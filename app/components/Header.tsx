@@ -8,9 +8,17 @@ export default function Header() {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
 
   const serviceLinks = [
+    { href: "/services/private-events", label: "Private Events" },
     { href: "/services/weddings", label: "Weddings" },
     { href: "/services/corporate", label: "Corporate" },
-    { href: "/services/private-events", label: "Private Events" },
+  ];
+
+  const mainNavLinks = [
+    { href: "/menu", label: "Menu" },
+    { href: "/gallery", label: "Gallery" },
+    { href: "/about", label: "About" },
+    { href: "/reviews", label: "Reviews" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
@@ -21,80 +29,62 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link
-            href="/"
-            className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-          >
-            Home
-          </Link>
-          
+        <nav className="hidden lg:flex items-center gap-6">
           {/* Services Dropdown */}
           <div 
             className="relative"
             onMouseEnter={() => setIsServicesOpen(true)}
             onMouseLeave={() => setIsServicesOpen(false)}
           >
-            <button className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider flex items-center gap-1">
+            <button className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider flex items-center gap-1 py-2">
               Services
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             
             {isServicesOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-[#E6D9C8]">
-                <Link
-                  href="/services"
-                  className="block px-4 py-2 text-[#1F1F1F] hover:bg-[#F1E7DA] text-sm"
-                >
-                  All Services
-                </Link>
-                {serviceLinks.map((link) => (
+              <div className="absolute top-full left-0 mt-0 pt-2">
+                <div className="w-48 bg-white rounded-md shadow-lg py-2 border border-[#E6D9C8]">
                   <Link
-                    key={link.href}
-                    href={link.href}
-                    className="block px-4 py-2 text-[#1F1F1F] hover:bg-[#F1E7DA] text-sm"
+                    href="/services"
+                    className="block px-4 py-2 text-[#1F1F1F] hover:bg-[#F1E7DA] text-sm font-medium"
                   >
-                    {link.label}
+                    All Services
                   </Link>
-                ))}
+                  <div className="border-t border-[#E6D9C8] my-1"></div>
+                  {serviceLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="block px-4 py-2 text-[#1F1F1F] hover:bg-[#F1E7DA] text-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          <Link
-            href="/menu"
-            className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-          >
-            Menu
-          </Link>
-          <Link
-            href="/gallery"
-            className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-          >
-            Gallery
-          </Link>
-          <Link
-            href="/about"
-            className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-          >
-            Contact
-          </Link>
-          <Link href="/contact" className="btn-primary text-sm">
+          {mainNavLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
+            >
+              {link.label}
+            </Link>
+          ))}
+          
+          <Link href="/contact" className="btn-primary text-sm ml-2">
             Request a Quote
           </Link>
         </nav>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white p-2"
+          className="lg:hidden text-white p-2"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -115,73 +105,75 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <nav className="md:hidden bg-[#3A2A24] border-t border-white/10 px-6 py-4">
-          <Link
-            href="/"
-            className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Home
-          </Link>
-          
-          {/* Mobile Services */}
-          <div className="py-3">
-            <p className="text-white/80 text-sm uppercase tracking-wider mb-2">Services</p>
-            <div className="pl-4 space-y-2">
-              <Link
-                href="/services"
-                className="block py-2 text-white/60 hover:text-[#C9653B] transition-colors text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                All Services
-              </Link>
-              {serviceLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block py-2 text-white/60 hover:text-[#C9653B] transition-colors text-sm"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <Link
-            href="/menu"
-            className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Menu
-          </Link>
-          <Link
-            href="/gallery"
-            className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Gallery
-          </Link>
-          <Link
-            href="/about"
-            className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            About
-          </Link>
+        <nav className="lg:hidden bg-[#3A2A24] border-t border-white/10 px-6 py-4 max-h-[calc(100vh-80px)] overflow-y-auto">
+          {/* Mobile CTA - Top */}
           <Link
             href="/contact"
-            className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Contact
-          </Link>
-          <Link
-            href="/contact"
-            className="btn-primary text-sm mt-4 text-center block"
+            className="btn-primary text-sm text-center block mb-6"
             onClick={() => setIsMenuOpen(false)}
           >
             Request a Quote
+          </Link>
+
+          {/* Services Section */}
+          <div className="mb-4">
+            <button
+              onClick={() => setIsServicesOpen(!isServicesOpen)}
+              className="w-full flex justify-between items-center py-3 text-white/80 text-sm uppercase tracking-wider"
+            >
+              Services
+              <svg
+                className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {isServicesOpen && (
+              <div className="pl-4 border-l border-white/10 ml-2 space-y-1">
+                <Link
+                  href="/services"
+                  className="block py-2 text-white/60 hover:text-[#C9653B] transition-colors text-sm"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  All Services
+                </Link>
+                {serviceLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="block py-2 text-white/60 hover:text-[#C9653B] transition-colors text-sm"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Main Nav Links */}
+          {mainNavLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider border-t border-white/5"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          {/* FAQ Link */}
+          <Link
+            href="/faq"
+            className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider border-t border-white/5"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            FAQ
           </Link>
         </nav>
       )}

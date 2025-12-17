@@ -49,10 +49,10 @@ export default function Home() {
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <p className="text-[#C9653B] text-lg mb-4 tracking-widest uppercase">Karibu</p>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
-            Authentic Tanzanian Catering Across the Netherlands
+            Authentic Tanzanian Catering for Every Occasion
           </h1>
           <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
-            From intimate dinners to large weddings & corporate events.
+            Private Events • Weddings • Corporate
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact" className="btn-primary text-lg">
