@@ -48,7 +48,7 @@ export default function Home() {
             className="w-full h-full object-cover"
             poster="/hero-poster.jpg"
           >
-            <source src="/hero-video.mp4" type="video/mp4" />
+            <source src="/hero-video.MP4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/50" />
         </div>
