@@ -18,11 +18,9 @@ interface GalleryGridProps {
 
 const defaultCategories = [
   { id: "all", label: "All" },
-  { id: "weddings", label: "Weddings" },
-  { id: "corporate", label: "Corporate" },
-  { id: "private", label: "Private Events" },
+  { id: "events", label: "Private Events & Corporate" },
   { id: "food", label: "Food" },
-  { id: "behind", label: "Behind the Scenes" },
+  { id: "behind", label: "Behind The Scenes" },
 ];
 
 export default function GalleryGrid({
@@ -36,6 +34,8 @@ export default function GalleryGrid({
 
   const filteredItems = activeFilter === "all"
     ? items
+    : activeFilter === "events"
+    ? items.filter((item) => item.category === "corporate" || item.category === "private")
     : items.filter((item) => item.category === activeFilter);
 
   const openLightbox = (index: number) => {

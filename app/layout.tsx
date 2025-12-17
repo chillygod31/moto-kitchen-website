@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { Lora, Source_Sans_3 } from "next/font/google";
+import { Cinzel } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
-const lora = Lora({
-  variable: "--font-lora",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const halimun = localFont({
+  src: "../public/fonts/Halimun.ttf",
+  variable: "--font-heading",
 });
 
-const sourceSans = Source_Sans_3({
-  variable: "--font-source-sans",
+const cinzel = Cinzel({
+  variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -68,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lora.variable} ${sourceSans.variable} antialiased`}>
+      <body className={`${halimun.variable} ${cinzel.variable} antialiased`}>
         <Header />
         <main>{children}</main>
         <Footer />

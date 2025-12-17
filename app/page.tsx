@@ -1,16 +1,23 @@
 import Link from "next/link";
+import { getRandomGalleryImages } from "../lib/gallery-data";
+import { findDishByName } from "../lib/menu-data";
 
 export default function Home() {
-  const signatureDishes = [
-    { name: "Pilau", description: "Aromatic spiced rice with tender meat", tags: ["GF"] },
-    { name: "Mchuzi wa Kuku", description: "Chicken in rich coconut curry", tags: ["GF"] },
-    { name: "Nyama Choma", description: "Grilled meat with East African spices", tags: ["GF", "Spicy"] },
-    { name: "Chapati", description: "Soft, layered flatbread", tags: ["V"] },
-    { name: "Samaki wa Kupaka", description: "Fish in creamy coconut sauce", tags: ["GF"] },
-    { name: "Maharage", description: "Spiced beans in coconut milk", tags: ["V", "GF"] },
-    { name: "Mshikaki", description: "Marinated meat skewers", tags: ["GF", "Spicy"] },
-    { name: "Mandazi", description: "Sweet fried dough, perfect with chai", tags: ["V"] },
+  const signatureDishNames = [
+    "Goat meat/Mbuzi",
+    "Fried Fish/Samaki",
+    "Mchuzi wa Nyama/Beef stew",
+    "Pilau Beef",
+    "Samosa",
+    "Vitumbua",
+    "Chapati",
+    "Kachumbari",
   ];
+
+  const signatureDishes = signatureDishNames.map(name => {
+    const dish = findDishByName(name);
+    return dish || { name, description: "", image: null };
+  });
 
   const trustPoints = [
     "Available Nationwide",
@@ -98,12 +105,10 @@ export default function Home() {
                 A Taste of Home, Far From Home
               </h2>
               <p className="text-[#4B4B4B] text-lg mb-6 leading-relaxed">
-                Moto Kitchen was born from a love of Tanzanian cuisine and a desire to share the rich, 
-                bold flavours of East Africa with the Netherlands. Every dish we create carries the 
-                warmth and tradition of home-cooked Tanzanian meals.
+                Moto Kitchen was born in the heart of a family, where three extraordinary women, a grandmother, mother, and aunt, turned their passion for cooking into a cherished legacy. What began as a family tradition soon evolved into a thriving venture, organizing wedding buffets, participating in festivals and conferences, and building a strong community presence across the Benelux region.
               </p>
               <p className="text-[#4B4B4B] text-lg mb-8 leading-relaxed">
-                &ldquo;Moto&rdquo; means fire in Swahili — and we bring that fire to every event we cater.
+                Today, our dedicated team of eight women, all daughters of the original cooks and chefs who inspired Moto Kitchen, continues this legacy with passion and precision. We honor the rich culinary heritage of Tanzania — shaped by Indian, Middle Eastern, and African influences — in every dish we create.
               </p>
               <Link href="/about" className="text-[#C9653B] font-semibold hover:underline inline-flex items-center gap-2">
                 Read Our Full Story
@@ -199,23 +204,20 @@ export default function Home() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {signatureDishes.map((dish, index) => (
-              <div key={index} className="card text-center">
-                <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">{dish.name}</h3>
-                <p className="text-[#4B4B4B] text-sm mb-3">{dish.description}</p>
-                <div className="flex justify-center gap-2">
-                  {dish.tags.map((tag, i) => (
-                    <span 
-                      key={i} 
-                      className={`tag ${
-                        tag === "V" ? "tag-v" : 
-                        tag === "GF" ? "tag-gf" : 
-                        tag === "Spicy" ? "tag-spicy" : ""
-                      }`}
-                    >
-                      {tag === "V" ? "Vegetarian" : tag === "GF" ? "Gluten-Free" : tag}
-                    </span>
-                  ))}
+              <div key={index} className="card">
+                <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
+                  {dish.image ? (
+                    <img 
+                      src={`/${dish.image}`} 
+                      alt={dish.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-4xl">🍽️</span>
+                  )}
                 </div>
+                <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">{dish.name}</h3>
+                <p className="text-[#4B4B4B] text-sm">{dish.description}</p>
               </div>
             ))}
           </div>
@@ -263,9 +265,13 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="aspect-square bg-[#F1E7DA] rounded-lg border border-[#E6D9C8] flex items-center justify-center">
-                <span className="text-4xl">🍽️</span>
+            {getRandomGalleryImages(6).map((item) => (
+              <div key={item.id} className="aspect-square bg-[#F1E7DA] rounded-lg border border-[#E6D9C8] overflow-hidden">
+                <img 
+                  src={item.src} 
+                  alt={item.alt} 
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
               </div>
             ))}
           </div>

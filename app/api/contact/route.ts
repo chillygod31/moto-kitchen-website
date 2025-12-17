@@ -87,7 +87,7 @@ ${howFound || "Not specified"}
     // Send email via Resend
     const { error } = await resend.emails.send({
       from: "Moto Kitchen Website <noreply@motokitchen.nl>",
-      to: ["info@motokitchen.nl"],
+      to: ["contact@motokitchen.nl"],
       replyTo: email,
       subject: `New Quote Request: ${eventType} - ${guestCount} guests in ${location}`,
       html: emailHtml,

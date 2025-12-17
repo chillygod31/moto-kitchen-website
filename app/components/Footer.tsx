@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="md:col-span-1">
-            <img src="/logo2.png" alt="Moto Kitchen" className="h-14 mb-4" />
+            <img src="/logo1.png" alt="Moto Kitchen" className="h-20 mb-4" />
             <p className="text-white/70 mb-4 text-sm">
               Authentic Tanzanian catering across the Netherlands.
             </p>
@@ -42,8 +42,8 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Get in Touch</h4>
             <ul className="space-y-3 text-white/70 text-sm">
               <li>
-                <a href="mailto:info@motokitchen.nl" className="hover:text-[#C9653B] transition-colors">
-                  info@motokitchen.nl
+                <a href="mailto:contact@motokitchen.nl" className="hover:text-[#C9653B] transition-colors">
+                  contact@motokitchen.nl
                 </a>
               </li>
               <li>
@@ -52,8 +52,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://instagram.com/motokitchen" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9653B] transition-colors">
-                  @motokitchen
+                <a href="https://instagram.com/motokitchen.nl" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9653B] transition-colors">
+                  @motokitchen.nl
                 </a>
               </li>
             </ul>

@@ -113,8 +113,8 @@ export default function ContactPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-2">Email</h3>
-                  <a href="mailto:info@motokitchen.nl" className="text-[#C9653B] hover:underline">
-                    info@motokitchen.nl
+                  <a href="mailto:contact@motokitchen.nl" className="text-[#C9653B] hover:underline">
+                    contact@motokitchen.nl
                   </a>
                 </div>
                 
@@ -127,8 +127,8 @@ export default function ContactPage() {
                 
                 <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-2">Instagram</h3>
-                  <a href="https://instagram.com/motokitchen" target="_blank" rel="noopener noreferrer" className="text-[#C9653B] hover:underline">
-                    @motokitchen
+                  <a href="https://instagram.com/motokitchen.nl" target="_blank" rel="noopener noreferrer" className="text-[#C9653B] hover:underline">
+                    @motokitchen.nl
                   </a>
                 </div>
                 
@@ -185,9 +185,9 @@ export default function ContactPage() {
                         className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
                       >
                         <option value="">Select event type</option>
+                        <option value="private">Private Party</option>
                         <option value="wedding">Wedding</option>
                         <option value="corporate">Corporate Event</option>
-                        <option value="private">Private Party</option>
                         <option value="other">Other</option>
                       </select>
                     </div>
