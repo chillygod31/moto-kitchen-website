@@ -119,13 +119,6 @@ export default function ContactPage() {
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">WhatsApp</h3>
-                  <a href="https://wa.me/31600000000" className="text-[#C9653B] hover:underline">
-                    +31 6 00 00 00 00
-                  </a>
-                </div>
-                
-                <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-2">Instagram</h3>
                   <a href="https://instagram.com/motokitchen.nl" target="_blank" rel="noopener noreferrer" className="text-[#C9653B] hover:underline">
                     @motokitchen.nl
@@ -135,14 +128,14 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-2">Location</h3>
                   <p className="text-[#4B4B4B]">Netherlands</p>
-                  <p className="text-[#4B4B4B] text-sm mt-1">We cater throughout the country</p>
+                  <p className="text-[#4B4B4B] text-sm mt-1">Serving the Netherlands, Belgium, Germany, and beyond</p>
                 </div>
               </div>
 
               <div className="mt-8 p-6 bg-[#F1E7DA] rounded-lg border border-[#E6D9C8]">
                 <p className="font-semibold text-[#1F1F1F] mb-2">Response Time</p>
                 <p className="text-[#4B4B4B] text-sm">
-                  We typically respond within 24 hours. For urgent inquiries, please reach out via WhatsApp.
+                  We typically respond within 24 hours.
                 </p>
               </div>
             </div>

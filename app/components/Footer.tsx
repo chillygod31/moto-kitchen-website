@@ -7,11 +7,17 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="md:col-span-1">
-            <img src="/logo1.png" alt="Moto Kitchen" className="h-20 mb-4" />
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/logo1.png" alt="Moto Kitchen" className="h-16 md:h-20 object-contain" />
+              <div className="flex flex-col -ml-2">
+                <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
+                <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-body)' }}>East African Catering Service</span>
+              </div>
+            </div>
             <p className="text-white/70 mb-4 text-sm">
-              Authentic Tanzanian catering across the Netherlands.
+              Serving the Netherlands, Belgium, Germany, and beyond.
             </p>
-            <p className="text-[#C9653B] font-medium">Karibu — Welcome</p>
+            <p className="text-[#C9653B] font-medium">Karibu</p>
           </div>
 
           {/* Services */}
@@ -47,17 +53,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/31600000000" className="hover:text-[#C9653B] transition-colors">
-                  WhatsApp
-                </a>
-              </li>
-              <li>
                 <a href="https://instagram.com/motokitchen.nl" target="_blank" rel="noopener noreferrer" className="hover:text-[#C9653B] transition-colors">
                   @motokitchen.nl
                 </a>
               </li>
             </ul>
-            <p className="text-white/50 text-xs mt-4">Serving across the Netherlands</p>
+            <p className="text-white/50 text-xs mt-4">Serving across the Benelux and beyond</p>
           </div>
         </div>
 

@@ -78,10 +78,13 @@ export default function ServicesPage() {
           <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Story</p>
           <h2 className="text-3xl md:text-4xl font-bold text-[#1F1F1F] mb-6">A Family Legacy</h2>
           <p className="text-[#4B4B4B] text-lg leading-relaxed mb-6">
-            Moto Kitchen was born in the heart of a family, where three extraordinary women, a grandmother, mother, and aunt, turned their passion for cooking into a cherished legacy. Our dedicated team of eight women, all daughters of the original cooks and chefs who inspired Moto Kitchen, continues this legacy with passion and precision.
+            Moto Kitchen began in a home kitchen, with a grandmother, a mother, and an aunt cooking for the people around them. That was about 12 to 13 years ago. Over time, people started asking if we could cook for them, first for birthdays and small celebrations, then for bigger moments where the food needed to feel like home.
+          </p>
+          <p className="text-[#4B4B4B] text-lg leading-relaxed mb-6">
+            In 2023 we officially started Moto Kitchen as a business. Today, we are a team of eight women, and we run Moto Kitchen like family. Our recipes were learned from our mothers and grandmothers, and we try to stay as close to home as possible, using spices from Tanzania and Zanzibar whenever we can.
           </p>
           <p className="text-[#4B4B4B] text-lg leading-relaxed">
-            We honor the rich culinary heritage of Tanzania — shaped by Indian, Middle Eastern, and African influences — in every dish we create, bringing bold, authentic flavors that bridge heritage and taste.
+            Moto means fire in Swahili. For us, it is the fire in our kitchen and the passion in our veins, the kind of fire that turns a meal into a memory.
           </p>
         </div>
       </section>

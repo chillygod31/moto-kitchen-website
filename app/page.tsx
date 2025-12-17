@@ -105,10 +105,10 @@ export default function Home() {
                 A Taste of Home, Far From Home
               </h2>
               <p className="text-[#4B4B4B] text-lg mb-6 leading-relaxed">
-                Moto Kitchen was born in the heart of a family, where three extraordinary women, a grandmother, mother, and aunt, turned their passion for cooking into a cherished legacy. What began as a family tradition soon evolved into a thriving venture, organizing wedding buffets, participating in festivals and conferences, and building a strong community presence across the Benelux region.
+                Moto Kitchen began in a home kitchen, with a grandmother, a mother, and an aunt cooking for the people around them. That was about 12 to 13 years ago. Over time, people started asking if we could cook for them, first for birthdays and small celebrations, then for bigger moments where the food needed to feel like home.
               </p>
               <p className="text-[#4B4B4B] text-lg mb-8 leading-relaxed">
-                Today, our dedicated team of eight women, all daughters of the original cooks and chefs who inspired Moto Kitchen, continues this legacy with passion and precision. We honor the rich culinary heritage of Tanzania — shaped by Indian, Middle Eastern, and African influences — in every dish we create.
+                In 2023 we officially started Moto Kitchen as a business. Today, we are a team of eight women, and we run Moto Kitchen like family. Moto means fire in Swahili. For us, it is the fire in our kitchen and the passion in our veins, the kind of fire that turns a meal into a memory.
               </p>
               <Link href="/about" className="text-[#C9653B] font-semibold hover:underline inline-flex items-center gap-2">
                 Read Our Full Story

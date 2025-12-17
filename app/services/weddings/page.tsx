@@ -48,7 +48,7 @@ export default function WeddingsPage() {
     <ServicePageTemplate
       heroTitle="Wedding Catering"
       heroSubtitle="Create unforgettable memories with authentic Tanzanian cuisine on your special day"
-      introText="Your wedding day deserves food that tells a story. Our dedicated team of eight women, all daughters of the original cooks and chefs who inspired Moto Kitchen, brings the rich, vibrant flavours of Tanzania to your celebration. We honor our family legacy and culinary heritage in every dish, creating a dining experience that your guests will remember forever. From intimate ceremonies to grand celebrations, we tailor every detail to your vision."
+      introText="Your wedding day deserves food that tells a story. Our team of eight women, running Moto Kitchen like family, brings the rich, vibrant flavours of Tanzania to your celebration. Our recipes were learned from our mothers and grandmothers, using spices from Tanzania and Zanzibar whenever we can. The flavours carry warmth, comfort, and a little spark, the kind that makes people pause after the first bite and say, 'this tastes like home.' From intimate ceremonies to grand celebrations, we tailor every detail to your vision."
       includedItems={includedItems}
       galleryImages={galleryImages}
       faqs={faqs}

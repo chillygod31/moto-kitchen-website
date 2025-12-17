@@ -48,7 +48,7 @@ export default function CorporatePage() {
     <ServicePageTemplate
       heroTitle="Corporate Catering"
       heroSubtitle="Impress your team and clients with authentic Tanzanian cuisine"
-      introText="Elevate your corporate events with something memorable. Our dedicated team of eight women, continuing the legacy of three generations of family cooks, brings authentic Tanzanian cuisine to your business events. Whether it's a team lunch, client meeting, conference, or company celebration, our heritage-inspired dishes bring people together and create talking points. Professional service, reliable timing, and exceptional food — every time."
+      introText="Elevate your corporate events with something memorable. Our team of eight women, running Moto Kitchen like family, brings authentic Tanzanian cuisine to your business events. Our recipes were learned from our mothers and grandmothers, and we try to stay as close to home as possible. Whether it's a team lunch, client meeting, conference, or company celebration, our heritage-inspired dishes bring people together and create talking points. Professional service, reliable timing, and exceptional food — every time."
       includedItems={includedItems}
       galleryImages={galleryImages}
       faqs={faqs}
