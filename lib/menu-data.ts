@@ -11,10 +11,10 @@ export const dishes = [
   { id: 8, name: "Mchuzi wa Kuku/Chicken stew", description: "Tender chicken in a rich, aromatic coconut-based curry.", category: "poultry-fish-meats", image: "mchuzi-wa-kuku.jpg" },
   { id: 9, name: "Mchuzi wa Nyama/Beef stew", description: "Slow-cooked beef in a flavourful spiced coconut gravy.", category: "poultry-fish-meats", image: "mchuzi-wa-nyama.jpg" },
   { id: 10, name: "Ndizi wa Nyama/Green bananas & beef", description: "Traditional dish of green bananas stewed with tender beef.", category: "poultry-fish-meats", image: "ndizi-wa-nyama.jpg" },
-  { id: 11, name: "Urojo/Zanzibar mix", description: "Famous Zanzibari street food — a tangy, spiced soup with fritters and potatoes.", category: "poultry-fish-meats", image: "urojo-zanzibar-mix.jpg" },
+  { id: 11, name: "Urojo/Zanzibar mix", description: "Famous Zanzibari street food — a tangy, spiced soup with fritters and potatoes.", category: "poultry-fish-meats", image: "urojo-vegetarian.jpg" },
 
   // Vegetables & Stews
-  { id: 12, name: "Njegere/Peas", description: "Green peas cooked in a light coconut sauce with onions and tomatoes.", category: "vegetables-stews", image: "njegere-peas.jpg" },
+  { id: 12, name: "Njegere/Peas", description: "Green peas cooked in a light coconut sauce with onions and tomatoes.", category: "vegetables-stews", image: "njegere.jpg" },
   { id: 13, name: "Kisamvu/Cassava leaves", description: "Pounded cassava leaves slow-cooked in coconut milk.", category: "vegetables-stews", image: "kisamvu-cassava-leaves.jpg" },
   { id: 14, name: "Kabichi/Fried cabbage", description: "Sautéed cabbage with onions, tomatoes, and mild spices.", category: "vegetables-stews", image: "kabichi-fried-cabbage.jpg" },
   { id: 15, name: "Mchicha/Spinach", description: "Fresh spinach cooked with coconut milk and ground peanuts.", category: "vegetables-stews", image: "mchicha-spinach.jpg" },

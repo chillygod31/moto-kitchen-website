@@ -1,4 +1,6 @@
 import ServicePageTemplate from "../../components/ServicePageTemplate";
+import SplitWhatsIncluded from "../../components/SplitWhatsIncluded";
+import { galleryItems } from "../../../lib/gallery-data";
 
 export const metadata = {
   title: "Private Event Catering | Moto Kitchen",
@@ -34,14 +36,10 @@ const testimonials = [
   { quote: "We hired Moto Kitchen for our daughter's graduation party. The food was fresh, flavourful, and the service was impeccable.", author: "Sarah M.", location: "The Hague", eventType: "Private Party", rating: 5 },
 ];
 
-const galleryImages = [
-  { src: "", alt: "Birthday celebration" },
-  { src: "", alt: "Family gathering spread" },
-  { src: "", alt: "Anniversary dinner" },
-  { src: "", alt: "Home catering setup" },
-  { src: "", alt: "Dessert table" },
-  { src: "", alt: "Guests enjoying food" },
-];
+// Get both private and corporate images from gallery data
+const eventImages = galleryItems
+  .filter(item => item.category === "private" || item.category === "corporate")
+  .map(item => item.src);
 
 export default function PrivateEventsPage() {
   return (
@@ -50,9 +48,10 @@ export default function PrivateEventsPage() {
       heroSubtitle="Bring people together with food that creates memories"
       introText="Life's special moments deserve exceptional food. Our team of eight women, running Moto Kitchen like family, brings authentic Tanzanian cuisine to your celebrations. Our recipes were learned from our mothers and grandmothers, using spices from Tanzania and Zanzibar whenever we can. Whether you're celebrating a birthday, anniversary, graduation, or simply gathering loved ones together, we add warmth and flavour to every occasion. We bring the feast to you — at home or your chosen venue."
       includedItems={includedItems}
-      galleryImages={galleryImages}
+      galleryImages={[]}
       faqs={faqs}
       testimonials={testimonials}
+      customWhatsIncluded={<SplitWhatsIncluded items={includedItems} images={eventImages} />}
     />
   );
 }

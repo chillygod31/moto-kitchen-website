@@ -8,39 +8,27 @@ export const metadata = {
 
 const services = [
   {
-    href: "/services/weddings",
-    title: "Wedding Catering",
-    description: "Make your special day unforgettable with authentic Tanzanian cuisine. From intimate ceremonies to grand celebrations.",
-    image: "/private-3.jpg",
-    features: [
-      "Custom menu planning",
-      "Tasting sessions",
-      "Full-service staff",
-      "Setup & cleanup",
-    ],
-  },
-  {
-    href: "/services/corporate",
-    title: "Corporate Events",
-    description: "Impress your team and clients with unique flavours. Perfect for team lunches, conferences, and company celebrations.",
-    image: "/corporate-2.jpg",
-    features: [
-      "Flexible packages",
-      "Professional presentation",
-      "Dietary accommodations",
-      "Reliable service",
-    ],
-  },
-  {
     href: "/services/private-events",
-    title: "Private Events",
-    description: "Birthday parties, family gatherings, anniversaries — bring people together with food that creates memories.",
+    title: "Special Events",
+    description: "Weddings, corporate events, birthday parties, anniversaries, and family gatherings — bring people together with food that creates memories.",
     image: "/food-8.jpg",
     features: [
       "Personalized menus",
       "Intimate to large groups",
       "Family-style options",
       "Cultural celebrations",
+    ],
+  },
+  {
+    href: "/services/pick-up-delivery",
+    title: "Pick Up & Delivery",
+    description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany.",
+    image: "/fresh-juice.jpg",
+    features: [
+      "Nationwide delivery",
+      "Flexible ordering",
+      "Fresh prepared meals",
+      "Easy pick-up options",
     ],
   },
 ];
@@ -64,7 +52,7 @@ export default function ServicesPage() {
       {/* Services Grid */}
       <section className="section-padding bg-[#FAF6EF]">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 justify-items-center max-w-4xl mx-auto">
             {services.map((service) => (
               <ServiceCard key={service.href} {...service} />
             ))}

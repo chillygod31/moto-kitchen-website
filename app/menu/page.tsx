@@ -70,10 +70,10 @@ export default function MenuPage() {
                     <span className="text-4xl">🍽️</span>
                   )}
                 </div>
-                <h3 className="text-lg font-medium text-[#1F1F1F] mb-2">{dish.name}</h3>
-                <p className="text-sm text-[#4B4B4B]">{dish.description}</p>
+                <h3 className="text-lg font-medium text-[#1F1F1F] mb-2 text-center">{dish.name}</h3>
+                <p className="text-sm text-[#4B4B4B] text-center">{dish.description}</p>
                 {dish.note && (
-                  <p className="text-xs text-[#C9653B] mt-2 italic">{dish.note}</p>
+                  <p className="text-xs text-[#C9653B] mt-2 italic text-center">{dish.note}</p>
                 )}
               </div>
             ))}

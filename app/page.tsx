@@ -59,7 +59,7 @@ export default function Home() {
             Authentic Tanzanian Catering for Every Occasion
           </h1>
           <p style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Private Events • Weddings • Corporate
+            Special Events • Pick Up & Delivery
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-primary text-lg">
@@ -141,25 +141,19 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 justify-items-center max-w-4xl mx-auto">
             {[
-              {
-                href: "/services/weddings",
-                image: "/private-3.jpg",
-                title: "Weddings",
-                description: "Make your special day unforgettable with a menu that tells your cultural story."
-              },
-              {
-                href: "/services/corporate",
-                image: "/corporate-2.jpg",
-                title: "Corporate",
-                description: "Impress your clients and team with unique East African cuisine for meetings and events."
-              },
               {
                 href: "/services/private-events",
                 image: "/food-8.jpg",
-                title: "Private Events",
-                description: "Birthday parties, anniversaries, and family gatherings with authentic flavours."
+                title: "Special Events",
+                description: "Weddings, corporate events, birthday parties, anniversaries, and family gatherings with authentic flavours."
+              },
+              {
+                href: "/services/pick-up-delivery",
+                image: "/fresh-juice.jpg",
+                title: "Pick Up & Delivery",
+                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany."
               }
             ].map((service, index) => (
               <Link 
@@ -174,13 +168,13 @@ export default function Home() {
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <h3 className="text-xl font-semibold text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors">
+                <h3 className="text-xl font-semibold text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors text-center">
                   {service.title}
                 </h3>
-                <p className="text-[#4B4B4B]">
+                <p className="text-[#4B4B4B] text-center">
                   {service.description}
                 </p>
-                <span className="inline-flex items-center gap-1 mt-4 text-[#C9653B] font-semibold text-sm">
+                <span className="inline-flex items-center gap-1 mt-4 text-[#C9653B] font-semibold text-sm justify-center w-full">
                   Learn more
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -216,8 +210,8 @@ export default function Home() {
                     <span className="text-4xl">🍽️</span>
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">{dish.name}</h3>
-                <p className="text-[#4B4B4B] text-sm">{dish.description}</p>
+                <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2 text-center">{dish.name}</h3>
+                <p className="text-[#4B4B4B] text-sm text-center">{dish.description}</p>
               </div>
             ))}
           </div>

@@ -1,4 +1,6 @@
 import ServicePageTemplate from "../../components/ServicePageTemplate";
+import SplitWhatsIncluded from "../../components/SplitWhatsIncluded";
+import { galleryItems } from "../../../lib/gallery-data";
 
 export const metadata = {
   title: "Corporate Catering | Moto Kitchen",
@@ -10,8 +12,6 @@ const includedItems = [
   { icon: "⏰", title: "Punctual Delivery", description: "Reliable timing for your business schedule" },
   { icon: "🍱", title: "Individual Portions", description: "Pre-packaged options for meetings available" },
   { icon: "🏢", title: "Office Setup", description: "We handle setup in your workspace" },
-  { icon: "🥗", title: "Dietary Labels", description: "Clear labeling for all dietary options" },
-  { icon: "♻️", title: "Eco-Friendly", description: "Sustainable packaging options available" },
   { icon: "📞", title: "Dedicated Contact", description: "Single point of contact for your event" },
   { icon: "🔄", title: "Repeat Discounts", description: "Special rates for regular corporate clients" },
 ];
@@ -43,6 +43,11 @@ const galleryImages = [
   { src: "", alt: "Professional presentation" },
 ];
 
+// Get all corporate images from gallery data
+const corporateImages = galleryItems
+  .filter(item => item.category === "corporate")
+  .map(item => item.src);
+
 export default function CorporatePage() {
   return (
     <ServicePageTemplate
@@ -50,9 +55,10 @@ export default function CorporatePage() {
       heroSubtitle="Impress your team and clients with authentic Tanzanian cuisine"
       introText="Elevate your corporate events with something memorable. Our team of eight women, running Moto Kitchen like family, brings authentic Tanzanian cuisine to your business events. Our recipes were learned from our mothers and grandmothers, and we try to stay as close to home as possible. Whether it's a team lunch, client meeting, conference, or company celebration, our heritage-inspired dishes bring people together and create talking points. Professional service, reliable timing, and exceptional food — every time."
       includedItems={includedItems}
-      galleryImages={galleryImages}
+      galleryImages={[]}
       faqs={faqs}
       testimonials={testimonials}
+      customWhatsIncluded={<SplitWhatsIncluded items={includedItems} images={corporateImages} />}
     />
   );
 }

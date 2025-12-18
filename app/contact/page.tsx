@@ -192,7 +192,7 @@ export default function ContactPage() {
                         <option value="">Select event type</option>
                         <option value="private">Private Party</option>
                         <option value="wedding">Wedding</option>
-                        <option value="corporate">Corporate Event</option>
+                        <option value="pickup-delivery">Pick Up & Delivery</option>
                         <option value="other">Other</option>
                       </select>
                     </div>

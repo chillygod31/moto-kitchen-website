@@ -9,8 +9,7 @@ export default function Header() {
 
   const serviceLinks = [
     { href: "/services/private-events", label: "Private Events" },
-    { href: "/services/weddings", label: "Weddings" },
-    { href: "/services/corporate", label: "Corporate" },
+    { href: "/services/pick-up-delivery", label: "Pick Up & Delivery" },
   ];
 
   const mainNavLinks = [
