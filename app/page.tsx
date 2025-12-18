@@ -54,18 +54,18 @@ export default function Home() {
         </div>
         
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <p className="text-[#C9653B] text-lg mb-4 tracking-widest uppercase">Karibu</p>
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+          <p style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-[#C9653B] text-lg mb-4 tracking-widest uppercase">Karibu</p>
+          <h1 style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-5xl md:text-7xl font-bold text-white mb-6">
             Authentic Tanzanian Catering for Every Occasion
           </h1>
-          <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
+          <p style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
             Private Events • Weddings • Corporate
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" className="btn-primary text-lg">
+            <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-primary text-lg">
               Request a Quote
             </Link>
-            <Link href="/menu" className="btn-secondary text-lg !text-white !border-white hover:!bg-white hover:!text-[#1F1F1F]">
+            <Link href="/menu" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-secondary text-lg !text-white !border-white hover:!bg-white hover:!text-[#1F1F1F]">
               View Sample Menus
             </Link>
           </div>
@@ -118,19 +118,13 @@ export default function Home() {
               </Link>
             </div>
             <div className="relative">
-              <div className="aspect-[4/5] bg-[#F1E7DA] rounded-lg overflow-hidden border border-[#E6D9C8]">
-                <div className="w-full h-full flex items-center justify-center text-[#4B4B4B]">
-                  <div className="text-center">
-                    <p className="text-6xl mb-4">🍲</p>
-                    <p className="text-sm">Chef Photo</p>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-[#C9653B] rounded-lg flex items-center justify-center">
-                <div className="text-center text-white">
-                  <p className="text-3xl font-bold">10+</p>
-                  <p className="text-xs uppercase tracking-wider">Years of Passion</p>
-                </div>
+              <div className="aspect-[3/2] bg-[#F1E7DA] rounded-lg overflow-hidden border border-[#E6D9C8]">
+                <img 
+                  src="/team1.jpg" 
+                  alt="Moto Kitchen team"
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: '70% center' }}
+                />
               </div>
             </div>
           </div>
@@ -151,19 +145,19 @@ export default function Home() {
             {[
               {
                 href: "/services/weddings",
-                image: "💒",
+                image: "/private-3.jpg",
                 title: "Weddings",
                 description: "Make your special day unforgettable with a menu that tells your cultural story."
               },
               {
                 href: "/services/corporate",
-                image: "🏢",
+                image: "/corporate-2.jpg",
                 title: "Corporate",
                 description: "Impress your clients and team with unique East African cuisine for meetings and events."
               },
               {
                 href: "/services/private-events",
-                image: "🎉",
+                image: "/food-8.jpg",
                 title: "Private Events",
                 description: "Birthday parties, anniversaries, and family gatherings with authentic flavours."
               }
@@ -173,7 +167,13 @@ export default function Home() {
                 href={service.href}
                 className="card hover:shadow-md transition-shadow group"
               >
-                <div className="text-5xl mb-6">{service.image}</div>
+                <div className="mb-6 overflow-hidden rounded-md">
+                  <img 
+                    src={service.image} 
+                    alt={service.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
                 <h3 className="text-xl font-semibold text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors">
                   {service.title}
                 </h3>

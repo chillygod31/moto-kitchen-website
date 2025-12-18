@@ -11,7 +11,7 @@ const services = [
     href: "/services/weddings",
     title: "Wedding Catering",
     description: "Make your special day unforgettable with authentic Tanzanian cuisine. From intimate ceremonies to grand celebrations.",
-    icon: "💒",
+    image: "/private-3.jpg",
     features: [
       "Custom menu planning",
       "Tasting sessions",
@@ -23,7 +23,7 @@ const services = [
     href: "/services/corporate",
     title: "Corporate Events",
     description: "Impress your team and clients with unique flavours. Perfect for team lunches, conferences, and company celebrations.",
-    icon: "🏢",
+    image: "/corporate-2.jpg",
     features: [
       "Flexible packages",
       "Professional presentation",
@@ -35,7 +35,7 @@ const services = [
     href: "/services/private-events",
     title: "Private Events",
     description: "Birthday parties, family gatherings, anniversaries — bring people together with food that creates memories.",
-    icon: "🎉",
+    image: "/food-8.jpg",
     features: [
       "Personalized menus",
       "Intimate to large groups",
@@ -98,24 +98,32 @@ export default function ServicesPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-4xl mb-4">🌍</div>
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+                <img src="/authenticreceipe.png" alt="Authentic Recipes" className="w-full h-full object-cover" />
+              </div>
               <h3 className="font-semibold text-[#1F1F1F] mb-2">Authentic Recipes</h3>
               <p className="text-[#4B4B4B] text-sm">Traditional Tanzanian dishes made with authentic spices and techniques</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl mb-4">👨‍🍳</div>
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+                <img src="/behind-3.jpg" alt="Expert Chefs" className="w-full h-full object-cover" />
+              </div>
               <h3 className="font-semibold text-[#1F1F1F] mb-2">Expert Chefs</h3>
               <p className="text-[#4B4B4B] text-sm">Passionate team with deep knowledge of East African cuisine</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl mb-4">🎯</div>
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+                <img src="/food-7.jpg" alt="Tailored Service" className="w-full h-full object-cover" />
+              </div>
               <h3 className="font-semibold text-[#1F1F1F] mb-2">Tailored Service</h3>
               <p className="text-[#4B4B4B] text-sm">Custom menus designed around your event and preferences</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl mb-4">🇳🇱</div>
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+                <img src="/nationwide.png" alt="Nationwide" className="w-full h-full object-cover" />
+              </div>
               <h3 className="font-semibold text-[#1F1F1F] mb-2">Nationwide</h3>
-              <p className="text-[#4B4B4B] text-sm">We cater events throughout the Netherlands</p>
+              <p className="text-[#4B4B4B] text-sm">Serving the Netherlands, Belgium, Germany, and beyond</p>
             </div>
           </div>
         </div>

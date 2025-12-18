@@ -61,7 +61,7 @@ export default function AboutPage() {
             </div>
             <div className="aspect-square bg-[#FAF6EF] rounded-lg border border-[#E6D9C8] overflow-hidden">
               <div className="w-full h-full flex items-center justify-center text-[#4B4B4B]">
-                <div className="text-center">
+                  <div className="text-center">
                   <p className="text-6xl mb-4">🌍</p>
                   <p className="text-sm">Heritage Photo</p>
                 </div>
@@ -109,12 +109,12 @@ export default function AboutPage() {
               At Moto Kitchen, we specialize in creating bespoke catering solutions designed to elevate your event. Whether it&apos;s an intimate gathering or a grand celebration, our offerings include:
             </p>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <span className="text-[#C9653B] text-xl">•</span>
                 <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-1">Buffets</h3>
-                  <p className="text-[#4B4B4B] text-sm">A diverse array of dishes that celebrate bold flavors and cultural richness.</p>
+                  <p className="text-[#4B4B4B] text-base">A diverse array of dishes that celebrate bold flavors and cultural richness.</p>
                 </div>
               </div>
               
@@ -122,15 +122,7 @@ export default function AboutPage() {
                 <span className="text-[#C9653B] text-xl">•</span>
                 <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-1">Shared Dining</h3>
-                  <p className="text-[#4B4B4B] text-sm">Interactive, communal meals that bring people together.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <span className="text-[#C9653B] text-xl">•</span>
-                <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-1">Plated Dinners</h3>
-                  <p className="text-[#4B4B4B] text-sm">Elegantly presented courses for a refined dining experience.</p>
+                  <p className="text-[#4B4B4B] text-base">Interactive, communal meals that bring people together.</p>
                 </div>
               </div>
               
@@ -138,7 +130,7 @@ export default function AboutPage() {
                 <span className="text-[#C9653B] text-xl">•</span>
                 <div>
                   <h3 className="font-semibold text-[#1F1F1F] mb-1">Enhancements</h3>
-                  <p className="text-[#4B4B4B] text-sm">Thoughtful additions like curated wine pairings and venue décor to complete the ambiance.</p>
+                  <p className="text-[#4B4B4B] text-base">Thoughtful additions like curated cocktail menus and venue décor to complete the ambiance.</p>
                 </div>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cinzel } from "next/font/google";
+import { Cinzel, Source_Sans_3 } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "./components/Header";
@@ -11,9 +11,14 @@ const halimun = localFont({
 });
 
 const cinzel = Cinzel({
-  variable: "--font-body",
+  variable: "--font-cinzel",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const sourceSans = Source_Sans_3({
+  variable: "--font-body",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -68,7 +73,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${halimun.variable} ${cinzel.variable} antialiased`}>
+      <body className={`${halimun.variable} ${cinzel.variable} ${sourceSans.variable} antialiased`}>
         <Header />
         <main>{children}</main>
         <Footer />
