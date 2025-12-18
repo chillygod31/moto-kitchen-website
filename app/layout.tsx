@@ -64,6 +64,10 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  icons: {
+    icon: "/logo-circle.png",
+    apple: "/logo-circle.png",
+  },
 };
 
 export default function RootLayout({

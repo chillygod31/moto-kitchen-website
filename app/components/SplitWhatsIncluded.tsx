@@ -29,8 +29,7 @@ export default function SplitWhatsIncluded({ items, images }: SplitWhatsIncluded
     <section className="section-padding bg-[#F1E7DA]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">What We Offer</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1F1F1F]">What&apos;s Included</h2>
+          <p className="text-[#C9653B] text-2xl md:text-3xl font-bold uppercase tracking-widest">What We Offer</p>
         </div>
         
         <div className="grid md:grid-cols-[1.1fr_1fr] gap-1 items-center">

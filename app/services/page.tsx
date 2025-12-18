@@ -22,8 +22,8 @@ const services = [
   {
     href: "/services/pick-up-delivery",
     title: "Pick Up & Delivery",
-    description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany.",
-    image: "/fresh-juice.jpg",
+    description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond.",
+    image: "/delivery.jpg",
     features: [
       "Nationwide delivery",
       "Flexible ordering",

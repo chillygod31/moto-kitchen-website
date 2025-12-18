@@ -151,9 +151,9 @@ export default function Home() {
               },
               {
                 href: "/services/pick-up-delivery",
-                image: "/fresh-juice.jpg",
+                image: "/delivery.jpg",
                 title: "Pick Up & Delivery",
-                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany."
+                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond."
               }
             ].map((service, index) => (
               <Link 

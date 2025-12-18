@@ -10,7 +10,7 @@ export const dishes = [
   { id: 7, name: "Mchuzi wa Samaki/Fish stew", description: "Fresh fish simmered in a creamy coconut curry sauce.", category: "poultry-fish-meats", image: "mchuzi-wa-samaki.jpg" },
   { id: 8, name: "Mchuzi wa Kuku/Chicken stew", description: "Tender chicken in a rich, aromatic coconut-based curry.", category: "poultry-fish-meats", image: "mchuzi-wa-kuku.jpg" },
   { id: 9, name: "Mchuzi wa Nyama/Beef stew", description: "Slow-cooked beef in a flavourful spiced coconut gravy.", category: "poultry-fish-meats", image: "mchuzi-wa-nyama.jpg" },
-  { id: 10, name: "Ndizi wa Nyama/Green bananas & beef", description: "Traditional dish of green bananas stewed with tender beef.", category: "poultry-fish-meats", image: "ndizi-wa-nyama.jpg" },
+  { id: 10, name: "Ndizi na Nyama/Green bananas & beef", description: "Traditional dish of green bananas stewed with tender beef.", category: "poultry-fish-meats", image: "ndizi-wa-nyama.jpg" },
   { id: 11, name: "Urojo/Zanzibar mix", description: "Famous Zanzibari street food — a tangy, spiced soup with fritters and potatoes.", category: "poultry-fish-meats", image: "urojo-vegetarian.jpg" },
 
   // Vegetables & Stews

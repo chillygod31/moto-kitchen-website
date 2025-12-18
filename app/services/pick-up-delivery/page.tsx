@@ -34,10 +34,13 @@ const testimonials = [
   { quote: "Easy ordering process and the pick-up was quick. The food was amazing and our guests loved it!", author: "Michael B.", location: "Rotterdam", eventType: "Pick-Up", rating: 5 },
 ];
 
-// Get only food images for the carousel
-const foodImages = galleryItems
-  .filter(item => item.category === "food")
-  .map(item => item.src);
+// Get only food images for the carousel, starting with delivery.jpg
+const foodImages = [
+  "/delivery.jpg",
+  ...galleryItems
+    .filter(item => item.category === "food")
+    .map(item => item.src)
+];
 
 export default function PickUpDeliveryPage() {
   return (

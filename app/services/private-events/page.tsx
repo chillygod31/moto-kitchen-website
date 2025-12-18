@@ -46,7 +46,7 @@ export default function PrivateEventsPage() {
     <ServicePageTemplate
       heroTitle="Private Event Catering"
       heroSubtitle="Bring people together with food that creates memories"
-      introText="Life's special moments deserve exceptional food. Our team of eight women, running Moto Kitchen like family, brings authentic Tanzanian cuisine to your celebrations. Our recipes were learned from our mothers and grandmothers, using spices from Tanzania and Zanzibar whenever we can. Whether you're celebrating a birthday, anniversary, graduation, or simply gathering loved ones together, we add warmth and flavour to every occasion. We bring the feast to you — at home or your chosen venue."
+      introText="Life's special moments deserve exceptional food. Our team of eight women, running Moto Kitchen like family, brings authentic Tanzanian cuisine to your celebrations. Our recipes were learned from our mothers and grandmothers, using spices from Tanzania and Zanzibar whenever we can. Whether you're celebrating a birthday, anniversary, graduation, or simply gathering loved ones together, we add warmth and flavour to every occasion. We bring the feast to you at home or your chosen venue."
       includedItems={includedItems}
       galleryImages={[]}
       faqs={faqs}
