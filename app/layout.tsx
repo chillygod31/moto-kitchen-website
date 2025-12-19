@@ -67,6 +67,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo-circle.png",
     apple: "/logo-circle.png",
+    shortcut: "/logo-circle.png",
   },
 };
 

@@ -15,8 +15,8 @@ const includedItems = [
   { icon: "🏠", title: "Home Catering", description: "We come to your home or chosen venue" },
   { icon: "📏", title: "Any Size", description: "From intimate dinners to large gatherings" },
   { icon: "🍰", title: "Desserts Included", description: "Traditional Tanzanian sweets and treats" },
-  { icon: "🥂", title: "Special Occasions", description: "Engagement parties, graduations & more" },
-  { icon: "❤️", title: "Personal Touch", description: "Customized to your family's preferences" },
+  { icon: "🥂", title: "Special Occasions", description: "Corporate events, weddings, engagement parties, graduations & more" },
+  { icon: "❤️", title: "Personal Touch", description: "Customized to your preferences" },
 ];
 
 const faqs = [
@@ -24,12 +24,11 @@ const faqs = [
   { question: "Can you cater at my home?", answer: "Yes! We regularly cater at private homes. We just need access to a basic setup area and electricity." },
   { question: "How do I choose a menu?", answer: "We'll discuss your preferences, dietary needs, and event style, then create a custom menu proposal for your approval." },
   { question: "Do you cater cultural celebrations?", answer: "Absolutely! We specialize in Tanzanian cuisine and can create authentic menus for cultural celebrations and heritage events." },
-  { question: "What about dietary restrictions?", answer: "We accommodate all dietary needs including vegetarian, vegan, gluten-free, halal, and allergies. Just let us know." },
+  { question: "What about dietary restrictions?", answer: "We accommodate all dietary needs including vegetarian, vegan, gluten-free, and allergies. Just let us know." },
   { question: "Can I request specific dishes?", answer: "Yes! If there's a specific Tanzanian dish you love or want to try, let us know and we'll include it." },
   { question: "Do you provide serving staff for home events?", answer: "Yes, we can provide servers for your home event so you can relax and enjoy with your guests." },
   { question: "What's included in the price?", answer: "Our quotes include food, serving equipment, setup, and cleanup. Staff is included for full-service packages." },
   { question: "How far in advance should I book?", answer: "We recommend 2-3 weeks for most private events. For larger gatherings or peak seasons, book earlier." },
-  { question: "Do you offer kids' menus?", answer: "Yes, we can prepare kid-friendly options alongside the main menu for family events." },
 ];
 
 const testimonials = [

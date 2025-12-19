@@ -152,13 +152,17 @@ export default function ContactPage() {
     countryCode: "+31", // Default to Netherlands
     phone: "",
     eventType: "",
+    eventTypeOther: "",
     eventDate: "",
     dateFlexible: false,
     guestCount: "",
     location: "",
+    serviceType: "",
     dietary: [] as string[],
     message: "",
     howFound: "",
+    howFoundOther: "",
+    budget: "",
     // Honeypot field
     website: "",
   });
@@ -193,6 +197,11 @@ export default function ContactPage() {
     }));
   };
 
+  // Helper function to check if budget is required
+  const isBudgetRequired = () => {
+    return formData.serviceType !== "pickup-only" && formData.serviceType !== "not-sure-service";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -201,6 +210,13 @@ export default function ContactPage() {
     if (formData.website) {
       // Silently reject
       router.push("/contact/thank-you");
+      return;
+    }
+
+    // Conditional budget validation
+    if (isBudgetRequired() && !formData.budget) {
+      setError("Please select an estimated budget");
+      setIsSubmitting(false);
       return;
     }
 
@@ -214,13 +230,19 @@ export default function ContactPage() {
           name: formData.name,
           email: formData.email,
           phone: `${formData.countryCode} ${formData.phone}`,
-          eventType: formData.eventType,
+          eventType: formData.eventType === "other" && formData.eventTypeOther 
+            ? `Other: ${formData.eventTypeOther}` 
+            : formData.eventType,
           eventDate: formData.dateFlexible ? "Flexible" : formData.eventDate,
           guestCount: formData.guestCount,
           location: formData.location,
+          serviceType: formData.serviceType,
           dietary: formData.dietary,
           message: formData.message,
-          howFound: formData.howFound,
+          howFound: formData.howFound === "other" && formData.howFoundOther 
+            ? `Other: ${formData.howFoundOther}` 
+            : formData.howFound,
+          budget: formData.budget,
         }),
       });
 
@@ -338,16 +360,28 @@ export default function ContactPage() {
                       <select
                         required
                         value={formData.eventType}
-                        onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, eventType: e.target.value, eventTypeOther: "" })}
                         className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
                       >
                         <option value="">Select event type</option>
-                        <option value="private">Private Events</option>
+                        <option value="private">Private Event</option>
                         <option value="corporate">Corporate</option>
                         <option value="wedding">Wedding</option>
-                        <option value="pickup-delivery">Pick Up & Delivery</option>
-                        <option value="other">Other</option>
+                        <option value="pickup-only">Pick Up Only</option>
+                        <option value="other">Other (please specify)</option>
                       </select>
+                      {formData.eventType === "other" && (
+                        <div className="mt-3">
+                          <input
+                            type="text"
+                            required
+                            value={formData.eventTypeOther}
+                            onChange={(e) => setFormData({ ...formData, eventTypeOther: e.target.value })}
+                            placeholder="Please specify event type..."
+                            className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                          />
+                        </div>
+                      )}
                     </div>
                     
                     <div>
@@ -402,6 +436,76 @@ export default function ContactPage() {
                         className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
                         placeholder="e.g. Amsterdam"
                       />
+                    </div>
+                  </div>
+
+                  {/* Service Type */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
+                      Service Type <span className="text-[#C9653B]">*</span>
+                    </label>
+                    <div className="space-y-2">
+                      {[
+                        { value: "full-catering", label: "Full Catering Service", description: "We deliver, set up, serve, and clean up" },
+                        { value: "drop-off", label: "Drop-Off Catering", description: "We deliver fresh food, you handle serving" },
+                        { value: "pickup-only", label: "Pick-Up Only", description: "You collect from our location in Rotterdam" },
+                        { value: "not-sure-service", label: "Not sure yet", description: "We'll help you decide" },
+                      ].map((option) => (
+                        <label key={option.value} className="flex items-start gap-3 cursor-pointer p-3 border border-[#E6D9C8] rounded-md hover:bg-[#F1E7DA] transition-colors">
+                          <input
+                            type="radio"
+                            name="serviceType"
+                            required
+                            value={option.value}
+                            checked={formData.serviceType === option.value}
+                            onChange={(e) => {
+                              const newServiceType = e.target.value;
+                              setFormData({ 
+                                ...formData, 
+                                serviceType: newServiceType,
+                                budget: (newServiceType === "pickup-only" || newServiceType === "not-sure-service") ? "" : formData.budget
+                              });
+                            }}
+                            className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B] mt-0.5 flex-shrink-0"
+                          />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-[#1F1F1F] block">{option.label}</span>
+                            <span className="text-xs text-[#4B4B4B] block mt-1">{option.description}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Budget Range */}
+                  <div className={isBudgetRequired() ? "" : "opacity-50 pointer-events-none"}>
+                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
+                      Estimated Budget {isBudgetRequired() && <span className="text-[#C9653B]">*</span>}
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {[
+                        { value: "100-250", label: "€100-250" },
+                        { value: "250-500", label: "€250-500" },
+                        { value: "500-1000", label: "€500-1,000" },
+                        { value: "1000-2500", label: "€1,000-2,500" },
+                        { value: "2500-5000", label: "€2,500-5,000" },
+                        { value: "5000+", label: "€5,000+" },
+                        { value: "not-sure", label: "Not sure yet" },
+                      ].map((option) => (
+                        <label key={option.value} className={`flex items-center gap-2 p-3 border border-[#E6D9C8] rounded-md transition-colors ${isBudgetRequired() ? "cursor-pointer hover:bg-[#F1E7DA]" : "cursor-not-allowed"}`}>
+                          <input
+                            type="radio"
+                            name="budget"
+                            required={isBudgetRequired()}
+                            disabled={!isBudgetRequired()}
+                            value={option.value}
+                            checked={formData.budget === option.value}
+                            onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                            className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B]"
+                          />
+                          <span className="text-sm text-[#4B4B4B]">{option.label}</span>
+                        </label>
+                      ))}
                     </div>
                   </div>
 
@@ -532,14 +636,14 @@ export default function ContactPage() {
                   {/* Notes */}
                   <div>
                     <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
-                      Tell us about your vision
+                      Tell us about your event vision
                     </label>
                     <textarea
                       rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent resize-none bg-white"
-                      placeholder="Share your event vision, any specific dishes you'd like, additional dietary details, etc..."
+                      placeholder="Share your event vision, any specific dishes you'd like, additional dietary details, or special requests. Example: 'It's my mother's 60th birthday. She loves Tanzanian food and we want guests to experience authentic flavors. Looking for a buffet setup with both meat and vegetarian options.'"
                     />
                   </div>
 
@@ -550,16 +654,29 @@ export default function ContactPage() {
                     </label>
                     <select
                       value={formData.howFound}
-                      onChange={(e) => setFormData({ ...formData, howFound: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, howFound: e.target.value, howFoundOther: "" })}
                       className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
                     >
                       <option value="">Select an option</option>
                       <option value="google">Google Search</option>
                       <option value="instagram">Instagram</option>
+                      <option value="tiktok">TikTok</option>
                       <option value="referral">Friend/Family Referral</option>
-                      <option value="event">Saw us at an event</option>
+                      <option value="event">Saw you at an event</option>
+                      <option value="facebook">Facebook</option>
                       <option value="other">Other</option>
                     </select>
+                    {formData.howFound === "other" && (
+                      <div className="mt-3">
+                        <input
+                          type="text"
+                          value={formData.howFoundOther}
+                          onChange={(e) => setFormData({ ...formData, howFoundOther: e.target.value })}
+                          placeholder="Please specify..."
+                          className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <button

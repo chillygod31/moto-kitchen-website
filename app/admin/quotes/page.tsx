@@ -12,9 +12,11 @@ interface QuoteRequest {
   event_date: string | null;
   guest_count: number;
   location: string;
+  service_type: string | null;
   dietary_requirements: string[];
   message: string | null;
   how_found: string | null;
+  budget_range: string | null;
   status: string;
   notes: string | null;
   created_at: string;
@@ -121,7 +123,7 @@ export default function AdminQuotesPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Date", "Name", "Email", "Phone", "Event Type", "Date", "Guests", "Location", "Status"];
+    const headers = ["Date", "Name", "Email", "Phone", "Event Type", "Date", "Guests", "Location", "Service Type", "Budget Range", "Status"];
     const rows = quotes.map((q) => [
       new Date(q.created_at).toLocaleDateString(),
       q.name,
@@ -131,6 +133,8 @@ export default function AdminQuotesPage() {
       q.event_date || "Flexible",
       q.guest_count,
       q.location,
+      q.service_type ? formatServiceType(q.service_type) : "Not specified",
+      q.budget_range ? formatBudgetRange(q.budget_range) : "Not specified",
       q.status,
     ]);
 
@@ -141,6 +145,30 @@ export default function AdminQuotesPage() {
     a.href = url;
     a.download = `quote-requests-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
+  };
+
+  const formatBudgetRange = (budgetRange: string) => {
+    const budgetMap: Record<string, string> = {
+      "100-250": "€100-250",
+      "250-500": "€250-500",
+      "500-1000": "€500-1,000",
+      "1000-2500": "€1,000-2,500",
+      "2500-5000": "€2,500-5,000",
+      "5000+": "€5,000+",
+      "not-sure": "Not sure yet",
+    };
+    return budgetMap[budgetRange] || budgetRange;
+  };
+
+  const formatServiceType = (serviceType: string | null) => {
+    if (!serviceType) return "Not specified";
+    const serviceMap: Record<string, string> = {
+      "full-catering": "Full Catering Service",
+      "drop-off": "Drop-Off Catering",
+      "pickup-only": "Pick-Up Only",
+      "not-sure-service": "Not sure yet",
+    };
+    return serviceMap[serviceType] || serviceType;
   };
 
   const formatDate = (dateString: string) => {
@@ -275,6 +303,9 @@ export default function AdminQuotesPage() {
                     Location
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                    Service Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
@@ -285,7 +316,7 @@ export default function AdminQuotesPage() {
               <tbody className="divide-y divide-[#E6D9C8]">
                 {quotes.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-[#4B4B4B]">
+                    <td colSpan={9} className="px-6 py-12 text-center text-[#4B4B4B]">
                       No quote requests found
                     </td>
                   </tr>
@@ -311,6 +342,9 @@ export default function AdminQuotesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
                         {quote.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
+                        {quote.service_type ? formatServiceType(quote.service_type) : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
@@ -368,6 +402,12 @@ export default function AdminQuotesPage() {
                   <p><strong>Date:</strong> {selectedQuote.event_date || "Flexible"}</p>
                   <p><strong>Guests:</strong> {selectedQuote.guest_count}</p>
                   <p><strong>Location:</strong> {selectedQuote.location}</p>
+                  {selectedQuote.service_type && (
+                    <p><strong>Service Type:</strong> {formatServiceType(selectedQuote.service_type)}</p>
+                  )}
+                  {selectedQuote.budget_range && (
+                    <p><strong>Budget Range:</strong> {formatBudgetRange(selectedQuote.budget_range)}</p>
+                  )}
                 </div>
                 {selectedQuote.dietary_requirements && selectedQuote.dietary_requirements.length > 0 && (
                   <div>

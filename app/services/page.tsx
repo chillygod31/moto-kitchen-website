@@ -52,7 +52,6 @@ const services = [
     title: "Pick-Up & Delivery",
     description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond.",
     image: "/delivery.jpg",
-    pricing: formatPricing("pick-up-delivery"),
     features: [
       "Nationwide delivery",
       "Flexible ordering",

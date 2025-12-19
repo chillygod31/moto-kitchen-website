@@ -11,7 +11,7 @@ export interface PricingInfo {
 
 export const pricingData: Record<ServiceType, PricingInfo> = {
   "private-events": {
-    price: 25,
+    price: 15,
     currency: "€",
     unit: "per person",
   },
@@ -21,7 +21,7 @@ export const pricingData: Record<ServiceType, PricingInfo> = {
     unit: "per person",
   },
   weddings: {
-    price: 35,
+    price: 25,
     currency: "€",
     unit: "per person",
   },
