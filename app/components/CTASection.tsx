@@ -20,7 +20,7 @@ export default function CTASection({
       bg: "bg-[#C9653B]",
       title: "text-white",
       description: "text-white/90",
-      button: "bg-white text-[#C9653B] hover:bg-[#FAF6EF]",
+      button: "btn-primary !bg-white !text-[#1F1F1F] hover:!bg-[#FAF6EF] hover:!text-[#1F1F1F]",
     },
     dark: {
       bg: "bg-[#3A2A24]",
@@ -58,7 +58,7 @@ export default function CTASection({
         )}
         <Link
           href={buttonHref}
-          className={`px-8 py-4 rounded-md font-semibold text-lg transition-colors inline-block ${styles.button}`}
+          className={`btn-primary ${variant === "primary" ? "bg-white text-[#C9653B] hover:bg-[#FAF6EF]" : ""}`}
         >
           {buttonText}
         </Link>

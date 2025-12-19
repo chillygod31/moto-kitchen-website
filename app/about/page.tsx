@@ -188,7 +188,7 @@ export default function AboutPage() {
           <p className="text-white/90 text-lg mb-10">
             Ready to bring authentic Tanzanian flavours to your next event?
           </p>
-          <Link href="/contact" className="bg-white text-[#C9653B] px-8 py-4 rounded-md font-semibold text-lg hover:bg-[#FAF6EF] transition-colors inline-block">
+          <Link href="/contact" className="btn-primary !bg-white !text-[#1F1F1F] hover:!bg-[#FAF6EF] hover:!text-[#1F1F1F]">
             Get in Touch
           </Link>
         </div>

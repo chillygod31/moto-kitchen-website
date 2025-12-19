@@ -49,7 +49,8 @@ export default function MenuPage() {
               <button
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 400 }}
+                className={`px-4 py-2 rounded-full text-lg transition-colors ${
                   activeCategory === category.id
                     ? "bg-[#C9653B] text-white"
                     : "bg-white border border-[#E6D9C8] text-[#4B4B4B] hover:bg-[#C9653B] hover:text-white hover:border-[#C9653B]"
@@ -75,8 +76,8 @@ export default function MenuPage() {
                     <span className="text-4xl">🍽️</span>
                   )}
                 </div>
-                <h3 className="text-lg font-medium text-[#1F1F1F] mb-2 text-center">{dish.name}</h3>
-                <p className="text-sm text-[#4B4B4B] text-center leading-relaxed mb-2">{dish.description}</p>
+                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2 mb-2 text-center">{dish.name}</h3>
+                <p className="text-sm text-[#4B4B4B] text-center leading-relaxed mb-2 italic">{dish.description}</p>
                 {dish.tags && dish.tags.length > 0 && (
                   <div className="flex gap-1 flex-wrap justify-center">
                     {dish.tags.map((tag, index) => {

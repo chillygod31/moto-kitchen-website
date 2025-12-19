@@ -83,7 +83,7 @@ export default function Header() {
             </Link>
           ))}
           
-          <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-primary text-sm ml-2">
+          <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif', fontSize: '0.875rem', lineHeight: '1.25rem' }} className="btn-primary ml-2">
             Request a Quote
           </Link>
         </nav>
@@ -115,8 +115,8 @@ export default function Header() {
           {/* Mobile CTA - Top */}
           <Link
             href="/contact"
-            style={{ fontFamily: 'var(--font-cinzel), serif' }}
-            className="btn-primary text-sm text-center block mb-6"
+            style={{ fontFamily: 'var(--font-cinzel), serif', fontSize: '0.875rem', lineHeight: '1.25rem' }}
+            className="btn-primary text-center block mb-6"
             onClick={() => setIsMenuOpen(false)}
           >
             Request a Quote

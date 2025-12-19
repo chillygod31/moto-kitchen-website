@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cinzel, Source_Sans_3 } from "next/font/google";
+import { Cinzel, Work_Sans, Cormorant_Garamond } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "./components/Header";
@@ -16,9 +16,15 @@ const cinzel = Cinzel({
   weight: ["400", "500", "600", "700"],
 });
 
-const sourceSans = Source_Sans_3({
+const workSans = Work_Sans({
   variable: "--font-body",
   subsets: ["latin"],
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-heading-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -78,7 +84,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${halimun.variable} ${cinzel.variable} ${sourceSans.variable} antialiased`}>
+      <body className={`${halimun.variable} ${cinzel.variable} ${workSans.variable} ${cormorantGaramond.variable} antialiased`}>
         <Header />
         <main>{children}</main>
         <Footer />

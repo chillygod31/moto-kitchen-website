@@ -66,7 +66,8 @@ export default function GalleryGrid({
                 <button
                   key={category.id}
                   onClick={() => setActiveFilter(category.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 400 }}
+                  className={`px-4 py-2 rounded-full text-lg transition-colors ${
                     activeFilter === category.id
                       ? "bg-[#C9653B] text-white"
                       : "bg-white border border-[#E6D9C8] text-[#4B4B4B] hover:bg-[#C9653B] hover:text-white hover:border-[#C9653B]"

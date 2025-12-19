@@ -17,7 +17,6 @@ export default function Footer() {
             <p className="text-white/70 mb-4 text-sm">
               Serving the Netherlands, Belgium, Germany, and beyond.
             </p>
-            <p className="text-[#C9653B] font-medium">Karibu</p>
           </div>
 
           {/* Services */}

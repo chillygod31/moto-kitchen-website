@@ -31,10 +31,10 @@ export default function ServiceCard({
       ) : null}
 
       {/* Content */}
-      <h3 className="text-xl font-bold text-[#1F1F1F] mb-3 group-hover:text-[#C9653B] transition-colors">
+      <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-[#1F1F1F] mb-3 group-hover:text-[#C9653B] transition-colors">
         {title}
       </h3>
-      <p className="text-[#4B4B4B] mb-4 flex-grow">
+      <p className="text-[#4B4B4B] mb-4 flex-grow italic">
         {description}
       </p>
 

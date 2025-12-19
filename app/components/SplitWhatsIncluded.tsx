@@ -29,7 +29,7 @@ export default function SplitWhatsIncluded({ items, images }: SplitWhatsIncluded
     <section className="section-padding bg-[#F1E7DA]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <p className="text-[#C9653B] text-2xl md:text-3xl font-bold uppercase tracking-widest">What We Offer</p>
+          <p style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-[#1F1F1F] text-4xl md:text-5xl tracking-widest">What We Offer</p>
         </div>
         
         <div className="grid md:grid-cols-[1.1fr_1fr] gap-1 items-center">
@@ -39,7 +39,7 @@ export default function SplitWhatsIncluded({ items, images }: SplitWhatsIncluded
               <div key={index} className="flex items-start gap-4">
                 <div className="flex-shrink-0 text-[#C9653B] text-xl">•</div>
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-1">{item.title}</h3>
+                  <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-[#1F1F1F] text-lg mb-1">{item.title}</h3>
                   <p className="text-[#4B4B4B] text-sm">{item.description}</p>
                 </div>
               </div>

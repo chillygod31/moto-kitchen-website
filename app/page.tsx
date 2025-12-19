@@ -55,18 +55,17 @@ export default function Home() {
         </div>
         
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <p style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-[#C9653B] text-lg mb-4 tracking-widest uppercase">Karibu</p>
-          <h1 style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-5xl md:text-7xl font-bold text-white mb-6">
+          <h1 style={{ fontWeight: 400 }} className="text-5xl md:text-7xl text-white mb-6">
             Authentic Tanzanian Catering for Every Occasion
           </h1>
-          <p style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Private Events • Corporate Events • Weddings • Pick Up & Delivery
+          <p style={{ fontFamily: 'var(--font-body), sans-serif' }} className="text-base md:text-lg text-white/80 mb-10 max-w-2xl mx-auto">
+            Private Events • Corporate Events • Weddings
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-primary text-lg">
+            <Link href="/contact" className="btn-primary">
               Request a Quote
             </Link>
-            <Link href="/menu" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-secondary text-lg !text-white !border-white hover:!bg-white hover:!text-[#1F1F1F]">
+            <Link href="/menu" className="btn-secondary !text-white !border-white hover:!bg-white hover:!text-[#1F1F1F]">
               View Sample Menus
             </Link>
           </div>
@@ -102,7 +101,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Story</p>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#1F1F1F]">
+              <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl mb-6 text-[#1F1F1F]">
                 A Taste of Home, Far From Home
               </h2>
               <p className="text-[#4B4B4B] text-lg mb-6 leading-relaxed">
@@ -137,7 +136,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">What We Offer</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1F1F1F]">
+            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
               Our Services
             </h2>
           </div>
@@ -154,7 +153,7 @@ export default function Home() {
               {
                 href: "/services/private-events",
                 image: "/corporate-2.jpg",
-                title: "Corporate",
+                title: "Corporate Events",
                 description: "Professional catering for team lunches, conferences, client meetings, and company celebrations.",
                 pricing: formatPricing("corporate")
               },
@@ -184,10 +183,10 @@ export default function Home() {
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <h3 className="text-xl font-semibold text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors text-center">
+                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors text-center">
                   {service.title}
                 </h3>
-                <p className="text-[#4B4B4B] text-center mb-4">
+                <p className="text-[#4B4B4B] text-center mb-4 italic">
                   {service.description}
                 </p>
                 {service.pricing && (
@@ -212,7 +211,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Menu</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1F1F1F]">
+            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
               Signature Dishes
             </h2>
           </div>
@@ -231,8 +230,8 @@ export default function Home() {
                     <span className="text-4xl">🍽️</span>
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2 text-center">{dish.name}</h3>
-                <p className="text-[#4B4B4B] text-sm text-center">{dish.description}</p>
+                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2 mb-2 text-center">{dish.name}</h3>
+                <p className="text-[#4B4B4B] text-sm text-center italic">{dish.description}</p>
               </div>
             ))}
           </div>
@@ -250,7 +249,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Simple Process</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-white">
+            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-white">
               How It Works
             </h2>
           </div>
@@ -261,7 +260,7 @@ export default function Home() {
                 <div className="w-16 h-16 bg-[#C9653B] rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-white">{item.step}</span>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-white mb-3">{item.title}</h3>
                 <p className="text-white/70">{item.description}</p>
               </div>
             ))}
@@ -274,7 +273,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Work</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1F1F1F]">
+            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
               Gallery
             </h2>
           </div>
@@ -304,7 +303,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Testimonials</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1F1F1F]">
+            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
               What Our Clients Say
             </h2>
           </div>
@@ -354,13 +353,13 @@ export default function Home() {
           }} />
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-white mb-6">
             Ready to Experience Tanzanian Flavours?
           </h2>
           <p className="text-white/90 text-lg mb-10 max-w-2xl mx-auto">
             Let us bring the taste of Tanzania to your next event. Get in touch for a custom quote tailored to your needs.
           </p>
-          <Link href="/contact" className="bg-white text-[#C9653B] px-8 py-4 rounded-md font-semibold text-lg hover:bg-[#FAF6EF] transition-colors inline-block">
+          <Link href="/contact" className="btn-primary !bg-white !text-[#1F1F1F] hover:!bg-[#FAF6EF] hover:!text-[#1F1F1F]">
             Request a Quote
           </Link>
         </div>

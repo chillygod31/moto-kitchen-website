@@ -48,7 +48,7 @@ export default function DishCard({
 
       {/* Content */}
       <div className="flex justify-between items-start gap-2 mb-2">
-        <h3 className="text-lg font-semibold text-[#1F1F1F]">{name}</h3>
+        <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2">{name}</h3>
         {tags.length > 0 && (
           <div className="flex gap-1 flex-shrink-0">
             {tags.map((tag, index) => (
@@ -63,7 +63,7 @@ export default function DishCard({
           </div>
         )}
       </div>
-      <p className="text-[#4B4B4B] text-sm leading-relaxed">{description}</p>
+      <p className="text-[#4B4B4B] text-sm leading-relaxed italic">{description}</p>
     </div>
   );
 }
