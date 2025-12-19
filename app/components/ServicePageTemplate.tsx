@@ -39,6 +39,7 @@ interface ServicePageTemplateProps {
   testimonials: Testimonial[];
   howItWorksSteps?: { number: string; title: string; description: string }[];
   customWhatsIncluded?: React.ReactNode;
+  pricing?: string;
 }
 
 export default function ServicePageTemplate({
@@ -52,6 +53,7 @@ export default function ServicePageTemplate({
   testimonials,
   howItWorksSteps,
   customWhatsIncluded,
+  pricing,
 }: ServicePageTemplateProps) {
   return (
     <>
@@ -70,9 +72,14 @@ export default function ServicePageTemplate({
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
             {heroTitle}
           </h1>
-          <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-white/80 mb-4 max-w-2xl mx-auto">
             {heroSubtitle}
           </p>
+          {pricing && (
+            <p className="text-[#C9653B] font-semibold text-lg mb-6">
+              {pricing}
+            </p>
+          )}
           <Link href="/contact" className="btn-primary text-lg">
             Request a Quote
           </Link>

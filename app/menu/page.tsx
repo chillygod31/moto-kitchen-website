@@ -76,7 +76,36 @@ export default function MenuPage() {
                   )}
                 </div>
                 <h3 className="text-lg font-medium text-[#1F1F1F] mb-2 text-center">{dish.name}</h3>
-                <p className="text-sm text-[#4B4B4B] text-center">{dish.description}</p>
+                <p className="text-sm text-[#4B4B4B] text-center leading-relaxed mb-2">{dish.description}</p>
+                {dish.tags && dish.tags.length > 0 && (
+                  <div className="flex gap-1 flex-wrap justify-center">
+                    {dish.tags.map((tag, index) => {
+                      const tagStyles: Record<string, string> = {
+                        vegetarian: "bg-[#e8f5e9] text-[#2e7d32]",
+                        vegan: "bg-[#e8f5e9] text-[#1b5e20]",
+                        "gluten-free": "bg-[#fff3e0] text-[#e65100]",
+                        "dairy-free": "bg-[#e1f5fe] text-[#0277bd]",
+                        spicy: "bg-[#ffebee] text-[#c62828]",
+                      };
+                      const tagLabels: Record<string, string> = {
+                        vegetarian: "V",
+                        vegan: "VG",
+                        "gluten-free": "GF",
+                        "dairy-free": "DF",
+                        spicy: "🌶️",
+                      };
+                      return (
+                        <span
+                          key={index}
+                          className={`text-xs px-2 py-0.5 rounded font-medium ${tagStyles[tag.type] || "bg-gray-100 text-gray-600"}`}
+                          title={tag.label}
+                        >
+                          {tagLabels[tag.type] || tag.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
                 {dish.note && (
                   <p className="text-xs text-[#C9653B] mt-2 italic text-center">{dish.note}</p>
                 )}

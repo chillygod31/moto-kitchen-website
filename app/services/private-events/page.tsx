@@ -1,6 +1,7 @@
 import ServicePageTemplate from "../../components/ServicePageTemplate";
 import SplitWhatsIncluded from "../../components/SplitWhatsIncluded";
 import { galleryItems } from "../../../lib/gallery-data";
+import { formatPricing } from "../../../lib/pricing-data";
 
 export const metadata = {
   title: "Private Event Catering | Moto Kitchen",
@@ -52,6 +53,7 @@ export default function PrivateEventsPage() {
       faqs={faqs}
       testimonials={testimonials}
       customWhatsIncluded={<SplitWhatsIncluded items={includedItems} images={eventImages} />}
+      pricing={formatPricing("private-events")}
     />
   );
 }

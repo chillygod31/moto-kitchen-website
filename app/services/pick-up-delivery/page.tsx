@@ -1,6 +1,7 @@
 import ServicePageTemplate from "../../components/ServicePageTemplate";
 import SplitWhatsIncluded from "../../components/SplitWhatsIncluded";
 import { galleryItems } from "../../../lib/gallery-data";
+import { formatPricing } from "../../../lib/pricing-data";
 
 export const metadata = {
   title: "Pick Up & Delivery | Moto Kitchen",
@@ -47,12 +48,13 @@ export default function PickUpDeliveryPage() {
     <ServicePageTemplate
       heroTitle="Pick Up & Delivery"
       heroSubtitle="Authentic Tanzanian cuisine delivered to your door or ready for pick-up"
-      introText="Enjoy Moto Kitchen's authentic Tanzanian flavours from the comfort of your home or office. Our pick-up and delivery service brings our family recipes directly to you across the Netherlands, Belgium, Germany, and beyond. Whether you're planning a family meal, office lunch, or special occasion, we prepare everything fresh and deliver it ready to enjoy. Our team ensures your order arrives on time and at the perfect temperature, so you can focus on what matters most — sharing great food with the people you care about."
+      introText="Enjoy Moto Kitchen's authentic Tanzanian flavours from the comfort of your home or office. Our pick-up and delivery service brings our family recipes directly to you across the Netherlands, Belgium, Germany, and beyond. Whether you're planning a family meal, office lunch, or special occasion, we prepare everything fresh and deliver it ready to enjoy. Our team ensures your order arrives on time and at the perfect temperature, so you can focus on what matters most, sharing great food with the people you care about."
       includedItems={includedItems}
       galleryImages={[]}
       faqs={faqs}
       testimonials={testimonials}
       customWhatsIncluded={<SplitWhatsIncluded items={includedItems} images={foodImages} />}
+      pricing={formatPricing("pick-up-delivery")}
     />
   );
 }

@@ -1,5 +1,6 @@
 import ServiceCard from "../components/ServiceCard";
 import CTASection from "../components/CTASection";
+import { formatPricing } from "../../lib/pricing-data";
 
 export const metadata = {
   title: "Catering Services | Moto Kitchen",
@@ -9,9 +10,10 @@ export const metadata = {
 const services = [
   {
     href: "/services/private-events",
-    title: "Special Events",
-    description: "Weddings, corporate events, birthday parties, anniversaries, and family gatherings — bring people together with food that creates memories.",
+    title: "Private Events",
+    description: "Birthday parties, anniversaries, family gatherings, and intimate celebrations with authentic flavours.",
     image: "/food-8.jpg",
+    pricing: formatPricing("private-events"),
     features: [
       "Personalized menus",
       "Intimate to large groups",
@@ -20,10 +22,37 @@ const services = [
     ],
   },
   {
+    href: "/services/private-events",
+    title: "Corporate",
+    description: "Professional catering for team lunches, conferences, client meetings, and company celebrations.",
+    image: "/corporate-2.jpg",
+    pricing: formatPricing("corporate"),
+    features: [
+      "Flexible packages",
+      "Punctual delivery",
+      "Individual portions",
+      "Office setup available",
+    ],
+  },
+  {
+    href: "/services/private-events",
+    title: "Weddings",
+    description: "Make your special day unforgettable with authentic Tanzanian cuisine for your wedding celebration.",
+    image: "/private-3.jpg",
+    pricing: formatPricing("weddings"),
+    features: [
+      "Custom menu planning",
+      "Tasting sessions",
+      "Full-service staff",
+      "Setup & cleanup",
+    ],
+  },
+  {
     href: "/services/pick-up-delivery",
-    title: "Pick Up & Delivery",
+    title: "Pick-Up & Delivery",
     description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond.",
     image: "/delivery.jpg",
+    pricing: formatPricing("pick-up-delivery"),
     features: [
       "Nationwide delivery",
       "Flexible ordering",
@@ -52,9 +81,9 @@ export default function ServicesPage() {
       {/* Services Grid */}
       <section className="section-padding bg-[#FAF6EF]">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 justify-items-center max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center max-w-7xl mx-auto">
             {services.map((service) => (
-              <ServiceCard key={service.href} {...service} />
+              <ServiceCard key={service.title} {...service} />
             ))}
           </div>
         </div>

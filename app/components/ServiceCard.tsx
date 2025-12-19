@@ -7,6 +7,7 @@ interface ServiceCardProps {
   image?: string;
   icon?: string;
   features?: string[];
+  pricing?: string;
 }
 
 export default function ServiceCard({
@@ -16,6 +17,7 @@ export default function ServiceCard({
   image,
   icon,
   features,
+  pricing,
 }: ServiceCardProps) {
   return (
     <Link href={href} className="card hover:shadow-md transition-shadow group flex flex-col text-center">
@@ -38,7 +40,7 @@ export default function ServiceCard({
 
       {/* Features */}
       {features && features.length > 0 && (
-        <ul className="space-y-2 mb-6">
+        <ul className="space-y-2 mb-4">
           {features.map((feature, index) => (
             <li key={index} className="flex items-center justify-center gap-2 text-[#4B4B4B] text-sm">
               <svg className="w-4 h-4 text-[#C9653B] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -48,6 +50,13 @@ export default function ServiceCard({
             </li>
           ))}
         </ul>
+      )}
+
+      {/* Pricing */}
+      {pricing && (
+        <p className="text-[#C9653B] font-semibold text-sm mb-4">
+          {pricing}
+        </p>
       )}
 
       {/* Link */}

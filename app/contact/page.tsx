@@ -190,7 +190,8 @@ export default function ContactPage() {
                         className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
                       >
                         <option value="">Select event type</option>
-                        <option value="private">Private Party</option>
+                        <option value="private">Private Events</option>
+                        <option value="corporate">Corporate</option>
                         <option value="wedding">Wedding</option>
                         <option value="pickup-delivery">Pick Up & Delivery</option>
                         <option value="other">Other</option>

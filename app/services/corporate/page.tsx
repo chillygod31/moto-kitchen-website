@@ -1,6 +1,7 @@
 import ServicePageTemplate from "../../components/ServicePageTemplate";
 import SplitWhatsIncluded from "../../components/SplitWhatsIncluded";
 import { galleryItems } from "../../../lib/gallery-data";
+import { formatPricing } from "../../../lib/pricing-data";
 
 export const metadata = {
   title: "Corporate Catering | Moto Kitchen",
@@ -59,6 +60,7 @@ export default function CorporatePage() {
       faqs={faqs}
       testimonials={testimonials}
       customWhatsIncluded={<SplitWhatsIncluded items={includedItems} images={corporateImages} />}
+      pricing={formatPricing("corporate")}
     />
   );
 }

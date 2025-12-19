@@ -26,19 +26,42 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto">
           <div className="card space-y-6">
             <p className="text-[#4B4B4B] text-lg leading-relaxed">
-              Moto Kitchen began the way many of our favourite meals begin. In a home kitchen, with a grandmother, a mother, and an aunt cooking for the people around them. The kind of cooking you learn by watching, tasting, and adjusting, until it feels right.
+              Moto Kitchen began the way many of our favourite meals begin. In a home kitchen, with a grandmother, a mother, and an aunt cooking for the people around them.
             </p>
             
             <p className="text-[#4B4B4B] text-lg leading-relaxed">
-              Long before we were a company, we were simply the family that cooked. At parties and gatherings, everyone quickly became known for their best dish. That was about 12 to 13 years ago. Over time, people started asking if we could cook for them, first for birthdays and small celebrations, then for bigger moments where the food needed to feel like home.
+              The kind of cooking you learn by watching, tasting, and adjusting, until it feels right.
             </p>
             
             <p className="text-[#4B4B4B] text-lg leading-relaxed">
-              In 2023 we officially started Moto Kitchen as a business, and the kitchen grew with us. From family parties to weddings, engagement celebrations, office lunches, and festival crowds, we have been grateful to bring Tanzanian flavours to tables across the Netherlands and the wider Benelux.
+              Long before we were a company, we were simply the family that cooked. At parties and gatherings, everyone quickly became known for their best dish.
             </p>
             
             <p className="text-[#4B4B4B] text-lg leading-relaxed">
-              One of the moments we are quietly grateful for was being invited to cater for an event at the Tanzanian Embassy in the Netherlands. Since then, the embassy has remained a loyal client, and we appreciate that trust more than we can say.
+              That was about 12 to 13 years ago. Over time, people started asking if we could cook for them, first for birthdays and small celebrations, then for bigger moments where the food needed to feel like home.
+            </p>
+            
+            {/* Pull Quote */}
+            <div className="my-8 p-6 bg-[#F1E7DA] border-l-4 border-[#C9653B] rounded-r-lg">
+              <p className="text-[#1F1F1F] text-xl md:text-2xl font-semibold italic leading-relaxed">
+                &quot;The kind of cooking you learn by watching, tasting, and adjusting, until it feels right.&quot;
+              </p>
+            </div>
+            
+            <p className="text-[#4B4B4B] text-lg leading-relaxed">
+              In 2023 we officially started Moto Kitchen as a business, and the kitchen grew with us.
+            </p>
+            
+            <p className="text-[#4B4B4B] text-lg leading-relaxed">
+              From family parties to weddings, engagement celebrations, office lunches, and festival crowds, we have been grateful to bring Tanzanian flavours to tables across the Netherlands and the wider Benelux.
+            </p>
+            
+            <p className="text-[#4B4B4B] text-lg leading-relaxed">
+              One of the moments we are quietly grateful for was being invited to cater for an event at the Tanzanian Embassy in the Netherlands.
+            </p>
+            
+            <p className="text-[#4B4B4B] text-lg leading-relaxed">
+              Since then, the embassy has remained a loyal client, and we appreciate that trust more than we can say.
             </p>
           </div>
         </div>
@@ -52,11 +75,20 @@ export default function AboutPage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-[#1F1F1F]">
                 Our Culinary Heritage
               </h2>
-              <p className="text-[#4B4B4B] text-lg mb-6 leading-relaxed">
-                Our food is Tanzanian at heart. Our recipes were learned from our mothers and grandmothers, and we try to stay as close to home as possible, using spices from Tanzania and Zanzibar whenever we can. The flavours carry warmth, comfort, and a little spark, the kind that makes people pause after the first bite and say, &quot;this tastes like home.&quot;
+              <p className="text-[#4B4B4B] text-lg mb-4 leading-relaxed">
+                Our food is Tanzanian at heart. Our recipes were learned from our mothers and grandmothers, and we try to stay as close to home as possible, using spices from Tanzania and Zanzibar whenever we can.
+              </p>
+              <p className="text-[#4B4B4B] text-lg mb-4 leading-relaxed">
+                The flavours carry warmth, comfort, and a little spark, the kind that makes people pause after the first bite and say, &quot;this tastes like home.&quot;
+              </p>
+              <p className="text-[#4B4B4B] text-lg mb-4 leading-relaxed">
+                Tanzanian cuisine, shaped by Indian, Middle Eastern, and African influences, reflects a unique culinary crossroads.
+              </p>
+              <p className="text-[#4B4B4B] text-lg mb-4 leading-relaxed">
+                Situated along ancient trade routes, Tanzania&apos;s food culture has absorbed the spices of India, the aromatics of the Middle East, and the vibrant traditions of Africa.
               </p>
               <p className="text-[#4B4B4B] text-lg leading-relaxed">
-                Tanzanian cuisine, shaped by Indian, Middle Eastern, and African influences, reflects a unique culinary crossroads. Situated along ancient trade routes, Tanzania&apos;s food culture has absorbed the spices of India, the aromatics of the Middle East, and the vibrant traditions of Africa. The result is a harmonious blend of flavors — spiced pilau, coconut curries, and dishes like nyama choma — that tell the story of a nation&apos;s rich history and diversity.
+                The result is a harmonious blend of flavors, spiced pilau, coconut curries, and dishes like nyama choma, that tell the story of a nation&apos;s rich history and diversity.
               </p>
             </div>
             <div className="aspect-square bg-[#FAF6EF] rounded-lg border border-[#E6D9C8] overflow-hidden">

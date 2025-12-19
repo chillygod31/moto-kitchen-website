@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getRandomGalleryImages } from "../lib/gallery-data";
 import { findDishByName } from "../lib/menu-data";
+import { formatPricing } from "../lib/pricing-data";
 
 export default function Home() {
   const signatureDishNames = [
@@ -20,11 +21,10 @@ export default function Home() {
   });
 
   const trustPoints = [
-    "Available Nationwide",
-    "Custom Menus",
-    "Dietary Options",
-    "Professional Service",
-    "Authentic Recipes",
+    "Family-owned",
+    "100% Halal",
+    "Serving across the Netherlands and beyond",
+    "Official caterer for the Embassy of Tanzania in the Netherlands",
   ];
 
   const howItWorks = [
@@ -45,12 +45,13 @@ export default function Home() {
             muted
             loop
             playsInline
+            preload="auto"
             className="w-full h-full object-cover"
-            poster="/hero-poster.jpg"
+            style={{ objectPosition: 'center', zIndex: 0 }}
           >
             <source src="/hero-video.MP4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/50 z-10" />
         </div>
         
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
@@ -59,7 +60,7 @@ export default function Home() {
             Authentic Tanzanian Catering for Every Occasion
           </h1>
           <p style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Special Events • Pick Up & Delivery
+            Private Events • Corporate Events • Weddings • Pick Up & Delivery
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif' }} className="btn-primary text-lg">
@@ -141,19 +142,35 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 justify-items-center max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center max-w-7xl mx-auto">
             {[
               {
                 href: "/services/private-events",
                 image: "/food-8.jpg",
-                title: "Special Events",
-                description: "Weddings, corporate events, birthday parties, anniversaries, and family gatherings with authentic flavours."
+                title: "Private Events",
+                description: "Birthday parties, anniversaries, family gatherings, and intimate celebrations with authentic flavours.",
+                pricing: formatPricing("private-events")
+              },
+              {
+                href: "/services/private-events",
+                image: "/corporate-2.jpg",
+                title: "Corporate",
+                description: "Professional catering for team lunches, conferences, client meetings, and company celebrations.",
+                pricing: formatPricing("corporate")
+              },
+              {
+                href: "/services/private-events",
+                image: "/private-3.jpg",
+                title: "Weddings",
+                description: "Make your special day unforgettable with authentic Tanzanian cuisine for your wedding celebration.",
+                pricing: formatPricing("weddings")
               },
               {
                 href: "/services/pick-up-delivery",
                 image: "/delivery.jpg",
-                title: "Pick Up & Delivery",
-                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond."
+                title: "Pick-Up & Delivery",
+                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond.",
+                pricing: formatPricing("pick-up-delivery")
               }
             ].map((service, index) => (
               <Link 
@@ -171,10 +188,15 @@ export default function Home() {
                 <h3 className="text-xl font-semibold text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors text-center">
                   {service.title}
                 </h3>
-                <p className="text-[#4B4B4B] text-center">
+                <p className="text-[#4B4B4B] text-center mb-4">
                   {service.description}
                 </p>
-                <span className="inline-flex items-center gap-1 mt-4 text-[#C9653B] font-semibold text-sm justify-center w-full">
+                {service.pricing && (
+                  <p className="text-[#C9653B] font-semibold text-sm mb-4 text-center">
+                    {service.pricing}
+                  </p>
+                )}
+                <span className="inline-flex items-center gap-1 mt-auto text-[#C9653B] font-semibold text-sm justify-center w-full">
                   Learn more
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
