@@ -275,7 +275,7 @@ export default function ContactPage() {
 
       {/* Contact Form & Info */}
       <section className="section-padding bg-[#FAF6EF]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6 w-full">
           <div className="grid md:grid-cols-3 gap-12">
             {/* Contact Info */}
             <div className="md:col-span-1">
@@ -327,8 +327,8 @@ export default function ContactPage() {
             </div>
 
             {/* Form */}
-            <div className="md:col-span-2">
-              <div className="card">
+            <div className="md:col-span-2 w-full">
+              <div className="card w-full max-w-full">
                 <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">
                   Tell Us About Your Event
                 </h2>
@@ -339,7 +339,7 @@ export default function ContactPage() {
                   </div>
                 )}
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-full">
                   {/* Honeypot - hidden from users */}
                   <input
                     type="text"
@@ -492,7 +492,7 @@ export default function ContactPage() {
                         { value: "5000+", label: "€5,000+" },
                         { value: "not-sure", label: "Not sure yet" },
                       ].map((option) => (
-                        <label key={option.value} className={`flex items-center gap-2 p-3 border border-[#E6D9C8] rounded-md transition-colors ${isBudgetRequired() ? "cursor-pointer hover:bg-[#F1E7DA]" : "cursor-not-allowed"}`}>
+                        <label key={option.value} className={`flex items-center gap-2 p-3 border border-[#E6D9C8] rounded-md transition-colors min-w-0 ${isBudgetRequired() ? "cursor-pointer hover:bg-[#F1E7DA]" : "cursor-not-allowed"}`}>
                           <input
                             type="radio"
                             name="budget"
@@ -501,9 +501,9 @@ export default function ContactPage() {
                             value={option.value}
                             checked={formData.budget === option.value}
                             onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                            className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B]"
+                            className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B] flex-shrink-0"
                           />
-                          <span className="text-sm text-[#4B4B4B]">{option.label}</span>
+                          <span className="text-sm text-[#4B4B4B] truncate">{option.label}</span>
                         </label>
                       ))}
                     </div>
@@ -543,8 +543,8 @@ export default function ContactPage() {
                       <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
                         Phone <span className="text-[#C9653B]">*</span>
                       </label>
-                      <div className="flex border border-[#E6D9C8] rounded-md overflow-visible focus-within:ring-2 focus-within:ring-[#C9653B] focus-within:border-transparent bg-white relative">
-                        <div ref={countryDropdownRef} className="relative">
+                      <div className="flex border border-[#E6D9C8] rounded-md focus-within:ring-2 focus-within:ring-[#C9653B] focus-within:border-transparent bg-white relative">
+                        <div ref={countryDropdownRef} className="relative z-10">
                           <button
                             type="button"
                             onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
@@ -563,7 +563,7 @@ export default function ContactPage() {
                           </button>
                           
                           {isCountryDropdownOpen && (
-                            <div className="absolute top-full left-0 mt-1 bg-white border border-[#E6D9C8] rounded-md shadow-lg z-50 max-h-80 overflow-y-auto w-[calc(100vw-3rem)] sm:w-80">
+                            <div className="absolute top-full left-0 mt-1 bg-white border border-[#E6D9C8] rounded-md shadow-lg z-50 max-h-80 overflow-y-auto w-[280px] sm:w-80 max-w-[calc(100vw-3rem)]">
                               <div className="py-1">
                                 <div className="px-3 py-2 text-xs font-semibold text-[#4B4B4B] bg-gray-50 sticky top-0">
                                   Primary Markets
