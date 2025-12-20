@@ -25,6 +25,10 @@
   --font-body: var(--font-body);
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--text-primary);
@@ -33,6 +37,7 @@ body {
     radial-gradient(circle at 20% 50%, rgba(241, 231, 218, 0.3) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(201, 101, 59, 0.05) 0%, transparent 50%);
   background-attachment: fixed;
+  overflow-x: hidden;
 }
 
 h1, h2 {
