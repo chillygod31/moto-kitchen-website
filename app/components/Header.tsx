@@ -10,7 +10,7 @@ export default function Header() {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
 
   // Hide header on all ordering pages (they have their own headers)
-  const hideHeader = pathname?.startsWith("/order");
+  const hideHeader = pathname && pathname.startsWith("/order");
 
   if (hideHeader) {
     return null;
