@@ -3,6 +3,7 @@
 import { useState } from "react";
 import CTASection from "../components/CTASection";
 import { dishes } from "../../lib/menu-data";
+import { parseDishName } from "../../lib/utils";
 
 const categories = [
   { id: "poultry-fish-meats", label: "Poultry, Fish & Meats" },
@@ -67,16 +68,27 @@ export default function MenuPage() {
       <section className="section-padding bg-[#FAF6EF]">
         <div className="max-w-5xl mx-auto">
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDishes.map((dish) => (
+            {filteredDishes.map((dish) => {
+              const { swahili, english } = parseDishName(dish.name);
+              return (
               <div key={dish.id} className="card">
                 <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
                   {dish.image ? (
-                    <img src={`/${dish.image}`} alt={dish.name} className="w-full h-full object-cover" />
+                    <img src={`/${dish.image}`} alt={swahili || english} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-4xl">🍽️</span>
                   )}
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2 mb-2 text-center">{dish.name}</h3>
+                {swahili ? (
+                  <>
+                    <h3 className="dish-name-swahili -mt-2 text-center">{swahili}</h3>
+                    <p className="dish-name-english text-center">{english}</p>
+                  </>
+                ) : (
+                  <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2 mb-2 text-center">
+                    {english}
+                  </h3>
+                )}
                 <p className="text-sm text-[#4B4B4B] text-center leading-relaxed mb-2 italic">{dish.description}</p>
                 {dish.tags && dish.tags.length > 0 && (
                   <div className="flex gap-1 flex-wrap justify-center">
@@ -111,7 +123,8 @@ export default function MenuPage() {
                   <p className="text-xs text-[#C9653B] mt-2 italic text-center">{dish.note}</p>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

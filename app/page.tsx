@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getRandomGalleryImages } from "../lib/gallery-data";
 import { findDishByName } from "../lib/menu-data";
 import { formatPricing } from "../lib/pricing-data";
+import { parseDishName } from "../lib/utils";
 
 export default function Home() {
   const signatureDishNames = [
@@ -217,23 +218,35 @@ export default function Home() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {signatureDishes.map((dish, index) => (
+            {signatureDishes.map((dish, index) => {
+              const { swahili, english } = parseDishName(dish.name);
+              return (
               <div key={index} className="card">
                 <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
                   {dish.image ? (
                     <img 
                       src={`/${dish.image}`} 
-                      alt={dish.name} 
+                      alt={swahili || english} 
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <span className="text-4xl">🍽️</span>
                   )}
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2 mb-2 text-center">{dish.name}</h3>
+                {swahili ? (
+                  <>
+                    <h3 className="dish-name-swahili -mt-2 text-center">{swahili}</h3>
+                    <p className="dish-name-english text-center">{english}</p>
+                  </>
+                ) : (
+                  <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2 mb-2 text-center">
+                    {english}
+                  </h3>
+                )}
                 <p className="text-[#4B4B4B] text-sm text-center italic">{dish.description}</p>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           <div className="text-center mt-12">

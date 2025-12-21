@@ -1,3 +1,5 @@
+import { parseDishName } from '../../lib/utils';
+
 interface DietaryTag {
   label: string;
   type: "vegetarian" | "vegan" | "gluten-free" | "halal" | "spicy";
@@ -33,12 +35,14 @@ export default function DishCard({
   image,
   tags = [],
 }: DishCardProps) {
+  const { swahili, english } = parseDishName(name);
+  
   return (
     <div className="card group">
       {/* Image */}
       {image ? (
         <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8]">
-          <img src={image} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={image} alt={swahili || english} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
       ) : (
         <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 flex items-center justify-center border border-[#E6D9C8]">
@@ -48,7 +52,18 @@ export default function DishCard({
 
       {/* Content */}
       <div className="flex justify-between items-start gap-2 mb-2">
-        <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2">{name}</h3>
+        <div className="flex-1 min-w-0">
+          {swahili ? (
+            <>
+              <h3 className="dish-name-swahili -mt-2">{swahili}</h3>
+              <p className="dish-name-english">{english}</p>
+            </>
+          ) : (
+            <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-xl text-[#1F1F1F] -mt-2">
+              {english}
+            </h3>
+          )}
+        </div>
         {tags.length > 0 && (
           <div className="flex gap-1 flex-shrink-0">
             {tags.map((tag, index) => (

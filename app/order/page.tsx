@@ -8,6 +8,24 @@ interface MenuData {
   allItems: MenuItem[]
 }
 
+async function getBusinessSettings() {
+  try {
+    const supabase = createServerClient()
+    const tenantId = await getTenantId('moto-kitchen')
+
+    const { data: settings } = await supabase
+      .from('tenant_business_settings')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .single()
+
+    return settings || null
+  } catch (error) {
+    console.error('Error fetching business settings:', error)
+    return null
+  }
+}
+
 async function getMenuData(): Promise<{ data: MenuData | null; error: string | null }> {
   try {
     const supabase = createServerClient()
@@ -82,6 +100,7 @@ async function getMenuData(): Promise<{ data: MenuData | null; error: string | n
 
 export default async function MenuPage() {
   const { data: menuData, error } = await getMenuData()
+  const businessSettings = await getBusinessSettings()
 
   // If error or no data, still render the client component with empty data
   // The client component will handle the error display
@@ -89,6 +108,7 @@ export default async function MenuPage() {
     <MenuClient 
       initialMenuData={menuData || { categories: [], allItems: [] }}
       error={error}
+      businessSettings={businessSettings}
     />
   )
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getTenantId } from '@/lib/tenant'
-import { generateOrderNumber, extractPostcodePrefix } from '@/lib/utils'
+import { generateOrderNumber, extractPostcodePrefix, checkMinimumOrder } from '@/lib/utils'
 
 /**
  * GET /api/orders
@@ -96,6 +96,24 @@ export async function POST(request: NextRequest) {
         { message: 'Time slot is required' },
         { status: 400 }
       )
+    }
+
+    // Validate minimum order
+    const { data: businessSettings } = await supabase
+      .from('tenant_business_settings')
+      .select('min_order_value')
+      .eq('tenant_id', tenantId)
+      .single()
+
+    const minOrderValue = businessSettings?.min_order_value || 0
+    if (minOrderValue > 0) {
+      const minOrderCheck = checkMinimumOrder(subtotal, minOrderValue)
+      if (!minOrderCheck.valid) {
+        return NextResponse.json(
+          { message: minOrderCheck.message },
+          { status: 400 }
+        )
+      }
     }
 
     const orderNumber = generateOrderNumber()

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   getCart,
@@ -11,34 +12,74 @@ import {
   clearCart,
   CartItem,
 } from '@/lib/cart'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, checkMinimumOrder } from '@/lib/utils'
+import { trackViewCart, trackUpdateCart, trackRemoveFromCart } from '@/lib/analytics'
+import ErrorMessage from '../components/ErrorMessage'
+
+interface BusinessSettings {
+  min_order_value: number
+  timezone?: string
+  service_types?: string[]
+}
 
 export default function CartPage() {
   const router = useRouter()
   const [cart, setCart] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [businessSettings, setBusinessSettings] = useState<BusinessSettings | null>(null)
 
   useEffect(() => {
     loadCart()
   }, [])
 
-  const loadCart = () => {
+  useEffect(() => {
+    if (!loading && cart.length > 0) {
+      const subtotal = getCartTotal(cart)
+      const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+      trackViewCart(subtotal, itemCount)
+    }
+  }, [loading, cart])
+
+  const loadCart = async () => {
     const cartItems = getCart()
     setCart(cartItems)
+    
+    // Fetch business settings for minimum order check
+    try {
+      const res = await fetch('/api/business-settings')
+      if (res.ok) {
+        const settings = await res.json()
+        setBusinessSettings(settings)
+      }
+    } catch (error) {
+      console.error('Error fetching business settings:', error)
+    }
+    
     setLoading(false)
   }
 
   const handleQuantityChange = (itemId: string, quantity: number) => {
     const updatedCart = updateCartItemQuantity(itemId, quantity)
     setCart(updatedCart)
+    
+    // Track cart update
+    trackUpdateCart(itemId, quantity)
   }
 
   const handleRemove = (itemId: string) => {
+    const item = cart.find((i) => i.id === itemId)
     const updatedCart = removeFromCart(itemId)
     setCart(updatedCart)
+    
+    // Track removal
+    if (item) {
+      trackRemoveFromCart(itemId, item.name)
+    }
   }
 
   const subtotal = getCartTotal(cart)
+  const minOrder = businessSettings?.min_order_value || 0
+  const minOrderCheck = checkMinimumOrder(subtotal, minOrder)
 
   if (loading) {
     return (
@@ -57,7 +98,7 @@ export default function CartPage() {
         <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
-              <img src="/logo1.png" alt="Moto Kitchen" className="h-12 md:h-16 object-contain" />
+              <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
               <div className="flex flex-col -ml-2">
                 <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
                 <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>
@@ -86,8 +127,8 @@ export default function CartPage() {
     <div className="min-h-screen bg-[#FAF6EF]">
       <header className="bg-[#3A2A24] shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
-            <img src="/logo1.png" alt="Moto Kitchen" className="h-12 md:h-16 object-contain" />
+            <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
+              <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
             <div className="flex flex-col -ml-2">
               <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
               <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>
@@ -99,6 +140,15 @@ export default function CartPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-10">Your Cart</h1>
 
+        {!minOrderCheck.valid && minOrder > 0 && (
+          <div className="mb-6">
+            <ErrorMessage
+              message={minOrderCheck.message}
+              className="bg-yellow-50 border-yellow-200"
+            />
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           {cart.map((item) => (
             <div
@@ -107,11 +157,16 @@ export default function CartPage() {
             >
               <div className="flex items-center space-x-4 flex-1">
                 {item.image_url && (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-20 h-20 object-cover rounded"
-                  />
+                  <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0">
+                    <Image
+                      src={item.image_url}
+                      alt={item.name || 'Cart item'}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                      loading="lazy"
+                    />
+                  </div>
                 )}
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
@@ -123,16 +178,18 @@ export default function CartPage() {
                 <div className="flex items-center border-2 border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                    className="px-3 py-1.5 hover:bg-gray-100 transition font-semibold text-gray-700"
+                    className="px-3 py-1.5 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
+                    aria-label="Decrease quantity"
                   >
                     −
                   </button>
-                  <span className="px-4 py-1.5 min-w-[3rem] text-center font-medium">
+                  <span className="px-4 py-1.5 min-w-[3rem] min-h-[44px] text-center font-medium flex items-center justify-center">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    className="px-3 py-1.5 hover:bg-gray-100 transition font-semibold text-gray-700"
+                    className="px-3 py-1.5 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
+                    aria-label="Increase quantity"
                   >
                     +
                   </button>
@@ -144,7 +201,8 @@ export default function CartPage() {
 
                 <button
                   onClick={() => handleRemove(item.id)}
-                  className="text-red-600 hover:text-red-800 px-2"
+                  className="text-red-600 hover:text-red-800 px-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+                  aria-label="Remove item"
                 >
                   Remove
                 </button>
@@ -156,29 +214,70 @@ export default function CartPage() {
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="space-y-4">
             <div className="flex justify-between text-lg">
-              <span className="text-gray-600">Subtotal</span>
+              <span className="text-gray-600">Items Subtotal</span>
               <span className="font-semibold text-gray-900">{formatCurrency(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-lg">
-              <span className="text-gray-600">Delivery fee</span>
-              <span className="text-gray-900">Calculated at checkout</span>
+            
+            {/* Delivery Fee Information */}
+            <div className="border-t pt-4 space-y-2">
+              <div className="flex justify-between text-lg">
+                <span className="text-gray-600">Delivery Fee</span>
+                <span className="text-gray-900">From €5.00*</span>
+              </div>
+              <p className="text-xs text-gray-500">
+                *Delivery fee calculated at checkout based on your postcode
+              </p>
             </div>
-            <div className="border-t pt-4 flex justify-between text-2xl font-bold">
-              <span>Total</span>
-              <span className="text-[#C9653B]">{formatCurrency(subtotal)}</span>
+
+            {/* Service Fee (if applicable) - currently 0 */}
+            {/* <div className="flex justify-between text-lg">
+              <span className="text-gray-600">Service Fee</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(0)}</span>
+            </div> */}
+
+            {/* Minimum Order Warning */}
+            {!minOrderCheck.valid && minOrder > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Minimum order:</strong> {formatCurrency(minOrder)}
+                  <br />
+                  Add {formatCurrency(minOrderCheck.amountNeeded)} more to proceed
+                </p>
+              </div>
+            )}
+
+            <div className="border-t pt-4">
+              <div className="flex justify-between text-xl font-semibold mb-2">
+                <span>Estimated Total</span>
+                <span className="text-[#C9653B]">{formatCurrency(subtotal + 5)}</span>
+              </div>
+              <p className="text-xs text-gray-500">
+                Final total includes delivery fee (calculated at checkout)
+              </p>
             </div>
           </div>
 
           <div className="mt-6 space-y-3">
             <Link
               href="/order/checkout"
-              className="block w-full text-center px-6 py-3 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold"
+              className={`block w-full text-center px-6 py-3 min-h-[56px] rounded-lg transition font-semibold flex items-center justify-center touch-manipulation ${
+                !minOrderCheck.valid && minOrder > 0
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed pointer-events-none'
+                  : 'bg-[#C9653B] text-white hover:bg-[#B8552B]'
+              }`}
+              onClick={(e) => {
+                if (!minOrderCheck.valid && minOrder > 0) {
+                  e.preventDefault()
+                }
+              }}
             >
-              Proceed to Checkout
+              {!minOrderCheck.valid && minOrder > 0
+                ? `Minimum order not met (${formatCurrency(minOrder)})`
+                : 'Proceed to Checkout'}
             </Link>
             <Link
               href="/order"
-              className="block w-full text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              className="block w-full text-center px-6 py-3 min-h-[56px] border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center justify-center touch-manipulation"
             >
               Continue Shopping
             </Link>

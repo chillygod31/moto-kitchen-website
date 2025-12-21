@@ -482,7 +482,7 @@ export default function ContactPage() {
                     <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
                       Estimated Budget {isBudgetRequired() && <span className="text-[#C9653B]">*</span>}
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full min-w-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 w-full min-w-0">
                       {[
                         { value: "100-250", label: "€100-250" },
                         { value: "250-500", label: "€250-500" },
@@ -503,7 +503,7 @@ export default function ContactPage() {
                             onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                             className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B] flex-shrink-0"
                           />
-                          <span className="text-sm text-[#4B4B4B] truncate">{option.label}</span>
+                          <span className="text-sm text-[#4B4B4B]">{option.label}</span>
                         </label>
                       ))}
                     </div>
@@ -639,10 +639,10 @@ export default function ContactPage() {
                       Tell us about your event vision
                     </label>
                     <textarea
-                      rows={4}
+                      rows={6}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent resize-none bg-white"
+                      className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent resize-y min-h-[120px] bg-white"
                       placeholder="Share your event vision, any specific dishes you'd like, additional dietary details, or special requests. Example: 'It's my mother's 60th birthday. She loves Tanzanian food and we want guests to experience authentic flavors. Looking for a buffet setup with both meat and vegetarian options.'"
                     />
                   </div>
