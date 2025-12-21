@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+
+  // Hide header on cart and checkout pages (they have their own minimal headers)
+  const hideHeader = pathname === "/order/cart" || pathname === "/order/checkout" || pathname === "/order/order-success";
+
+  if (hideHeader) {
+    return null;
+  }
 
   const serviceLinks = [
     { href: "/services/private-events", label: "Private Events" },
@@ -13,6 +22,7 @@ export default function Header() {
   ];
 
   const mainNavLinks = [
+    { href: "/order", label: "Order Online" },
     { href: "/menu", label: "Menu" },
     { href: "/gallery", label: "Gallery" },
     { href: "/about", label: "About" },

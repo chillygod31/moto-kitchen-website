@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface QuoteRequest {
   id: string;
@@ -208,6 +209,9 @@ export default function AdminQuotesPage() {
             <p className="text-[#4B4B4B]">Manage and track all quote requests</p>
           </div>
           <div className="flex gap-4">
+            <Link href="/admin/orders" className="btn-secondary px-6">
+              View Orders
+            </Link>
             <button
               onClick={exportToCSV}
               className="btn-secondary px-6"
