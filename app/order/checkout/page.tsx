@@ -179,7 +179,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF6EF]">
-      <header className="bg-[#3A2A24] shadow-lg">
+      <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
             <img src="/logo1.png" alt="Moto Kitchen" className="h-12 md:h-16 object-contain" />
