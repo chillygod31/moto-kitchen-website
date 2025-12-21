@@ -274,9 +274,9 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form & Info */}
-      <section className="section-padding bg-[#FAF6EF]">
-        <div className="max-w-6xl mx-auto px-6 w-full">
-          <div className="grid md:grid-cols-3 gap-12">
+      <section className="section-padding bg-[#FAF6EF] overflow-x-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-12">
             {/* Contact Info */}
             <div className="md:col-span-1">
               <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">
@@ -327,8 +327,8 @@ export default function ContactPage() {
             </div>
 
             {/* Form */}
-            <div className="md:col-span-2 w-full">
-              <div className="card w-full max-w-full">
+            <div className="md:col-span-2 w-full min-w-0">
+              <div className="card w-full max-w-full min-w-0">
                 <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">
                   Tell Us About Your Event
                 </h2>
@@ -339,7 +339,7 @@ export default function ContactPage() {
                   </div>
                 )}
                 
-                <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-full">
+                <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-full min-w-0">
                   {/* Honeypot - hidden from users */}
                   <input
                     type="text"
@@ -352,7 +352,7 @@ export default function ContactPage() {
                   />
 
                   {/* Event Type & Date */}
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-6 w-full min-w-0">
                     <div>
                       <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
                         Event Type <span className="text-[#C9653B]">*</span>
@@ -408,7 +408,7 @@ export default function ContactPage() {
                   </div>
 
                   {/* Guest Count & Location */}
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-6 w-full min-w-0">
                     <div>
                       <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
                         Number of Guests <span className="text-[#C9653B]">*</span>
@@ -482,7 +482,7 @@ export default function ContactPage() {
                     <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
                       Estimated Budget {isBudgetRequired() && <span className="text-[#C9653B]">*</span>}
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full min-w-0">
                       {[
                         { value: "100-250", label: "€100-250" },
                         { value: "250-500", label: "€250-500" },
@@ -543,17 +543,17 @@ export default function ContactPage() {
                       <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
                         Phone <span className="text-[#C9653B]">*</span>
                       </label>
-                      <div className="flex border border-[#E6D9C8] rounded-md focus-within:ring-2 focus-within:ring-[#C9653B] focus-within:border-transparent bg-white relative">
-                        <div ref={countryDropdownRef} className="relative z-10">
+                      <div className="flex border border-[#E6D9C8] rounded-md focus-within:ring-2 focus-within:ring-[#C9653B] focus-within:border-transparent bg-white relative min-w-0">
+                        <div ref={countryDropdownRef} className="relative z-10 flex-shrink-0">
                           <button
                             type="button"
                             onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                            className="px-3 py-3 border-0 border-r border-[#E6D9C8] focus:outline-none bg-white text-sm cursor-pointer flex items-center gap-1.5 hover:bg-gray-50 whitespace-nowrap"
+                            className="px-2 sm:px-3 py-3 border-0 border-r border-[#E6D9C8] focus:outline-none bg-white text-sm cursor-pointer flex items-center gap-1 sm:gap-1.5 hover:bg-gray-50 whitespace-nowrap"
                           >
-                            <span>{selectedCountry.flag}</span>
-                            <span>{selectedCountry.code}</span>
+                            <span className="text-base sm:text-lg">{selectedCountry.flag}</span>
+                            <span className="text-xs sm:text-sm">{selectedCountry.code}</span>
                             <svg
-                              className={`w-4 h-4 text-[#4B4B4B] transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`}
+                              className={`w-3 h-3 sm:w-4 sm:h-4 text-[#4B4B4B] transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-180' : ''}`}
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -606,7 +606,7 @@ export default function ContactPage() {
                           required
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="flex-1 px-4 py-3 border-0 focus:outline-none bg-white"
+                          className="flex-1 min-w-0 px-2 sm:px-4 py-3 border-0 focus:outline-none bg-white text-sm sm:text-base"
                           placeholder="000000000"
                         />
                       </div>
@@ -618,7 +618,7 @@ export default function ContactPage() {
                     <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
                       Dietary Requirements
                       </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full min-w-0">
                       {dietaryOptions.map((option) => (
                         <label key={option.id} className="flex items-center gap-2 cursor-pointer">
                           <input
