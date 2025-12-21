@@ -17,6 +17,7 @@ export default function MenuPage() {
   const [cartCount, setCartCount] = useState(0)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [showAddedNotification, setShowAddedNotification] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchMenu()
@@ -30,14 +31,24 @@ export default function MenuPage() {
   const fetchMenu = async () => {
     try {
       const response = await fetch('/api/menu')
-      if (!response.ok) throw new Error('Failed to fetch menu')
       const data = await response.json()
+      
+      if (!response.ok) {
+        console.error('API Error:', data)
+        setError(data.message || 'Failed to load menu. Please check your environment variables and database setup.')
+        setMenuData({ categories: [], allItems: [] })
+        return
+      }
+      
+      setError(null)
       setMenuData(data)
-      if (data.categories.length > 0) {
+      if (data.categories && data.categories.length > 0) {
         setActiveCategory(data.categories[0].id)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching menu:', error)
+      setError('Failed to connect to the server. Please check your internet connection and try again.')
+      setMenuData({ categories: [], allItems: [] })
     } finally {
       setLoading(false)
     }
@@ -74,8 +85,23 @@ export default function MenuPage() {
   if (!menuData || menuData.categories.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF6EF]">
-        <div className="text-center">
-          <p className="text-xl text-gray-600 mb-4">No menu items available</p>
+        <div className="text-center max-w-md mx-auto px-4">
+          {error ? (
+            <>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-4">
+                <p className="text-lg font-semibold text-red-800 mb-2">Error Loading Menu</p>
+                <p className="text-sm text-red-600 mb-4">{error}</p>
+                <p className="text-xs text-red-500">
+                  This is likely a configuration issue. Please check:
+                  <br />1. Environment variables are set in Vercel
+                  <br />2. Database schema is set up in Supabase
+                  <br />3. Tenant exists in the database
+                </p>
+              </div>
+            </>
+          ) : (
+            <p className="text-xl text-gray-600 mb-4">No menu items available</p>
+          )}
           <Link href="/order" className="text-[#C9653B] hover:underline">Back to Menu</Link>
         </div>
       </div>
