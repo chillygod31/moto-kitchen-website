@@ -9,8 +9,8 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
 
-  // Hide header on cart and checkout pages (they have their own minimal headers)
-  const hideHeader = pathname === "/order/cart" || pathname === "/order/checkout" || pathname === "/order/order-success";
+  // Hide header on all ordering pages (they have their own headers)
+  const hideHeader = pathname?.startsWith("/order");
 
   if (hideHeader) {
     return null;
