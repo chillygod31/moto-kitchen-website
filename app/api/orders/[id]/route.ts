@@ -8,12 +8,12 @@ import { getTenantId } from '@/lib/tenant'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = createServerClient()
     const tenantId = await getTenantId('moto-kitchen')
-    const { id } = params
+    const { id } = await params
 
     const { data, error } = await supabase
       .from('orders')
@@ -46,12 +46,12 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = createServerClient()
     const tenantId = await getTenantId('moto-kitchen')
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
     const { status, payment_status, ...otherUpdates } = body
