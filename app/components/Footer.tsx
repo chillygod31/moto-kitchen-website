@@ -81,7 +81,7 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-            <p className="text-white/50 text-xs mt-4">Serving across the Benelux and beyond</p>
+            <p className="text-white/50 text-xs mt-4">Serving the Netherlands, Belgium, Germany, and beyond</p>
           </div>
         </div>
 

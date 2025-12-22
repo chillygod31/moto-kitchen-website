@@ -58,7 +58,7 @@ export default function CTASection({
         )}
         <Link
           href={buttonHref}
-          className={`btn-primary ${variant === "primary" ? "bg-white text-[#C9653B] hover:bg-[#FAF6EF]" : ""}`}
+          className={`btn-primary ${variant === "primary" ? "!bg-white !text-[#1F1F1F] hover:!bg-[#FAF6EF] hover:!text-[#1F1F1F]" : ""}`}
         >
           {buttonText}
         </Link>

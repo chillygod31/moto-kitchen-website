@@ -225,7 +225,7 @@ export default function AdminOrdersPage() {
           </div>
           <div className="flex gap-4">
             <Link href="/admin/quotes" className="btn-secondary px-6">
-              View Orders
+              View Quotes
             </Link>
             <button
               onClick={() => {

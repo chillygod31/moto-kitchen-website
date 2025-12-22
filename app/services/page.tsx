@@ -50,7 +50,7 @@ const services = [
   {
     href: "/services/pick-up-delivery",
     title: "Pick-Up & Delivery",
-    description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond.",
+    description: "Convenient pick-up and delivery service across the Netherlands, Belgium, Germany, and beyond.",
     image: "/delivery.jpg",
     features: [
       "Nationwide delivery",

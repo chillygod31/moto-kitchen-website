@@ -24,7 +24,7 @@ export default function Home() {
   const trustPoints = [
     "Family-owned",
     "100% Halal",
-    "Serving across the Netherlands and beyond",
+    "Serving the Netherlands, Belgium, Germany, and beyond",
     "Official caterer for the Embassy of Tanzania in the Netherlands",
   ];
 
@@ -169,7 +169,7 @@ export default function Home() {
                 href: "/services/pick-up-delivery",
                 image: "/delivery.jpg",
                 title: "Pick-Up & Delivery",
-                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, and Germany, and beyond."
+                description: "Convenient pick-up and delivery service across the Netherlands, Belgium, Germany, and beyond."
               }
             ].map((service, index) => (
               <Link 

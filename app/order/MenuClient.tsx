@@ -286,13 +286,13 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
 
       {/* Category Tabs */}
       <div className="bg-white border-b sticky top-[73px] z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex space-x-1 overflow-x-auto scrollbar-hide px-2 sm:px-4 lg:px-8" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {menuData.categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
-                className={`px-6 py-4 whitespace-nowrap font-medium transition border-b-2 ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap font-medium transition border-b-2 flex-shrink-0 text-sm sm:text-base ${
                   activeCategory === category.id
                     ? 'text-[#C9653B] border-[#C9653B]'
                     : 'text-gray-600 hover:text-gray-900 border-transparent hover:border-gray-300'
@@ -300,7 +300,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
               >
                 {category.name}
                 {category.items.length > 0 && (
-                  <span className="ml-2 text-sm opacity-75">
+                  <span className="ml-2 text-xs sm:text-sm opacity-75">
                     ({category.items.length})
                   </span>
                 )}

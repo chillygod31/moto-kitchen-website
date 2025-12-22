@@ -149,63 +149,66 @@ export default function CartPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6">
           {cart.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between py-4 border-b last:border-b-0"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 border-b last:border-b-0 gap-4"
             >
-              <div className="flex items-center space-x-4 flex-1">
+              <div className="flex items-center space-x-4 flex-1 min-w-0">
                 {item.image_url && (
-                  <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0">
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded overflow-hidden flex-shrink-0">
                     <Image
                       src={item.image_url}
                       alt={item.name || 'Cart item'}
                       fill
                       className="object-cover"
-                      sizes="80px"
+                      sizes="96px"
                       loading="lazy"
                     />
                   </div>
                 )}
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                  <p className="text-gray-600">{formatCurrency(item.price)} each</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{item.name}</h3>
+                  <p className="text-sm sm:text-base text-gray-600">{formatCurrency(item.price)} each</p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                 <div className="flex items-center border-2 border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                    className="px-3 py-1.5 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
                     aria-label="Decrease quantity"
                   >
                     −
                   </button>
-                  <span className="px-4 py-1.5 min-w-[3rem] min-h-[44px] text-center font-medium flex items-center justify-center">
+                  <span className="px-3 sm:px-4 py-1.5 sm:py-2 min-w-[2.5rem] sm:min-w-[3rem] min-h-[44px] text-center font-medium flex items-center justify-center text-sm sm:text-base">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    className="px-3 py-1.5 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
                     aria-label="Increase quantity"
                   >
                     +
                   </button>
                 </div>
 
-                <span className="text-lg font-semibold text-gray-900 w-24 text-right">
-                  {formatCurrency(item.price * item.quantity)}
-                </span>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <span className="text-base sm:text-lg font-semibold text-gray-900 whitespace-nowrap">
+                    {formatCurrency(item.price * item.quantity)}
+                  </span>
 
-                <button
-                  onClick={() => handleRemove(item.id)}
-                  className="text-red-600 hover:text-red-800 px-2 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
-                  aria-label="Remove item"
-                >
-                  Remove
-                </button>
+                  <button
+                    onClick={() => handleRemove(item.id)}
+                    className="text-red-600 hover:text-red-800 px-2 sm:px-3 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation text-sm sm:text-base"
+                    aria-label="Remove item"
+                  >
+                    <span className="hidden sm:inline">Remove</span>
+                    <span className="sm:hidden">×</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

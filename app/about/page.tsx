@@ -53,7 +53,7 @@ export default function AboutPage() {
             </p>
             
             <p className="text-[#4B4B4B] text-lg leading-relaxed">
-              From family parties to weddings, engagement celebrations, office lunches, and festival crowds, we have been grateful to bring Tanzanian flavours to tables across the Netherlands and the wider Benelux.
+              From family parties to weddings, engagement celebrations, office lunches, and festival crowds, we have been grateful to bring Tanzanian flavours to tables across the Netherlands, Belgium, Germany, and beyond.
             </p>
             
             <p className="text-[#4B4B4B] text-lg leading-relaxed">
@@ -145,7 +145,7 @@ export default function AboutPage() {
               <div className="flex items-start gap-3">
                 <span className="text-[#C9653B] text-xl">•</span>
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-1">Buffets</h3>
+                  <h3 className="font-bold italic text-xl text-[#1F1F1F] mb-1" style={{ fontFamily: 'var(--font-heading-display), serif' }}>Buffets</h3>
                   <p className="text-[#4B4B4B] text-base">A diverse array of dishes that celebrate bold flavors and cultural richness.</p>
                 </div>
               </div>
@@ -153,7 +153,7 @@ export default function AboutPage() {
               <div className="flex items-start gap-3">
                 <span className="text-[#C9653B] text-xl">•</span>
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-1">Shared Dining</h3>
+                  <h3 className="font-bold italic text-xl text-[#1F1F1F] mb-1" style={{ fontFamily: 'var(--font-heading-display), serif' }}>Shared Dining</h3>
                   <p className="text-[#4B4B4B] text-base">Interactive, communal meals that bring people together.</p>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function AboutPage() {
               <div className="flex items-start gap-3">
                 <span className="text-[#C9653B] text-xl">•</span>
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-1">Enhancements</h3>
+                  <h3 className="font-bold italic text-xl text-[#1F1F1F] mb-1" style={{ fontFamily: 'var(--font-heading-display), serif' }}>Enhancements</h3>
                   <p className="text-[#4B4B4B] text-base">Thoughtful additions like curated cocktail menus and venue décor to complete the ambiance.</p>
                 </div>
               </div>
