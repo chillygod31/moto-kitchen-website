@@ -10,18 +10,47 @@ export default function PaymentMethodSelector({
   onSelect,
 }: PaymentMethodSelectorProps) {
   const paymentMethods = [
-    { id: 'ideal', name: 'iDeal', icon: '💳' },
-    { id: 'card', name: 'Credit/Debit Card', icon: '💳' },
-    { id: 'paypal', name: 'PayPal', icon: '🔵' },
+    { 
+      id: 'ideal', 
+      name: 'iDEAL',
+      logo: (
+        <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="4" width="36" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+          <path d="M8 12H32M8 8H32M8 16H32" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      )
+    },
+    { 
+      id: 'card', 
+      name: 'Card',
+      logo: (
+        <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="36" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+          <path d="M2 10H38" stroke="currentColor" strokeWidth="1.5"/>
+          <circle cx="8" cy="16" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+        </svg>
+      )
+    },
+    { 
+      id: 'paypal', 
+      name: 'PayPal',
+      logo: (
+        <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 8C8 8 10 6 14 6C18 6 20 8 20 12C20 16 18 18 14 18H10L8 22H4L6 18H8V8Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+          <path d="M24 8V14C24 14 26 16 30 16C32 16 34 15 34 13C34 11 32 10 30 10C28 10 26 11 26 13" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+        </svg>
+      )
+    },
   ]
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3">
+      <div className="flex flex-row gap-3">
         {paymentMethods.map((method) => (
           <label
             key={method.id}
-            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition min-h-[44px] touch-manipulation ${
+            className={`flex-1 flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition min-h-[60px] touch-manipulation ${
               selectedMethod === method.id
                 ? 'border-[#C9653B] bg-[#C9653B]/5'
                 : 'border-gray-300 hover:border-gray-400'
@@ -33,26 +62,27 @@ export default function PaymentMethodSelector({
               value={method.id}
               checked={selectedMethod === method.id}
               onChange={() => onSelect(method.id)}
-              className="mr-3 w-5 h-5"
+              className="sr-only"
             />
-            <span className="text-2xl mr-3">{method.icon}</span>
-            <span className="font-medium">{method.name}</span>
+            <div className={`mb-2 transition ${selectedMethod === method.id ? 'text-[#C9653B]' : 'text-gray-400 grayscale'}`}>
+              {method.logo}
+            </div>
+            <span className={`text-xs font-medium ${selectedMethod === method.id ? 'text-[#C9653B]' : 'text-gray-600'}`}>
+              {method.name}
+            </span>
           </label>
         ))}
       </div>
       
       {/* Trust Signals */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-        <div className="flex items-start gap-3">
-          <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-[#FAF6EF] border border-[#E7E1D9] rounded-lg p-3 mt-4">
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-green-800 mb-1">Your payment is secure</p>
-            <p className="text-xs text-green-700">
-              All transactions are encrypted and secure. We never store your payment details.
-            </p>
-          </div>
+          <p className="text-sm text-gray-700">
+            Secure checkout via encrypted payments. We never store card details.
+          </p>
         </div>
       </div>
     </div>

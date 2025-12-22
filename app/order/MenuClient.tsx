@@ -7,6 +7,7 @@ import { MenuItem, MenuCategory } from '@/types'
 import { addToCart, getCart, getCartItemCount } from '@/lib/cart'
 import { formatCurrency } from '@/lib/utils'
 import { trackViewMenu, trackAddToCart } from '@/lib/analytics'
+import { orderRoutes } from '@/lib/routes'
 import ErrorMessage from './components/ErrorMessage'
 import ServiceInfoBanner from './components/ServiceInfoBanner'
 
@@ -37,6 +38,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
   )
   const [showAddedNotification, setShowAddedNotification] = useState<string | null>(null)
   const [itemQuantities, setItemQuantities] = useState<Record<string, number>>({})
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [cartIconPulse, setCartIconPulse] = useState(false)
   const [showCartTooltip, setShowCartTooltip] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,6 +97,19 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
     })
   }
 
+  const handleSelectItem = (itemId: string) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev)
+      newSet.add(itemId)
+      return newSet
+    })
+    // Initialize quantity to 1 if not set
+    setItemQuantities((prev) => ({
+      ...prev,
+      [itemId]: prev[itemId] || 1,
+    }))
+  }
+
   const handleAddToCart = (item: MenuItem) => {
     const quantity = itemQuantities[item.id] || 1
     addToCart({
@@ -108,7 +123,12 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
     // Track add to cart event
     trackAddToCart(item.id, item.name, item.price, quantity)
     
-    // Reset quantity after adding
+    // Remove from selected items and reset quantity after adding
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(item.id)
+      return newSet
+    })
     setItemQuantities((prev) => {
       const updated = { ...prev }
       delete updated[item.id]
@@ -206,7 +226,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
           ) : (
             <p className="text-xl text-gray-600 mb-4">No menu items available</p>
           )}
-          <Link href="/order" className="text-[#C9653B] hover:underline">Back to Menu</Link>
+          <Link href={orderRoutes.menu()} className="text-[#C9653B] hover:underline">Back to Menu</Link>
         </div>
       </div>
     )
@@ -220,7 +240,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
       <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
+            <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
               <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" />
               <div className="flex flex-col -ml-2">
                 <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
@@ -228,7 +248,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
               </div>
             </Link>
             <Link
-              href="/order/cart"
+              href={orderRoutes.cart()}
               className={`relative px-6 py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition-all font-semibold flex items-center gap-2 ${
                 cartIconPulse ? 'animate-pulse scale-110' : ''
               }`}
@@ -240,7 +260,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
               </svg>
               <span className="hidden sm:inline">Cart</span>
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center transition-all duration-300 animate-bounce">
+                <span className="absolute -top-2 -right-2 bg-[#C9653B] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center transition-all duration-300">
                   {cartCount}
                 </span>
               )}
@@ -267,25 +287,19 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
       <ServiceInfoBanner settings={businessSettings || null} />
 
       {/* Urgency Indicators & Social Proof */}
-      {(orderStats?.ordersToday !== undefined) && (
-        <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-3">
+      {(orderStats?.ordersToday !== undefined && orderStats.ordersToday > 5) && (
+        <div className="bg-white border-b border-[#E7E1D9] px-4 sm:px-6 lg:px-8 py-3">
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-4 text-sm text-gray-700">
-            {orderStats.ordersToday > 5 && (
-              <div className="flex items-center gap-2">
-                <span className="text-red-500">🔥</span>
-                <span>{orderStats.ordersToday} orders today</span>
-              </div>
-            )}
             <div className="flex items-center gap-2">
-              <span>🔔</span>
-              <span>Order by 8 PM for tomorrow delivery</span>
+              <span className="text-red-500">🔥</span>
+              <span>{orderStats.ordersToday} orders today</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Category Tabs */}
-      <div className="bg-white border-b sticky top-[73px] z-40 shadow-sm">
+      <div className="bg-white border-b border-[#E7E1D9] sticky top-[73px] z-40 shadow-sm">
         <div className="max-w-7xl mx-auto">
           <div className="flex space-x-1 overflow-x-auto scrollbar-hide px-2 sm:px-4 lg:px-8" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {menuData.categories.map((category) => (
@@ -311,7 +325,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-white border-b border-[#E7E1D9] px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="relative">
             <input
@@ -402,40 +416,50 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                       ))}
                     </div>
                   )}
-                  <div className="pt-4 border-t space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-[#C9653B]">
+                  <div className="pt-4 border-t border-[#E7E1D9]">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-semibold text-[#C9653B]">
                         {formatCurrency(item.price)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center border-2 border-gray-300 rounded-lg">
+                    {selectedItems.has(item.id) ? (
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center border border-[#E7E1D9] rounded-lg">
+                          <button
+                            onClick={() => handleQuantityChange(item.id, -1)}
+                            className="px-3 py-2 hover:bg-gray-100 transition font-semibold text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+                          <span className="px-4 py-2 min-w-[3rem] text-center font-medium min-h-[44px] flex items-center justify-center">
+                            {itemQuantities[item.id] || 1}
+                          </span>
+                          <button
+                            onClick={() => handleQuantityChange(item.id, 1)}
+                            className="px-3 py-2 hover:bg-gray-100 transition font-semibold text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
                         <button
-                          onClick={() => handleQuantityChange(item.id, -1)}
-                          className="px-3 py-2 hover:bg-gray-100 transition font-semibold text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                          aria-label="Decrease quantity"
+                          onClick={() => handleAddToCart(item)}
+                          className="flex-1 px-4 py-2 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
+                          aria-label={`Add ${item.name} to cart`}
                         >
-                          −
-                        </button>
-                        <span className="px-4 py-2 min-w-[3rem] text-center font-medium min-h-[44px] flex items-center justify-center">
-                          {itemQuantities[item.id] || 1}
-                        </span>
-                        <button
-                          onClick={() => handleQuantityChange(item.id, 1)}
-                          className="px-3 py-2 hover:bg-gray-100 transition font-semibold text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                          aria-label="Increase quantity"
-                        >
-                          +
+                          Add
                         </button>
                       </div>
-                    <button
-                      onClick={() => handleAddToCart(item)}
-                      className="flex-1 px-5 py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
-                      aria-label={`Add ${item.name} to cart`}
-                    >
-                      Add to Cart
-                    </button>
-                    </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSelectItem(item.id)}
+                        className="w-full px-4 py-2 border border-[#C9653B] text-[#C9653B] rounded-lg hover:bg-[#C9653B] hover:text-white transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
+                        aria-label={`Select ${item.name}`}
+                      >
+                        Select
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -9,7 +9,7 @@ import { getTenantId } from '@/lib/tenant'
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
 
     // Get order count for today
     const today = new Date()

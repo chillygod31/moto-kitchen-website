@@ -12,7 +12,7 @@ export async function GET(
 ) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
     const { id } = await params
 
     const { data, error } = await supabase
@@ -50,7 +50,7 @@ export async function PATCH(
 ) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
     const { id } = await params
     const body = await request.json()
 

@@ -43,6 +43,7 @@ export default function CheckoutPage() {
   const [postcode, setPostcode] = useState('')
   const [city, setCity] = useState('')
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [notes, setNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -129,6 +130,18 @@ export default function CheckoutPage() {
       setDeliveryFee(0)
     }
   }, [fulfillmentType, postcode, deliveryZones, city, fieldErrors])
+
+  // Derive selectedDate from selectedTimeSlot when time slots are loaded
+  useEffect(() => {
+    if (selectedTimeSlot && timeSlots.length > 0 && !selectedDate) {
+      const slot = timeSlots.find(s => s.id === selectedTimeSlot)
+      if (slot) {
+        const slotDate = new Date(slot.slot_time)
+        const dateKey = slotDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+        setSelectedDate(dateKey)
+      }
+    }
+  }, [selectedTimeSlot, timeSlots, selectedDate])
 
   // Scroll input into view on mobile when focused
   useEffect(() => {
@@ -276,6 +289,56 @@ export default function CheckoutPage() {
       // Default fee if no zone matches
       setDeliveryFee(10)
     }
+  }
+
+  // Group time slots by date
+  const slotsByDate = timeSlots.reduce((acc, slot) => {
+    const slotDate = new Date(slot.slot_time)
+    const dateKey = slotDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+    const dateFull = slotDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+    
+    if (!acc[dateKey]) {
+      acc[dateKey] = { dateFull, slots: [] }
+    }
+    acc[dateKey].slots.push(slot)
+    return acc
+  }, {} as Record<string, { dateFull: string; slots: TimeSlot[] }>)
+
+  // Get available times for selected date
+  const availableTimes = selectedDate 
+    ? slotsByDate[selectedDate]?.slots || []
+    : []
+
+  // Get unique dates for chips, sorted chronologically
+  const uniqueDates = Object.keys(slotsByDate).sort((a, b) => {
+    // Find any slot for each date key to get the timestamp
+    const slotA = timeSlots.find(s => {
+      const d = new Date(s.slot_time)
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) === a
+    })
+    const slotB = timeSlots.find(s => {
+      const d = new Date(s.slot_time)
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) === b
+    })
+    if (!slotA || !slotB) return 0
+    return new Date(slotA.slot_time).getTime() - new Date(slotB.slot_time).getTime()
+  })
+
+  // Form validation function
+  const isFormValid = () => {
+    return (
+      customerName.trim() !== '' &&
+      customerEmail.trim() !== '' &&
+      validateEmail(customerEmail) &&
+      customerPhone.trim() !== '' &&
+      validatePhone(customerPhone) &&
+      (fulfillmentType === 'pickup' || (deliveryAddress.trim() !== '' && postcode.trim() !== '' && city.trim() !== '')) &&
+      selectedTimeSlot !== '' &&
+      paymentMethod !== null &&
+      acceptedTerms &&
+      cart.length > 0 &&
+      checkMinimumOrder(getCartTotal(cart), businessSettings?.min_order_value || 0).valid
+    )
   }
 
   const subtotal = getCartTotal(cart)
@@ -432,7 +495,7 @@ export default function CheckoutPage() {
       localStorage.removeItem('checkout-form-backup')
       
       clearCart()
-      router.push(`/order/order-success?orderId=${order.id}&orderNumber=${order.order_number}`)
+              router.push(`${orderRoutes.success()}?orderId=${order.id}&orderNumber=${order.order_number}`)
     } catch (error: any) {
       console.error('Error submitting order:', error)
       
@@ -475,7 +538,7 @@ export default function CheckoutPage() {
   }
 
   if (cart.length === 0) {
-    router.push('/order/cart')
+    router.push(orderRoutes.cart())
     return null
   }
 
@@ -484,7 +547,7 @@ export default function CheckoutPage() {
       <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
+                    <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
               <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
               <div className="flex flex-col -ml-2">
                 <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
@@ -492,7 +555,7 @@ export default function CheckoutPage() {
               </div>
             </Link>
             <Link
-              href="/order/cart"
+                      href={orderRoutes.cart()}
               className="relative px-6 py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition-all font-semibold flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -756,55 +819,90 @@ export default function CheckoutPage() {
 
           {/* Time Slot Selection */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Select Time Slot *</h2>
+            <h2 className="text-xl font-semibold mb-2">Select Time Slot *</h2>
+            <p className="text-sm text-gray-600 mb-4">Choose your pickup window (15 min early/late is fine).</p>
             {fieldErrors.timeSlot && (
               <p className="mb-4 text-sm text-red-600">{fieldErrors.timeSlot}</p>
             )}
             {timeSlots.length === 0 ? (
               <p className="text-gray-600">No available time slots</p>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {timeSlots.map((slot) => {
-                  const slotDate = new Date(slot.slot_time)
-                  const isFull = slot.current_orders >= slot.max_orders
-                  return (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedTimeSlot(slot.id)
-                        if (fieldErrors.timeSlot) {
-                          setFieldErrors({ ...fieldErrors, timeSlot: '' })
-                        }
-                      }}
-                      disabled={isFull}
-                      className={`p-3 border-2 rounded-lg text-left transition ${
-                        selectedTimeSlot === slot.id
-                          ? 'border-[#C9653B] bg-[#C9653B] text-white'
-                          : isFull
-                          ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : fieldErrors.timeSlot
-                          ? 'border-red-300 hover:border-[#C9653B]'
-                          : 'border-gray-300 hover:border-[#C9653B]'
-                      }`}
-                    >
-                      <div className="font-medium">
-                        {slotDate.toLocaleDateString('nl-NL', {
-                          weekday: 'short',
-                          day: 'numeric',
-                          month: 'short',
-                        })}
-                      </div>
-                      <div className="text-sm">
-                        {slotDate.toLocaleTimeString('nl-NL', {
+              <div className="space-y-4">
+                {/* Date Chips - Horizontally Scrollable */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
+                  <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+                    {uniqueDates.map((dateKey) => (
+                      <button
+                        key={dateKey}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDate(dateKey)
+                          setSelectedTimeSlot('') // Clear time selection when date changes
+                          if (fieldErrors.timeSlot) {
+                            setFieldErrors({ ...fieldErrors, timeSlot: '' })
+                          }
+                        }}
+                        className={`px-4 py-2 rounded-full border flex-shrink-0 transition whitespace-nowrap ${
+                          selectedDate === dateKey
+                            ? 'border-[#C9653B] bg-[#C9653B] text-white shadow-sm'
+                            : 'border-gray-300 bg-white text-gray-700 hover:border-[#C9653B]'
+                        }`}
+                      >
+                        {slotsByDate[dateKey].dateFull}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Time Chips - Only show when date is selected */}
+                {selectedDate && availableTimes.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {availableTimes.map((slot) => {
+                        const slotDate = new Date(slot.slot_time)
+                        const isFull = slot.current_orders >= slot.max_orders
+                        const startTime = slotDate.toLocaleTimeString('en-GB', {
                           hour: '2-digit',
                           minute: '2-digit',
-                        })}
-                      </div>
-                      {isFull && <div className="text-xs mt-1">Full</div>}
-                    </button>
-                  )
-                })}
+                        })
+                        // Calculate end time (assuming 1 hour slot, adjust if needed)
+                        const endTime = new Date(slotDate.getTime() + 60 * 60 * 1000).toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        return (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTimeSlot(slot.id)
+                              if (fieldErrors.timeSlot) {
+                                setFieldErrors({ ...fieldErrors, timeSlot: '' })
+                              }
+                            }}
+                            disabled={isFull}
+                            className={`px-3 py-2 rounded-lg border text-center transition min-h-[44px] ${
+                              selectedTimeSlot === slot.id
+                                ? 'border-[#C9653B] bg-[#C9653B]/10 text-[#C9653B] font-semibold'
+                                : isFull
+                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'border-gray-300 bg-white text-gray-700 hover:border-[#C9653B]'
+                            }`}
+                          >
+                            <div className="text-sm">
+                              {startTime}–{endTime}
+                            </div>
+                            {isFull && (
+                              <div className="text-xs mt-1 text-gray-400">Full</div>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -824,6 +922,23 @@ export default function CheckoutPage() {
                 }
               }}
             />
+          </div>
+
+          {/* What Happens Next */}
+          <div className="bg-[#FAF6EF] border border-[#E6D9C8] rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[#C9653B] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>What happens next:</strong> You&apos;ll receive a confirmation email + {fulfillmentType === 'pickup' ? 'pickup' : 'delivery'} instructions.
+                </p>
+                <p className="text-xs text-gray-600">
+                  Allergens: reply to your confirmation email.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Terms & Conditions */}
@@ -875,11 +990,19 @@ export default function CheckoutPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={submitting || !selectedTimeSlot || !paymentMethod || !acceptedTerms}
-            className="w-full px-6 py-4 min-h-[56px] bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed touch-manipulation"
-            aria-label={submitting ? 'Placing order...' : 'Place order'}
+            disabled={submitting || !isFormValid()}
+            className={`w-full px-6 py-4 min-h-[56px] rounded-lg transition font-semibold text-lg touch-manipulation ${
+              isFormValid() && !submitting
+                ? 'bg-[#C9653B] text-white hover:bg-[#B8552B]'
+                : 'bg-gray-400 opacity-60 text-white cursor-not-allowed'
+            }`}
+            aria-label={submitting ? 'Placing order...' : fulfillmentType === 'pickup' ? 'Confirm pickup order' : 'Place pre-order'}
           >
-            {submitting ? 'Placing Order...' : 'Place Order'}
+            {submitting 
+              ? 'Placing Order...' 
+              : fulfillmentType === 'pickup' 
+                ? 'Confirm Pickup Order' 
+                : 'Place Pre-Order'}
           </button>
         </form>
           </div>

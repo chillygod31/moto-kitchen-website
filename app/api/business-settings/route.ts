@@ -9,7 +9,7 @@ import { getTenantId } from '@/lib/tenant'
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
 
     const { data: settings, error } = await supabase
       .from('tenant_business_settings')

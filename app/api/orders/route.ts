@@ -10,7 +10,7 @@ import { generateOrderNumber, extractPostcodePrefix, checkMinimumOrder } from '@
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
 
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
 
     const body = await request.json()
     const {

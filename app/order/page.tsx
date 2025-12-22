@@ -15,7 +15,7 @@ interface MenuData {
 async function getBusinessSettings() {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const tenantId = await getTenantId()
 
     const { data: settings } = await supabase
       .from('tenant_business_settings')

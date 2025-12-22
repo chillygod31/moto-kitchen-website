@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { Order } from '@/types'
 import { formatCurrency, formatDate, copyToClipboard, getGoogleMapsUrl } from '@/lib/utils'
 import { trackPurchase } from '@/lib/analytics'
+import { orderRoutes } from '@/lib/routes'
 import OrderTimeline from '../components/OrderTimeline'
 
 function OrderSuccessContent() {
@@ -91,7 +92,7 @@ function OrderSuccessContent() {
     <div className="min-h-screen bg-[#FAF6EF]">
       <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
+                  <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
             <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
             <div className="flex flex-col -ml-2">
               <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
@@ -306,13 +307,13 @@ function OrderSuccessContent() {
 
           <div className="space-y-3">
             <Link
-              href="/order"
+                      href={orderRoutes.menu()}
               className="block w-full text-center px-6 py-3 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold min-h-[56px] flex items-center justify-center touch-manipulation"
             >
               Order Again
             </Link>
             <Link
-              href="/order"
+                      href={orderRoutes.menu()}
               className="block w-full text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition min-h-[56px] flex items-center justify-center touch-manipulation"
             >
               Back to Menu
