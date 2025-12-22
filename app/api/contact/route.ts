@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createServerClient } from "@/lib/supabase/server";
-import { getPricing } from "@/lib/pricing-data";
-
-// Map form event types to pricing service types
-function mapEventTypeToServiceType(eventType: string): "private-events" | "corporate" | "weddings" | "pick-up-delivery" {
-  if (eventType === "private") return "private-events";
-  if (eventType === "corporate") return "corporate";
-  if (eventType === "wedding") return "weddings";
-  if (eventType === "pickup-delivery" || eventType === "pickup-only") return "pick-up-delivery";
-  return "private-events"; // default
-}
+import fs from "fs";
+import path from "path";
 
 export async function POST(request: Request) {
   try {
@@ -130,17 +122,6 @@ export async function POST(request: Request) {
       ? new Date(eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       : "Flexible";
 
-    // Calculate estimated budget range (using your pricing)
-    const guestCountNum = parseInt(guestCount);
-    const pricingServiceType = mapEventTypeToServiceType(eventType);
-    const basePrice = getPricing(pricingServiceType).price;
-    const estimatedMin = guestCountNum * basePrice;
-    const estimatedMax = guestCountNum * (basePrice + 10);
-
-    // Calculate per person rate
-    const perPersonMin = basePrice;
-    const perPersonMax = basePrice + 10;
-
     // Check if date is urgent (within 14 days / 2 weeks)
     const isUrgent = eventDate && eventDate !== "Flexible" 
       ? (new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 14
@@ -169,6 +150,55 @@ export async function POST(request: Request) {
         "not-sure": "Not sure yet",
       };
       return budgetMap[budgetRange] || budgetRange;
+    };
+
+    // Format budget range for subject line (with en dash)
+    const formatBudgetForSubject = (budgetRange: string | null) => {
+      if (!budgetRange || budgetRange === "not-sure") return "Budget TBD";
+      const budgetMap: Record<string, string> = {
+        "100-250": "€100–250",
+        "250-500": "€250–500",
+        "500-1000": "€500–1,000",
+        "1000-2500": "€1,000–2,500",
+        "2500-5000": "€2,500–5,000",
+        "5000+": "€5,000+",
+      };
+      return budgetMap[budgetRange] || budgetRange.replace(/-/g, "–");
+    };
+
+    // Format event type to short form for subject line
+    const formatEventTypeShort = (eventTypeValue: string) => {
+      const eventTypeMap: Record<string, string> = {
+        "private": "Private",
+        "corporate": "Corporate",
+        "wedding": "Wedding",
+        "pickup-only": "Pick-Up",
+        "pickup-delivery": "Pick-Up",
+        "other": "Other",
+      };
+      return eventTypeMap[eventTypeValue] || eventTypeValue.charAt(0).toUpperCase() + eventTypeValue.slice(1).replace(/-/g, " ");
+    };
+
+    // Calculate per-person budget from customer's selected budget range
+    const calculatePerPersonBudget = (budgetRange: string | null, guestCount: number) => {
+      if (!budgetRange || budgetRange === "not-sure" || guestCount <= 0) return null;
+      
+      const budgetMap: Record<string, { min: number; max: number }> = {
+        "100-250": { min: 100, max: 250 },
+        "250-500": { min: 250, max: 500 },
+        "500-1000": { min: 500, max: 1000 },
+        "1000-2500": { min: 1000, max: 2500 },
+        "2500-5000": { min: 2500, max: 5000 },
+        "5000+": { min: 5000, max: 10000 }, // Use 10000 as max for 5000+
+      };
+      
+      const budgetValues = budgetMap[budgetRange];
+      if (!budgetValues) return null;
+      
+      const perPersonMin = Math.round(budgetValues.min / guestCount);
+      const perPersonMax = Math.round(budgetValues.max / guestCount);
+      
+      return { min: perPersonMin, max: perPersonMax };
     };
 
     // Format service type for display
@@ -218,10 +248,12 @@ export async function POST(request: Request) {
           </div>
 
           <div class="section">
-            <h2>💰 BUDGET ANALYSIS</h2>
-            <p><strong>Estimated Budget:</strong> €${estimatedMin.toLocaleString()} - €${estimatedMax.toLocaleString()}</p>
-            <p><strong>Per Person Rate:</strong> €${perPersonMin} - €${perPersonMax}/person</p>
-            ${budget ? `<p><strong>Customer Budget Range:</strong> ${formatBudgetRange(budget)}</p>` : ''}
+            <h2>💰 Budget (customer selected)</h2>
+            ${budget ? `<p><strong>Budget Range:</strong> ${formatBudgetRange(budget)}</p>` : '<p><strong>Budget Range:</strong> Not specified</p>'}
+            ${(() => {
+              const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
+              return perPerson ? `<p><strong>Per Person:</strong> €${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)</p>` : '';
+            })()}
           </div>
 
           <div class="section ${isUrgent ? 'urgent' : ''}">
@@ -281,10 +313,12 @@ Guest Count: ${guestCount} people
 Location: ${location}
 Service Type: ${formatServiceType(serviceType)}
 
-💰 BUDGET ANALYSIS
-Estimated Budget: €${estimatedMin.toLocaleString()} - €${estimatedMax.toLocaleString()}
-Per Person Rate: €${perPersonMin} - €${perPersonMax}/person
-${budget ? `Customer Budget Range: ${formatBudgetRange(budget)}` : ''}
+💰 Budget (customer selected)
+${budget ? `Budget Range: ${formatBudgetRange(budget)}` : 'Budget Range: Not specified'}
+${(() => {
+  const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
+  return perPerson ? `Per Person: €${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)` : '';
+})()}
 
 ⏰ URGENCY
 Days Until Event: ${daysUntilEvent !== null ? `${daysUntilEvent} days` : 'Flexible'}
@@ -310,11 +344,15 @@ Submitted: ${new Date().toLocaleString('en-NL')}
     `;
 
     // Build subject line
+    const eventTypeShort = formatEventTypeShort(eventType);
+    const budgetDisplay = formatBudgetForSubject(budget);
+    const locationDisplay = location; // Use location as-is (could extract city if needed)
+    
     let subject: string;
     if (isUrgent && daysUntilEvent !== null) {
-      subject = `🔥 URGENT (${daysUntilEvent} days): ${name} - ${eventTypeLabel} - ${guestCount} pax`;
+      subject = `[URGENT ≤${daysUntilEvent}d] ${eventTypeShort} • ${guestCount} pax • ${locationDisplay} • ${shortDate} • ${budgetDisplay} — ${name}`;
     } else {
-      subject = `🍽️ Quote Request: ${name} - ${eventTypeLabel} - ${shortDate} - ${guestCount} pax`;
+      subject = `${eventTypeShort} • ${guestCount} pax • ${locationDisplay} • ${shortDate} • ${budgetDisplay} — ${name}`;
     }
 
     // Send admin notification email via Resend
@@ -343,11 +381,18 @@ Submitted: ${new Date().toLocaleString('en-NL')}
         ? formattedDate
         : "Flexible (to be confirmed)";
 
+      // Read logo and convert to base64
+      const logoPath = path.join(process.cwd(), "public", "logo1.png");
+      const logoBuffer = fs.readFileSync(logoPath);
+      const logoBase64 = logoBuffer.toString("base64");
+      const logoDataUri = `data:image/png;base64,${logoBase64}`;
+
       const autoReplyHtml = `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
+          <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #FAF6EF; }
             .container { max-width: 600px; margin: 0 auto; background: white; }
@@ -362,13 +407,19 @@ Submitted: ${new Date().toLocaleString('en-NL')}
             h1 { margin: 0; }
             ul { margin: 10px 0; padding-left: 20px; }
             li { margin: 8px 0; }
+            .logo-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; flex-direction: column; }
+            .logo-text { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; color: white; line-height: 1.2; margin: 0; }
+            .tagline { font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.9; margin: 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0;">Moto Kitchen</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">East African Catering</p>
+              <div class="logo-container">
+                <img src="${logoDataUri}" alt="Moto Kitchen" style="height: 50px; width: auto; display: block; margin-bottom: 8px;" />
+                <span class="logo-text">Moto Kitchen</span>
+                <p class="tagline">EAST AFRICAN CATERING SERVICE</p>
+              </div>
             </div>
             
             <div class="content">
