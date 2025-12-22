@@ -3,6 +3,10 @@ import { getTenantId } from '@/lib/tenant'
 import MenuClient from './MenuClient'
 import { MenuItem, MenuCategory } from '@/types'
 
+// Force dynamic rendering - don't statically generate this page
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface MenuData {
   categories: (MenuCategory & { items: MenuItem[] })[]
   allItems: MenuItem[]
@@ -28,8 +32,31 @@ async function getBusinessSettings() {
 
 async function getMenuData(): Promise<{ data: MenuData | null; error: string | null }> {
   try {
+    // Validate environment variables first
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const errorMsg = 'Missing Supabase environment variables. Please check your configuration.'
+      console.error('[MenuPage]', errorMsg)
+      return {
+        data: null,
+        error: errorMsg
+      }
+    }
+
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    
+    // Get tenant ID
+    let tenantId: string
+    try {
+      tenantId = await getTenantId('moto-kitchen')
+      console.log('[MenuPage] Tenant ID retrieved:', tenantId ? 'Success' : 'Failed')
+    } catch (tenantError: any) {
+      const errorMsg = `Failed to get tenant: ${tenantError.message}`
+      console.error('[MenuPage]', errorMsg, tenantError)
+      return {
+        data: null,
+        error: errorMsg
+      }
+    }
 
     // Get menu categories
     const { data: categories, error: categoriesError } = await supabase
@@ -40,7 +67,8 @@ async function getMenuData(): Promise<{ data: MenuData | null; error: string | n
       .order('sort_order', { ascending: true })
 
     if (categoriesError) {
-      console.error('Error fetching categories:', categoriesError)
+      console.error('[MenuPage] Error fetching categories:', categoriesError)
+      // Don't return early - continue to try fetching items
     }
 
     // Get menu items
@@ -52,12 +80,15 @@ async function getMenuData(): Promise<{ data: MenuData | null; error: string | n
       .order('sort_order', { ascending: true })
 
     if (itemsError) {
-      console.error('Error fetching menu items:', itemsError)
+      console.error('[MenuPage] Error fetching menu items:', itemsError)
       return {
         data: null,
-        error: itemsError.message || 'Failed to fetch menu items'
+        error: `Failed to fetch menu items: ${itemsError.message}`
       }
     }
+
+    // Log what we got for debugging
+    console.log('[MenuPage] Data fetched - Categories:', categories?.length || 0, 'Items:', menuItems?.length || 0)
 
     // Group items by category
     const menuByCategory = (categories || []).map((category) => ({
@@ -90,25 +121,46 @@ async function getMenuData(): Promise<{ data: MenuData | null; error: string | n
       error: null
     }
   } catch (error: any) {
-    console.error('Error in getMenuData:', error)
+    const errorMsg = error.message || 'Internal server error'
+    console.error('[MenuPage] Unexpected error in getMenuData:', error)
+    console.error('[MenuPage] Error stack:', error.stack)
     return {
       data: null,
-      error: error.message || 'Internal server error'
+      error: errorMsg
     }
   }
 }
 
 export default async function MenuPage() {
-  const { data: menuData, error } = await getMenuData()
-  const businessSettings = await getBusinessSettings()
+  try {
+    const { data: menuData, error } = await getMenuData()
+    const businessSettings = await getBusinessSettings()
 
-  // If error or no data, still render the client component with empty data
-  // The client component will handle the error display
-  return (
-    <MenuClient 
-      initialMenuData={menuData || { categories: [], allItems: [] }}
-      error={error}
-      businessSettings={businessSettings}
-    />
-  )
+    // Log the result for debugging
+    if (error) {
+      console.error('[MenuPage] Error fetching menu data:', error)
+    } else {
+      console.log('[MenuPage] Menu data fetched successfully - Categories:', menuData?.categories.length || 0)
+    }
+
+    // Always render the client component, even with empty data or errors
+    // The client component will handle the error display
+    return (
+      <MenuClient 
+        initialMenuData={menuData || { categories: [], allItems: [] }}
+        error={error}
+        businessSettings={businessSettings}
+      />
+    )
+  } catch (error: any) {
+    // Catch any unexpected errors during rendering
+    console.error('[MenuPage] Fatal error in MenuPage:', error)
+    return (
+      <MenuClient 
+        initialMenuData={{ categories: [], allItems: [] }}
+        error={error.message || 'Failed to load menu page'}
+        businessSettings={null}
+      />
+    )
+  }
 }
