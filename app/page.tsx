@@ -22,17 +22,49 @@ export default function Home() {
   });
 
   const trustPoints = [
-    "Family-owned",
-    "100% Halal",
-    "Serving the Netherlands, Belgium, Germany, and beyond",
-    "Official caterer for the Embassy of Tanzania in the Netherlands",
+    "Family-owned since 2010",
+    "100% Halal Certified",
+    "250+ events catered since 2023",
+    "Official caterer for Embassy of Tanzania",
   ];
 
   const howItWorks = [
-    { step: "1", title: "Inquiry", description: "Tell us about your event and requirements" },
-    { step: "2", title: "Proposal", description: "Receive a custom menu and quote" },
-    { step: "3", title: "Confirm", description: "Finalize details and secure your date" },
-    { step: "4", title: "Catering Day", description: "We deliver an unforgettable experience" },
+    { 
+      step: "1", 
+      title: "Inquiry", 
+      bullets: [
+        "Submit our quote form (2 minutes) or contact us directly",
+        "Share your date, location, guest count, and budget",
+        "Tell us any dietary needs or preferred dishes"
+      ]
+    },
+    { 
+      step: "2", 
+      title: "Proposal", 
+      bullets: [
+        "Receive a tailored menu + quote within 24 to 48 hours",
+        "Clear options based on your event style and budget",
+        "Optional consultation call (if helpful)"
+      ]
+    },
+    { 
+      step: "3", 
+      title: "Confirm", 
+      bullets: [
+        "Secure your date with a 50% deposit (or full payment if within 7 days)",
+        "Final guest count confirmed 5 days before",
+        "We finalize logistics with you/your venue"
+      ]
+    },
+    { 
+      step: "4", 
+      title: "Event Day", 
+      bullets: [
+        "We arrive on time with fresh, beautifully presented food",
+        "Seamless setup and service (as agreed)",
+        "You enjoy the moment and we handle the rest"
+      ]
+    },
   ];
 
   return (
@@ -81,16 +113,20 @@ export default function Home() {
       </section>
 
       {/* Trust Bar */}
-      <section className="py-6 bg-[#F1E7DA] border-y border-[#E6D9C8]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-wrap justify-center gap-4">
+      <section className="py-8 bg-[#F1E7DA] border-y border-[#E6D9C8]">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="grid grid-cols-2 gap-4">
             {trustPoints.map((point, index) => (
-              <span key={index} className="trust-chip">
-                <svg className="w-4 h-4 text-[#C9653B]" fill="currentColor" viewBox="0 0 20 20">
+              <div 
+                key={index} 
+                className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-4 flex items-center gap-3 h-full"
+                style={{ borderRadius: '14px' }}
+              >
+                <svg className="w-5 h-5 text-[#C9653B] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
-                {point}
-              </span>
+                <span className="text-[#1F1F1F] font-medium text-sm md:text-base">{point}</span>
+              </div>
             ))}
           </div>
         </div>
@@ -273,8 +309,15 @@ export default function Home() {
                 <div className="w-16 h-16 bg-[#C9653B] rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-white">{item.step}</span>
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-white mb-3">{item.title}</h3>
-                <p className="text-white/70">{item.description}</p>
+                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-white mb-4">{item.title}</h3>
+                <ul className="text-white/70 text-left space-y-2 max-w-xs mx-auto">
+                  {item.bullets.map((bullet, bulletIndex) => (
+                    <li key={bulletIndex} className="flex items-start">
+                      <span className="text-[#C9653B] mr-2 mt-1">•</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

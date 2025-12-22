@@ -1,7 +1,8 @@
 interface Step {
   number: string;
   title: string;
-  description: string;
+  description?: string;
+  bullets?: string[];
 }
 
 interface HowItWorksProps {
@@ -55,8 +56,19 @@ export default function HowItWorks({
               <div className="w-16 h-16 bg-[#C9653B] rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-white">{step.number}</span>
               </div>
-              <h3 className={`text-xl font-semibold mb-3 ${s.stepTitle}`}>{step.title}</h3>
-              <p className={s.stepDesc}>{step.description}</p>
+              <h3 className={`text-xl font-semibold mb-4 ${s.stepTitle}`}>{step.title}</h3>
+              {step.bullets ? (
+                <ul className={`${s.stepDesc} text-left space-y-2 max-w-xs mx-auto`}>
+                  {step.bullets.map((bullet, bulletIndex) => (
+                    <li key={bulletIndex} className="flex items-start">
+                      <span className="text-[#C9653B] mr-2 mt-1">•</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className={s.stepDesc}>{step.description}</p>
+              )}
             </div>
           ))}
         </div>

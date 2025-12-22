@@ -34,6 +34,45 @@ const testimonials = [
   { quote: "Easy ordering process and the pick-up was quick. The food was amazing and our guests loved it!", author: "Michael B.", location: "Rotterdam", eventType: "Pick-Up", rating: 5 },
 ];
 
+const howItWorksSteps = [
+  { 
+    number: "1", 
+    title: "Inquiry", 
+    bullets: [
+      "Submit our quote form (2 minutes) or contact us directly",
+      "Share your date, location, guest count, and budget",
+      "Tell us any dietary needs or preferred dishes"
+    ]
+  },
+  { 
+    number: "2", 
+    title: "Proposal", 
+    bullets: [
+      "Receive a tailored menu + quote within 24 to 48 hours",
+      "Clear options based on your event style and budget",
+      "Optional consultation call (if helpful)"
+    ]
+  },
+  { 
+    number: "3", 
+    title: "Confirm", 
+    bullets: [
+      "Secure your date with a 50% deposit (or full payment if within 7 days)",
+      "Final guest count confirmed 5 days before",
+      "We finalize logistics with you/your venue"
+    ]
+  },
+  { 
+    number: "4", 
+    title: "Event Day", 
+    bullets: [
+      "We arrive on time with fresh, beautifully presented food",
+      "Seamless setup and service (as agreed)",
+      "You enjoy the moment and we handle the rest"
+    ]
+  },
+];
+
 // Get only food images for the carousel, starting with delivery.jpg
 const foodImages = [
   "/delivery.jpg",
@@ -52,6 +91,7 @@ export default function PickUpDeliveryPage() {
       galleryImages={[]}
       faqs={faqs}
       testimonials={testimonials}
+      howItWorksSteps={howItWorksSteps}
       customWhatsIncluded={<SplitWhatsIncluded items={includedItems} images={foodImages} />}
     />
   );

@@ -37,7 +37,7 @@ interface ServicePageTemplateProps {
   galleryImages: GalleryImage[];
   faqs: FAQ[];
   testimonials: Testimonial[];
-  howItWorksSteps?: { number: string; title: string; description: string }[];
+  howItWorksSteps?: { number: string; title: string; description?: string; bullets?: string[] }[];
   customWhatsIncluded?: React.ReactNode;
   pricing?: string;
 }
