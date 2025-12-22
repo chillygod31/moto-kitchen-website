@@ -117,19 +117,26 @@ export async function POST(request: Request) {
     
     const daysFromNow = daysUntilEvent;
 
-    // Format date as "Jan 23" or "Dec 22" for subject line
+    // Format date as "14 Jan 2026" for title and subject line
     const shortDate = eventDate && eventDate !== "Flexible"
-      ? new Date(eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      ? new Date(eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
       : "Flexible";
 
-    // Check if date is urgent (within 14 days / 2 weeks)
+    // Check if date is urgent (within 7 days)
     const isUrgent = eventDate && eventDate !== "Flexible" 
-      ? (new Date(eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 14
+      ? daysUntilEvent !== null && daysUntilEvent <= 7
       : false;
 
     // Determine priority level and response time
-    const priorityLevel = isUrgent ? "URGENT" : "NORMAL";
-    const responseTime = isUrgent ? "Within 24 hours" : "Within 48 hours";
+    let priorityLevel = "NORMAL";
+    let responseTime = "Within 48 hours";
+    if (daysUntilEvent !== null && daysUntilEvent <= 3) {
+      priorityLevel = "HIGH";
+      responseTime = "Within 12 hours";
+    } else if (daysUntilEvent !== null && daysUntilEvent <= 7) {
+      priorityLevel = "MEDIUM";
+      responseTime = "Within 24 hours";
+    }
 
     const dietaryList = dietary?.length > 0 
       ? dietary.join(", ") 
@@ -154,6 +161,20 @@ export async function POST(request: Request) {
 
     // Format budget range for subject line (with en dash)
     const formatBudgetForSubject = (budgetRange: string | null) => {
+      if (!budgetRange || budgetRange === "not-sure") return "Budget TBD";
+      const budgetMap: Record<string, string> = {
+        "100-250": "€100–250",
+        "250-500": "€250–500",
+        "500-1000": "€500–1,000",
+        "1000-2500": "€1,000–2,500",
+        "2500-5000": "€2,500–5,000",
+        "5000+": "€5,000+",
+      };
+      return budgetMap[budgetRange] || budgetRange.replace(/-/g, "–");
+    };
+
+    // Format budget for title (simpler format without second €)
+    const formatBudgetForTitle = (budgetRange: string | null) => {
       if (!budgetRange || budgetRange === "not-sure") return "Budget TBD";
       const budgetMap: Record<string, string> = {
         "100-250": "€100–250",
@@ -219,128 +240,307 @@ export async function POST(request: Request) {
       <head>
         <meta charset="utf-8">
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-          .header { background: #3A2A24; color: white; padding: 20px; text-align: center; }
-          .content { padding: 20px; background: #FAF6EF; }
-          .section { background: white; padding: 15px; margin: 15px 0; border-left: 4px solid #C9653B; border-radius: 4px; }
-          .urgent { background: #fff3cd; border-left-color: #ffc107; }
-          .button { display: inline-block; padding: 12px 24px; background: #C9653B; color: white; text-decoration: none; border-radius: 6px; margin: 10px 0; }
-          .footer { padding: 20px; text-align: center; color: #666; font-size: 12px; background: #F1E7DA; }
-          .highlight { background: #F1E7DA; padding: 10px; border-radius: 4px; margin: 10px 0; }
-          h2 { color: #3A2A24; margin-top: 0; }
-          a { color: #C9653B; }
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #1F1F1F; 
+            margin: 0; 
+            padding: 0; 
+            background: #FAF6EF;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 0;
+          }
+          .header { 
+            background: #3A2A24; 
+            color: white; 
+            padding: 24px 32px; 
+            text-align: left; 
+          }
+          .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.3px;
+          }
+          .submitted {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 12px 0 0 0;
+          }
+          .content { 
+            padding: 32px; 
+            background: white; 
+          }
+          .section { 
+            margin: 0 0 28px 0;
+            padding: 0 0 24px 0;
+            border-bottom: 1px solid #E6D9C8;
+          }
+          .section:last-child {
+            border-bottom: none;
+          }
+          .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+          }
+          .section-icon {
+            width: 18px;
+            height: 18px;
+            color: #666;
+            flex-shrink: 0;
+          }
+          .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3A2A24;
+            margin: 0;
+            text-transform: none;
+            letter-spacing: 0;
+          }
+          .field {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+          }
+          .field:last-child {
+            margin-bottom: 0;
+          }
+          .field-label {
+            color: #666;
+            font-weight: 400;
+            display: inline-block;
+            min-width: 120px;
+          }
+          .field-value {
+            color: #1F1F1F;
+            font-weight: 500;
+          }
+          .button-container {
+            text-align: center; 
+            margin: 32px 0 24px 0;
+            padding-top: 24px;
+            border-top: 1px solid #E6D9C8;
+          }
+          .button { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            background: #C9653B; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0 8px 8px 0;
+          }
+          .button:hover {
+            background: #B8552B;
+          }
+          .footer { 
+            padding: 24px 32px; 
+            text-align: center; 
+            color: #666; 
+            font-size: 12px; 
+            background: #FAF6EF;
+            border-top: 1px solid #E6D9C8;
+          }
+          a { 
+            color: #C9653B; 
+            text-decoration: none;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+          .priority-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #E6D9C8;
+            color: #3A2A24;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 3px;
+            margin-left: 8px;
+          }
+          .priority-badge.urgent {
+            background: #ffc107;
+            color: #3A2A24;
+          }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1 style="margin: 0;">🍽️ New Quote Request</h1>
-          ${isUrgent && daysUntilEvent !== null ? `<p style="color: #ffc107; font-weight: bold; margin: 10px 0 0 0;">⚠️ URGENT: Event within ${daysUntilEvent} days</p>` : ''}
-        </div>
-        
-        <div class="content">
-          <div class="section ${isUrgent ? 'urgent' : ''}">
-            <h2>📅 EVENT DETAILS</h2>
-            <p><strong>Event Type:</strong> ${eventTypeLabel}</p>
-            <p><strong>Event Date:</strong> ${formattedDate}${daysFromNow !== null ? ` (${daysFromNow} days from now)` : ''}</p>
-            <p><strong>Guest Count:</strong> ${guestCount} people</p>
-            <p><strong>Location:</strong> ${location}</p>
-            <p><strong>Service Type:</strong> ${formatServiceType(serviceType)}</p>
+        <div class="container">
+          <div class="header">
+            <h1>New Quote Request • ${eventTypeLabel} • ${guestCount} pax • ${location} • ${shortDate} • ${formatBudgetForTitle(budget)} — ${name}${isUrgent && daysUntilEvent !== null ? `<span class="priority-badge urgent">URGENT — within ${daysUntilEvent} days</span>` : daysUntilEvent !== null ? `<span class="priority-badge">${priorityLevel}</span><span class="priority-badge">${daysUntilEvent} days away</span>` : ''}</h1>
+            <p class="submitted">Submitted: ${new Date().toLocaleString('en-NL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
           </div>
+          
+          <div class="content">
+            <div class="section">
+              <div class="section-header">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <h2 class="section-title">Event Details</h2>
+              </div>
+              <div class="field">
+                <span class="field-label">Event type:</span>
+                <span class="field-value">${eventTypeLabel}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Date:</span>
+                <span class="field-value">${shortDate}${daysUntilEvent !== null ? ` (${daysUntilEvent} days away)` : ''}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Guests:</span>
+                <span class="field-value">${guestCount}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">City:</span>
+                <span class="field-value">${location}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Service style:</span>
+                <span class="field-value">${formatServiceType(serviceType)}</span>
+              </div>
+            </div>
 
-          <div class="section">
-            <h2>💰 Budget (customer selected)</h2>
-            ${budget ? `<p><strong>Budget Range:</strong> ${formatBudgetRange(budget)}</p>` : '<p><strong>Budget Range:</strong> Not specified</p>'}
-            ${(() => {
-              const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
-              return perPerson ? `<p><strong>Per Person:</strong> €${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)</p>` : '';
-            })()}
-          </div>
+            <div class="section">
+              <div class="section-header">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <h2 class="section-title">Budget</h2>
+              </div>
+              <div class="field">
+                <span class="field-label">Budget range:</span>
+                <span class="field-value">${budget ? formatBudgetRange(budget) : 'Not specified'}</span>
+              </div>
+              ${(() => {
+                const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
+                return perPerson ? `
+                  <div class="field">
+                    <span class="field-label">Approx per person:</span>
+                    <span class="field-value">€${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)</span>
+                  </div>
+                ` : '';
+              })()}
+            </div>
 
-          <div class="section ${isUrgent ? 'urgent' : ''}">
-            <h2>⏰ URGENCY</h2>
-            <p><strong>Days Until Event:</strong> ${daysUntilEvent !== null ? `${daysUntilEvent} days` : 'Flexible'}</p>
-            <p><strong>Priority Level:</strong> ${priorityLevel}</p>
-            <p><strong>Recommended Response Time:</strong> ${responseTime}</p>
-          </div>
+            <div class="section">
+              <div class="section-header">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <h2 class="section-title">Contact</h2>
+              </div>
+              <div class="field">
+                <span class="field-label">Name:</span>
+                <span class="field-value">${name}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Email:</span>
+                <span class="field-value"><a href="mailto:${email}">${email}</a></span>
+              </div>
+              <div class="field">
+                <span class="field-label">Phone:</span>
+                <span class="field-value"><a href="tel:${phone}">${phone}</a></span>
+              </div>
+            </div>
 
-          <div class="section">
-            <h2>👤 Contact Information</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-            <p><strong>Phone:</strong> <a href="tel:${phone}">${phone}</a></p>
-          </div>
+            ${dietaryList !== 'None specified' ? `
+            <div class="section">
+              <div class="section-header">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h2 class="section-title">Dietary Requirements</h2>
+              </div>
+              <div class="field">
+                <span class="field-value">${dietaryList}</span>
+              </div>
+            </div>
+            ` : ''}
 
-          <div class="section">
-            <h2>🥗 Dietary Requirements</h2>
-            <p>${dietaryList}</p>
-          </div>
+            ${message ? `
+            <div class="section">
+              <div class="section-header">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <h2 class="section-title">Additional Message</h2>
+              </div>
+              <div class="field">
+                <span class="field-value">${message}</span>
+              </div>
+            </div>
+            ` : ''}
 
-          ${message ? `
-          <div class="section">
-            <h2>💬 Additional Message</h2>
-            <p>${message}</p>
-          </div>
-          ` : ''}
+            <div class="section">
+              <div class="section-header">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <h2 class="section-title">Lead Source</h2>
+              </div>
+              <div class="field">
+                <span class="field-value">${howFound || "Not specified"}</span>
+              </div>
+            </div>
 
-          <div class="section">
-            <h2>📊 Lead Source</h2>
-            <p>${howFound || "Not specified"}</p>
+            <div class="button-container">
+              <a href="mailto:${email}?subject=Re: Your Quote Request for ${eventTypeLabel}" class="button">
+                Reply
+              </a>
+            </div>
           </div>
-
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="mailto:${email}?subject=Re: Your Quote Request for ${eventTypeLabel}" class="button">
-              Reply to ${name}
-            </a>
+          
+          <div class="footer">
+            <p><strong>Quote Request ID:</strong> ${quoteRequest?.id || 'N/A'}</p>
           </div>
-        </div>
-        
-        <div class="footer">
-          <p><strong>Quote Request ID:</strong> ${quoteRequest?.id || 'N/A'}</p>
-          <p>Submitted: ${new Date().toLocaleString('en-NL')}</p>
         </div>
       </body>
       </html>
     `;
 
     const emailText = `
-NEW QUOTE REQUEST ${isUrgent ? '⚠️ URGENT' : ''}
-${'='.repeat(50)}
+NEW QUOTE REQUEST${isUrgent && daysUntilEvent !== null ? ` [URGENT — within ${daysUntilEvent} days]` : daysUntilEvent !== null ? ` [${priorityLevel}] [${daysUntilEvent} days away]` : ''}
+${'='.repeat(60)}
 
-📅 EVENT DETAILS
-Event Type: ${eventTypeLabel}
-Event Date: ${formattedDate}${daysFromNow !== null ? ` (${daysFromNow} days from now)` : ''}
-Guest Count: ${guestCount} people
-Location: ${location}
-Service Type: ${formatServiceType(serviceType)}
+${eventTypeLabel} • ${guestCount} pax • ${location} • ${shortDate} • ${formatBudgetForTitle(budget)} — ${name}
+Submitted: ${new Date().toLocaleString('en-NL', { dateStyle: 'medium', timeStyle: 'short' })}
 
-💰 Budget (customer selected)
-${budget ? `Budget Range: ${formatBudgetRange(budget)}` : 'Budget Range: Not specified'}
+${'='.repeat(60)}
+
+EVENT DETAILS
+Event type: ${eventTypeLabel}
+Date: ${shortDate}${daysUntilEvent !== null ? ` (${daysUntilEvent} days away)` : ''}
+Guests: ${guestCount}
+City: ${location}
+Service style: ${formatServiceType(serviceType)}
+
+BUDGET
+Budget range: ${budget ? formatBudgetRange(budget) : 'Not specified'}
 ${(() => {
   const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
-  return perPerson ? `Per Person: €${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)` : '';
+  return perPerson ? `Approx per person: €${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)\n` : '';
 })()}
 
-⏰ URGENCY
-Days Until Event: ${daysUntilEvent !== null ? `${daysUntilEvent} days` : 'Flexible'}
-Priority Level: ${priorityLevel}
-Recommended Response Time: ${responseTime}
+CONTACT
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
 
-CONTACT INFORMATION
-- Name: ${name}
-- Email: ${email}
-- Phone: ${phone}
-
-DIETARY REQUIREMENTS
-${dietaryList}
-
-${message ? `MESSAGE\n${message}\n` : ''}
-
+${dietaryList !== 'None specified' ? `DIETARY REQUIREMENTS\n${dietaryList}\n\n` : ''}
+${message ? `ADDITIONAL MESSAGE\n${message}\n\n` : ''}
 LEAD SOURCE
 ${howFound || "Not specified"}
 
-${'='.repeat(50)}
+${'='.repeat(60)}
 Quote Request ID: ${quoteRequest?.id || 'N/A'}
-Submitted: ${new Date().toLocaleString('en-NL')}
     `;
 
     // Build subject line
@@ -349,11 +549,7 @@ Submitted: ${new Date().toLocaleString('en-NL')}
     const locationDisplay = location; // Use location as-is (could extract city if needed)
     
     let subject: string;
-    if (isUrgent && daysUntilEvent !== null) {
-      subject = `[URGENT ≤${daysUntilEvent}d] ${eventTypeShort} • ${guestCount} pax • ${locationDisplay} • ${shortDate} • ${budgetDisplay} — ${name}`;
-    } else {
-      subject = `${eventTypeShort} • ${guestCount} pax • ${locationDisplay} • ${shortDate} • ${budgetDisplay} — ${name}`;
-    }
+    subject = `New Quote Request • ${eventTypeShort} • ${guestCount} pax • ${locationDisplay} • ${shortDate} • ${budgetDisplay} — ${name}`;
 
     // Send admin notification email via Resend
     const { error: emailError } = await resend.emails.send({

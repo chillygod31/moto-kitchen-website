@@ -92,12 +92,11 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="aspect-square bg-[#FAF6EF] rounded-lg border border-[#E6D9C8] overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center text-[#4B4B4B]">
-                  <div className="text-center">
-                  <p className="text-6xl mb-4">🌍</p>
-                  <p className="text-sm">Heritage Photo</p>
-                </div>
-              </div>
+              <img 
+                src="/corporate-4.jpg" 
+                alt="Our Culinary Heritage" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
