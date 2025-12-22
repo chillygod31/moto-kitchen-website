@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getCart, clearCart, getCartTotal, CartItem } from '@/lib/cart'
+import { getCart, clearCart, getCartTotal, CartItem, saveCart } from '@/lib/cart'
 import { formatCurrency, validateEmail, validatePhone, checkMinimumOrder, getCityFromPostcode } from '@/lib/utils'
 import { trackBeginCheckout } from '@/lib/analytics'
 import ErrorMessage from '../components/ErrorMessage'
@@ -57,6 +57,7 @@ export default function CheckoutPage() {
   const [isOffline, setIsOffline] = useState(false)
 
   useEffect(() => {
+    validateCartItems()
     loadData()
     
     // Restore form data from backup if available
@@ -144,6 +145,48 @@ export default function CheckoutPage() {
     window.addEventListener('focusin', handleFocus)
     return () => window.removeEventListener('focusin', handleFocus)
   }, [])
+
+  const validateCartItems = async () => {
+    try {
+      const currentCart = getCart()
+      if (currentCart.length === 0) return
+
+      // Fetch all menu items to validate cart items
+      const response = await fetch('/api/menu')
+      if (!response.ok) return
+
+      const menuData = await response.json()
+      const validItemIds = new Set(
+        menuData.categories?.flatMap((cat: any) => cat.items?.map((item: any) => item.id) || []) || []
+      )
+
+      // Filter out invalid items
+      const validCart = currentCart.filter((item) => validItemIds.has(item.id))
+      const removedItems = currentCart.filter((item) => !validItemIds.has(item.id))
+
+      if (removedItems.length > 0) {
+        console.warn('Removed invalid cart items:', removedItems)
+        // Update cart with only valid items
+        if (validCart.length === 0) {
+          clearCart()
+          setCart([])
+        } else {
+          // Save valid cart
+          saveCart(validCart)
+          setCart(validCart)
+        }
+        
+        // Show error about removed items
+        setError(`Some items in your cart are no longer available and have been removed. Please add items again.`)
+      } else {
+        setCart(validCart)
+      }
+    } catch (error) {
+      console.error('Error validating cart:', error)
+      // If validation fails, keep the cart as is
+      setCart(getCart())
+    }
+  }
 
   const loadData = async () => {
     const cartItems = getCart()
@@ -376,7 +419,11 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Server error' }))
-        throw new Error(errorData.message || 'Failed to create order')
+        console.error('Order creation error - Full details:', JSON.stringify(errorData, null, 2))
+        console.error('Error message:', errorData.message)
+        console.error('Error details:', errorData.details)
+        console.error('Error code:', errorData.code)
+        throw new Error(errorData.message || errorData.error || 'Failed to create order')
       }
 
       const order = await response.json()
@@ -436,13 +483,29 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-[#FAF6EF]">
       <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
-            <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
-            <div className="flex flex-col -ml-2">
-              <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
-              <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>
-            </div>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
+              <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
+              <div className="flex flex-col -ml-2">
+                <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
+                <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>
+              </div>
+            </Link>
+            <Link
+              href="/order/cart"
+              className="relative px-6 py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition-all font-semibold flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span className="hidden sm:inline">Cart</span>
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
       </header>
 

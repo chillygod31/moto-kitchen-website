@@ -22,7 +22,6 @@ export default function Header() {
   ];
 
   const mainNavLinks = [
-    { href: "/order", label: "Order Online" },
     { href: "/menu", label: "Menu" },
     { href: "/gallery", label: "Gallery" },
     { href: "/about", label: "About" },

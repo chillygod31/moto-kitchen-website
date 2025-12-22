@@ -152,8 +152,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate menu items exist before creating order items
+    const menuItemIds = cartItems.map((item: any) => item.id)
+    const { data: existingMenuItems, error: menuCheckError } = await supabase
+      .from('menu_items')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .in('id', menuItemIds)
+
+    if (menuCheckError) {
+      console.error('Error checking menu items:', menuCheckError)
+      await supabase.from('orders').delete().eq('id', order.id)
+      return NextResponse.json(
+        { message: 'Failed to validate menu items', error: menuCheckError.message },
+        { status: 500 }
+      )
+    }
+
+    if (!existingMenuItems || existingMenuItems.length !== menuItemIds.length) {
+      const existingIds = existingMenuItems?.map((m: any) => m.id) || []
+      const missingIds = menuItemIds.filter((id: string) => !existingIds.includes(id))
+      console.error('Some menu items not found:', missingIds)
+      await supabase.from('orders').delete().eq('id', order.id)
+      return NextResponse.json(
+        { message: `Menu items not found: ${missingIds.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
     // Create order items
     const orderItemsData = cartItems.map((item: any) => ({
+      tenant_id: tenantId,
       order_id: order.id,
       menu_item_id: item.id,
       name_snapshot: item.name,
@@ -163,16 +192,26 @@ export async function POST(request: NextRequest) {
       notes: item.notes || null,
     }))
 
-    const { error: itemsError } = await supabase
+    const { data: insertedItems, error: itemsError } = await supabase
       .from('order_items')
       .insert(orderItemsData)
+      .select()
 
     if (itemsError) {
       console.error('Error creating order items:', itemsError)
+      console.error('Order items data attempted:', JSON.stringify(orderItemsData, null, 2))
+      console.error('Tenant ID:', tenantId)
+      console.error('Order ID:', order.id)
+      console.error('Full error object:', JSON.stringify(itemsError, null, 2))
       // Rollback order creation
       await supabase.from('orders').delete().eq('id', order.id)
       return NextResponse.json(
-        { message: 'Failed to create order items', error: itemsError.message },
+        { 
+          message: 'Failed to create order items', 
+          error: itemsError.message, 
+          details: itemsError.details || itemsError.hint || 'No additional details',
+          code: itemsError.code
+        },
         { status: 500 }
       )
     }
