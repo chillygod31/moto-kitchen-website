@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 export default function Footer() {
   const pathname = usePathname();
   
-  // Hide footer on all ordering pages
-  const hideFooter = pathname && pathname.startsWith("/order");
+  // Hide footer on all ordering pages and admin pages
+  const hideFooter = pathname && (pathname.startsWith("/order") || pathname.startsWith("/admin"));
   
   if (hideFooter) {
     return null;

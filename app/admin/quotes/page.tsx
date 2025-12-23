@@ -43,14 +43,22 @@ export default function AdminQuotesPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = sessionStorage.getItem("admin_authenticated");
-    if (!isAuthenticated) {
-      router.push("/admin/login");
-      return;
-    }
+    // Check authentication via API (server-side session)
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/admin/session");
+        if (!response.ok) {
+          router.push("/admin/login");
+          return;
+        }
+        fetchQuotes();
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        router.push("/admin/login");
+      }
+    };
 
-    fetchQuotes();
+    checkAuth();
   }, [statusFilter, router]);
 
   const fetchQuotes = async () => {
@@ -200,38 +208,29 @@ export default function AdminQuotesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF6EF] pt-24 pb-12">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-[#3A2A24] mb-2">Quote Requests</h1>
-            <p className="text-[#4B4B4B]">Manage and track all quote requests</p>
-          </div>
-          <div className="flex gap-4">
-            <Link href="/admin/orders" className="btn-secondary px-6">
-              View Orders
-            </Link>
-            <button
-              onClick={exportToCSV}
-              className="btn-secondary px-6"
-            >
-              Export CSV
-            </button>
-            <button
-              onClick={() => {
-                sessionStorage.removeItem("admin_authenticated");
-                router.push("/admin/login");
-              }}
-              className="btn-secondary px-6"
-            >
-              Logout
-            </button>
-          </div>
+    <div>
+      {/* Page Header */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--brand-secondary, #3A2A24)' }}>
+            Quote Requests
+          </h1>
+          <p style={{ color: 'var(--brand-muted, #4B4B4B)' }}>
+            Manage and track all quote requests
+          </p>
         </div>
+        <div className="flex gap-4">
+          <button
+            onClick={exportToCSV}
+            className="btn-secondary px-6"
+          >
+            Export CSV
+          </button>
+        </div>
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg p-6 mb-6 border border-[#E6D9C8]">
+      {/* Filters */}
+      <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
@@ -282,8 +281,8 @@ export default function AdminQuotesPage() {
           </div>
         </div>
 
-        {/* Quotes Table */}
-        <div className="bg-white rounded-lg border border-[#E6D9C8] overflow-hidden">
+      {/* Quotes Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#F1E7DA]">
@@ -380,8 +379,8 @@ export default function AdminQuotesPage() {
           </div>
         </div>
 
-        {/* Quote Details Modal */}
-        {selectedQuote && (
+      {/* Quote Details Modal */}
+      {selectedQuote && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50" onClick={() => setSelectedQuote(null)}>
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="p-6 border-b border-[#E6D9C8] flex justify-between items-center">
@@ -454,7 +453,6 @@ export default function AdminQuotesPage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

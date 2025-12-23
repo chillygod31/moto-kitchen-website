@@ -12,6 +12,10 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const pathname = request.nextUrl.pathname
 
+  // Add pathname to headers for server components to access
+  const response = NextResponse.next()
+  response.headers.set('x-pathname', pathname)
+
   // Skip middleware for API routes, static files, and Next.js internals
   if (
     pathname.startsWith('/api') ||
@@ -20,7 +24,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/favicon.ico') ||
     pathname.includes('.')
   ) {
-    return NextResponse.next()
+    return response
   }
 
   // If request is to order.motokitchen.nl or orders.motokitchen.nl
@@ -48,7 +52,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {
