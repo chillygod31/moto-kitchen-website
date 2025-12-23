@@ -50,7 +50,7 @@ const faqs = [
       },
       {
         question: "Do you charge delivery or travel fees?",
-        answer: "For events within 50km of Rotterdam, delivery and travel are included in our pricing. For events beyond 50km, we charge a travel fee based on distance. We'll provide a detailed quote that includes all travel costs when you book. Contact us with your event location for an accurate estimate.",
+        answer: "We charge a travel fee based on distance from our location. We'll provide a detailed quote that includes all travel costs when you book. Contact us with your event location for an accurate estimate.",
       },
       {
         question: "What's included in your per-person pricing?",
