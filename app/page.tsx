@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getRandomGalleryImages } from "../lib/gallery-data";
 import { findDishByName } from "../lib/menu-data";
 import { formatPricing } from "../lib/pricing-data";
@@ -22,10 +23,50 @@ export default function Home() {
   });
 
   const trustPoints = [
-    "Family-owned since 2010",
-    "100% Halal Certified",
-    "250+ events catered since 2023",
-    "Official caterer for Embassy of Tanzania",
+    { 
+      top: "Family-owned", 
+      topMobile: "Family-owned",
+      bottom: "Since 2010",
+      bottomMobile: "Since 2010",
+      icon: (
+        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+      )
+    },
+    { 
+      top: "100% Halal", 
+      topMobile: "100% Halal",
+      bottom: "Certified",
+      bottomMobile: "Certified",
+      icon: (
+        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
+    },
+    { 
+      top: "250+ events", 
+      topMobile: "250+ events",
+      bottom: "Catered since 2023",
+      bottomMobile: "Since 2023",
+      icon: (
+        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
+    },
+    { 
+      top: "Embassy of Tanzania (NL)", 
+      topMobile: "Embassy of Tanzania",
+      bottom: "Official caterer",
+      bottomMobile: "Official caterer",
+      icon: (
+        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+      )
+    },
   ];
 
   const howItWorks = [
@@ -113,19 +154,25 @@ export default function Home() {
       </section>
 
       {/* Trust Bar */}
-      <section className="py-8 bg-[#F1E7DA] border-y border-[#E6D9C8]">
+      <section className="mt-4 py-5 bg-[#F1E7DA] border-y border-[#E6D9C8]">
         <div className="max-w-4xl mx-auto px-6">
           <div className="grid grid-cols-2 gap-4">
             {trustPoints.map((point, index) => (
               <div 
                 key={index} 
-                className="bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-4 flex items-center gap-3 h-full"
-                style={{ borderRadius: '14px' }}
+                className="bg-white/80 rounded-xl border border-black/10 shadow-sm px-4 py-3 h-full"
               >
-                <svg className="w-5 h-5 text-[#C9653B] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <span className="text-[#1F1F1F] font-medium text-sm md:text-base">{point}</span>
+                <div className="flex items-center gap-2 mb-1">
+                  {point.icon}
+                  <div className="text-[13px] font-medium tracking-tight text-stone-900">
+                    <span className="md:hidden">{point.topMobile}</span>
+                    <span className="hidden md:inline">{point.top}</span>
+                  </div>
+                </div>
+                <div className="text-[11px] text-stone-600 ml-[26px]">
+                  <span className="md:hidden">{point.bottomMobile}</span>
+                  <span className="hidden md:inline">{point.bottom}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -155,11 +202,13 @@ export default function Home() {
               </Link>
             </div>
             <div className="relative">
-              <div className="aspect-[3/2] bg-[#F1E7DA] rounded-lg overflow-hidden border border-[#E6D9C8]">
-                <img 
-                  src="/team1.jpg" 
-                  alt="Moto Kitchen team"
-                  className="w-full h-full object-cover"
+              <div className="relative aspect-[3/2] bg-[#F1E7DA] rounded-lg overflow-hidden border border-[#E6D9C8]">
+                <Image
+                  src="/team1.jpg"
+                  alt="Moto Kitchen team of eight women"
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
                   style={{ objectPosition: '70% center' }}
                 />
               </div>
@@ -213,11 +262,13 @@ export default function Home() {
                 href={service.href}
                 className="card hover:shadow-md transition-shadow group"
               >
-                <div className="mb-6 overflow-hidden rounded-md">
-                  <img 
-                    src={service.image} 
+                <div className="relative aspect-[4/3] mb-6 overflow-hidden rounded-md">
+                  <Image
+                    src={service.image}
                     alt={service.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors text-center">
@@ -258,12 +309,14 @@ export default function Home() {
               const { swahili, english } = parseDishName(dish.name);
               return (
               <div key={index} className="card">
-                <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
+                <div className="relative aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
                   {dish.image ? (
-                    <img 
-                      src={`/${dish.image}`} 
-                      alt={swahili || english} 
-                      className="w-full h-full object-cover"
+                    <Image
+                      src={`/${dish.image}`}
+                      alt={swahili || english}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
                     />
                   ) : (
                     <span className="text-4xl">🍽️</span>
@@ -336,11 +389,13 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {getRandomGalleryImages(6).map((item) => (
-              <div key={item.id} className="aspect-square bg-[#F1E7DA] rounded-lg border border-[#E6D9C8] overflow-hidden">
-                <img 
-                  src={item.src} 
-                  alt={item.alt} 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              <div key={item.id} className="relative aspect-square bg-[#F1E7DA] rounded-lg border border-[#E6D9C8] overflow-hidden">
+                <Image
+                  src={item.src}
+                  alt={item.alt}
+                  fill
+                  sizes="(min-width: 768px) 33vw, 50vw"
+                  className="object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>
             ))}

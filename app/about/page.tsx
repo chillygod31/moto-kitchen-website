@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata = {
   title: "About Us | Moto Kitchen",
@@ -91,11 +92,13 @@ export default function AboutPage() {
                 The result is a harmonious blend of flavors, spiced pilau, coconut curries, and dishes like nyama choma, that tell the story of a nation&apos;s rich history and diversity.
               </p>
             </div>
-            <div className="aspect-square bg-[#FAF6EF] rounded-lg border border-[#E6D9C8] overflow-hidden">
-              <img 
-                src="/corporate-4.jpg" 
-                alt="Our Culinary Heritage" 
-                className="w-full h-full object-cover"
+            <div className="relative aspect-square bg-[#FAF6EF] rounded-lg border border-[#E6D9C8] overflow-hidden">
+              <Image
+                src="/corporate-4.jpg"
+                alt="Our Culinary Heritage"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
               />
             </div>
           </div>

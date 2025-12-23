@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -33,7 +34,14 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#3A2A24]/95 backdrop-blur-sm h-[90px]">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center h-full py-2 gap-0">
-          <img src="/logo1.png" alt="Moto Kitchen" className="h-16 md:h-20 max-h-full object-contain" />
+          <Image
+            src="/logo1.png"
+            alt="Moto Kitchen"
+            width={80}
+            height={80}
+            className="h-16 md:h-20 max-h-full object-contain"
+            priority
+          />
           <div className="flex flex-col -ml-2">
             <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
             <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>

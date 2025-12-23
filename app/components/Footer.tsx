@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {
@@ -20,7 +21,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <img src="/logo1.png" alt="Moto Kitchen" className="h-16 md:h-20 object-contain" />
+              <Image
+                src="/logo1.png"
+                alt="Moto Kitchen"
+                width={80}
+                height={80}
+                className="h-16 md:h-20 object-contain"
+              />
               <div className="flex flex-col -ml-2">
                 <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
                 <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>

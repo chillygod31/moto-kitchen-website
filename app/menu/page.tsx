@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import CTASection from "../components/CTASection";
 import { dishes } from "../../lib/menu-data";
 import { parseDishName } from "../../lib/utils";
@@ -72,9 +73,15 @@ export default function MenuPage() {
               const { swahili, english } = parseDishName(dish.name);
               return (
               <div key={dish.id} className="card">
-                <div className="aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
+                <div className="relative aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
                   {dish.image ? (
-                    <img src={`/${dish.image}`} alt={swahili || english} className="w-full h-full object-cover" />
+                    <Image
+                      src={`/${dish.image}`}
+                      alt={swahili || english}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
                   ) : (
                     <span className="text-4xl">🍽️</span>
                   )}
