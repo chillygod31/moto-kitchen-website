@@ -9,7 +9,10 @@ import { getTenantId } from '@/lib/tenant'
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen') // MVP: default to moto-kitchen
+    
+    // For customer-facing menu, use auto-detection
+    // Admin endpoints should use getAdminTenantId
+    const tenantId = await getTenantId()
 
     // Get menu categories
     const { data: categories, error: categoriesError } = await supabase

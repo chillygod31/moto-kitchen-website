@@ -37,8 +37,8 @@ export default function Home() {
     { 
       top: "100% Halal", 
       topMobile: "100% Halal",
-      bottom: "Certified",
-      bottomMobile: "Certified",
+      bottom: "",
+      bottomMobile: "",
       icon: (
         <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -111,7 +111,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-[#3A2A24] overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center bg-[#2B1E1A] overflow-hidden">
         {/* Background Video/Image */}
         <div className="absolute inset-0">
           <video
@@ -154,7 +154,7 @@ export default function Home() {
       </section>
 
       {/* Trust Bar */}
-      <section className="mt-4 py-5 bg-[#F1E7DA] border-y border-[#E6D9C8]">
+      <section className="mt-4 py-5 bg-white border-y border-[#E9E2D7]">
         <div className="max-w-4xl mx-auto px-6">
           <div className="grid grid-cols-2 gap-4">
             {trustPoints.map((point, index) => (
@@ -180,21 +180,34 @@ export default function Home() {
       </section>
 
       {/* About Preview Section */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Story</p>
-              <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl mb-6 text-[#1F1F1F]">
+              <p className="text-[#C86A3A] text-sm uppercase tracking-widest mb-4">Our Story</p>
+              <h2 
+                className="text-[32px] md:text-[36px] lg:text-[40px] mb-6 text-[#1E1B18]"
+                style={{ 
+                  fontFamily: 'var(--font-inter), sans-serif', 
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em'
+                }}
+              >
                 A Taste of Home, Far From Home
               </h2>
-              <p className="text-[#4B4B4B] text-lg mb-6 leading-relaxed">
+              <p 
+                className="text-[#6B5B55] text-lg mb-6"
+                style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.75', fontSize: '1.125rem' }}
+              >
                 Moto Kitchen began in a home kitchen, with a grandmother, a mother, and an aunt cooking for the people around them. That was about 12 to 13 years ago. Over time, people started asking if we could cook for them, first for birthdays and small celebrations, then for bigger moments where the food needed to feel like home.
               </p>
-              <p className="text-[#4B4B4B] text-lg mb-8 leading-relaxed">
+              <p 
+                className="text-[#6B5B55] text-lg mb-8"
+                style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.75', fontSize: '1.125rem' }}
+              >
                 In 2023 we officially started Moto Kitchen as a business. Today, we are a team of eight women, and we run Moto Kitchen like family. Moto means fire in Swahili. For us, it is the fire in our kitchen and the passion in our veins, the kind of fire that turns a meal into a memory.
               </p>
-              <Link href="/about" className="text-[#C9653B] font-semibold hover:underline inline-flex items-center gap-2">
+              <Link href="/about" className="text-[#C86A3A] font-semibold hover:underline inline-flex items-center gap-2">
                 Read Our Full Story
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -202,7 +215,7 @@ export default function Home() {
               </Link>
             </div>
             <div className="relative">
-              <div className="relative aspect-[3/2] bg-[#F1E7DA] rounded-lg overflow-hidden border border-[#E6D9C8]">
+              <div className="relative aspect-[3/2] bg-[#FBF8F3] rounded-lg overflow-hidden border border-[#E9E2D7]">
                 <Image
                   src="/team1.jpg"
                   alt="Moto Kitchen team of eight women"
@@ -218,11 +231,18 @@ export default function Home() {
       </section>
 
       {/* Services Preview Section */}
-      <section className="section-padding bg-[#F1E7DA]">
+      <section className="section-padding bg-[#FBF8F3]">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">What We Offer</p>
-            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
+            <h2 
+              className="text-[32px] md:text-[36px] lg:text-[40px] text-[#1E1B18]"
+              style={{ 
+                fontFamily: 'var(--font-inter), sans-serif', 
+                fontWeight: 600,
+                letterSpacing: '-0.01em'
+              }}
+            >
               Our Services
             </h2>
           </div>
@@ -271,10 +291,20 @@ export default function Home() {
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-[#1F1F1F] mb-4 group-hover:text-[#C9653B] transition-colors text-center">
+                <h3 
+                  className="text-[16px] md:text-[18px] lg:text-[20px] text-[#1E1B18] mb-4 group-hover:text-[#C86A3A] transition-colors text-center"
+                  style={{ 
+                    fontFamily: 'var(--font-inter), sans-serif', 
+                    fontWeight: 600,
+                    letterSpacing: '-0.01em'
+                  }}
+                >
                   {service.title}
                 </h3>
-                <p className="text-[#4B4B4B] text-center mb-4 italic">
+                <p 
+                  className="text-[#6B5B55] text-center mb-4"
+                  style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7' }}
+                >
                   {service.description}
                 </p>
                 {service.pricing && (
@@ -295,11 +325,18 @@ export default function Home() {
       </section>
 
       {/* Signature Dishes Section */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Menu</p>
-            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
+            <h2 
+              className="text-[32px] md:text-[36px] lg:text-[40px] text-[#1E1B18]"
+              style={{ 
+                fontFamily: 'var(--font-inter), sans-serif', 
+                fontWeight: 600,
+                letterSpacing: '-0.01em'
+              }}
+            >
               Signature Dishes
             </h2>
           </div>
@@ -309,7 +346,7 @@ export default function Home() {
               const { swahili, english } = parseDishName(dish.name);
               return (
               <div key={index} className="card">
-                <div className="relative aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
+                <div className="relative aspect-[4/3] bg-[#FBF8F3] rounded-lg mb-4 overflow-hidden border border-[#E9E2D7] flex items-center justify-center">
                   {dish.image ? (
                     <Image
                       src={`/${dish.image}`}
@@ -347,11 +384,18 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="section-padding bg-[#3A2A24]">
+      <section className="section-padding bg-[#2B1E1A]">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Simple Process</p>
-            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-white">
+            <h2 
+              className="text-[32px] md:text-[36px] lg:text-[40px] text-white"
+              style={{ 
+                fontFamily: 'var(--font-inter), sans-serif', 
+                fontWeight: 600,
+                letterSpacing: '-0.01em'
+              }}
+            >
               How It Works
             </h2>
           </div>
@@ -362,8 +406,20 @@ export default function Home() {
                 <div className="w-16 h-16 bg-[#C9653B] rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-2xl font-bold text-white">{item.step}</span>
                 </div>
-                <h3 style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 700 }} className="text-2xl text-white mb-4">{item.title}</h3>
-                <ul className="text-white/70 text-left space-y-2 max-w-xs mx-auto">
+                <h3 
+                  className="text-[16px] md:text-[18px] lg:text-[20px] text-white mb-4"
+                  style={{ 
+                    fontFamily: 'var(--font-inter), sans-serif', 
+                    fontWeight: 600,
+                    letterSpacing: '-0.01em'
+                  }}
+                >
+                  {item.title}
+                </h3>
+                <ul 
+                  className="text-white/70 text-left space-y-2 max-w-xs mx-auto"
+                  style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7' }}
+                >
                   {item.bullets.map((bullet, bulletIndex) => (
                     <li key={bulletIndex} className="flex items-start">
                       <span className="text-[#C9653B] mr-2 mt-1">•</span>
@@ -378,18 +434,25 @@ export default function Home() {
       </section>
 
       {/* Gallery Teaser */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Work</p>
-            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
+            <h2 
+              className="text-[32px] md:text-[36px] lg:text-[40px] text-[#1E1B18]"
+              style={{ 
+                fontFamily: 'var(--font-inter), sans-serif', 
+                fontWeight: 600,
+                letterSpacing: '-0.01em'
+              }}
+            >
               Gallery
             </h2>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {getRandomGalleryImages(6).map((item) => (
-              <div key={item.id} className="relative aspect-square bg-[#F1E7DA] rounded-lg border border-[#E6D9C8] overflow-hidden">
+              <div key={item.id} className="relative aspect-square bg-[#FBF8F3] rounded-lg border border-[#E9E2D7] overflow-hidden">
                 <Image
                   src={item.src}
                   alt={item.alt}
@@ -410,11 +473,18 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="section-padding bg-[#F1E7DA]">
+      <section className="section-padding bg-[#FBF8F3]">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Testimonials</p>
-            <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-[#1F1F1F]">
+            <h2 
+              className="text-[32px] md:text-[36px] lg:text-[40px] text-[#1E1B18]"
+              style={{ 
+                fontFamily: 'var(--font-inter), sans-serif', 
+                fontWeight: 600,
+                letterSpacing: '-0.01em'
+              }}
+            >
               What Our Clients Say
             </h2>
           </div>
@@ -457,20 +527,22 @@ export default function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="section-padding bg-[#C9653B] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
+      <section className="section-padding bg-[#C86A3A] relative overflow-hidden">
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 style={{ fontFamily: 'var(--font-cinzel), serif', fontWeight: 400 }} className="text-4xl md:text-5xl text-white mb-6">
+          <h2 
+            className="text-[32px] md:text-[36px] lg:text-[40px] text-white mb-6"
+            style={{ 
+              fontFamily: 'var(--font-inter), sans-serif', 
+              fontWeight: 600,
+              letterSpacing: '-0.01em'
+            }}
+          >
             Ready to Experience Tanzanian Flavours?
           </h2>
           <p className="text-white/90 text-lg mb-10 max-w-2xl mx-auto">
             Let us bring the taste of Tanzania to your next event. Get in touch for a custom quote tailored to your needs.
           </p>
-          <Link href="/contact" className="btn-primary !bg-white !text-[#1F1F1F] hover:!bg-[#FAF6EF] hover:!text-[#1F1F1F]">
+            <Link href="/contact" className="btn-primary !bg-white !text-[#1E1B18] hover:!bg-[#FBF8F3] hover:!text-[#1E1B18]">
             Request a Quote
           </Link>
         </div>

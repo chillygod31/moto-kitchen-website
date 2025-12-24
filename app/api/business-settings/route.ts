@@ -5,10 +5,14 @@ import { getTenantId } from '@/lib/tenant'
 /**
  * GET /api/business-settings
  * Get tenant business settings
+ * For customer-facing: uses auto-detection
+ * For admin: should use getAdminTenantId
  */
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
+    
+    // Customer-facing endpoint - use auto-detection
     const tenantId = await getTenantId()
 
     const { data: settings, error } = await supabase

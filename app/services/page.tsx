@@ -65,10 +65,18 @@ export default function ServicesPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-32 pb-20 bg-[#3A2A24]">
+      <section className="pt-32 pb-20 bg-[#2B1E1A]">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">What We Do</p>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <p className="text-[#C86A3A] text-sm uppercase tracking-widest mb-4">What We Do</p>
+          <h1 
+            className="text-4xl md:text-6xl font-bold text-white mb-6"
+            style={{ 
+              fontFamily: 'var(--font-dm-serif-display), serif', 
+              fontWeight: 500,
+              letterSpacing: '-0.02em',
+              lineHeight: '1.1'
+            }}
+          >
             Our Catering Services
           </h1>
           <p className="text-xl text-white/80">
@@ -78,7 +86,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Services Grid */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center max-w-7xl mx-auto">
             {services.map((service) => (
@@ -89,11 +97,20 @@ export default function ServicesPage() {
       </section>
 
       {/* Our Legacy */}
-      <section className="section-padding bg-[#F1E7DA]">
+      <section className="section-padding bg-[#FBF8F3]">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Story</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1F1F1F] mb-6">A Family Legacy</h2>
-          <p className="text-[#4B4B4B] text-lg leading-relaxed mb-6">
+          <p className="text-[#C86A3A] text-sm uppercase tracking-widest mb-4">Our Story</p>
+          <h2 
+            className="text-[32px] md:text-[36px] lg:text-[40px] font-bold text-[#1E1B18] mb-6"
+            style={{ 
+              fontFamily: 'var(--font-inter), sans-serif', 
+              fontWeight: 600,
+              letterSpacing: '-0.01em'
+            }}
+          >
+            A Family Legacy
+          </h2>
+          <p className="text-[#6B5B55] text-lg leading-relaxed mb-6">
             Moto Kitchen began in a home kitchen, with a grandmother, a mother, and an aunt cooking for the people around them. That was about 12 to 13 years ago. Over time, people started asking if we could cook for them, first for birthdays and small celebrations, then for bigger moments where the food needed to feel like home.
           </p>
           <p className="text-[#4B4B4B] text-lg leading-relaxed mb-6">
@@ -106,40 +123,58 @@ export default function ServicesPage() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Why Moto Kitchen</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1F1F1F]">What Sets Us Apart</h2>
+            <p className="text-[#C86A3A] text-sm uppercase tracking-widest mb-4">Why Moto Kitchen</p>
+            <h2 
+              className="text-[32px] md:text-[36px] lg:text-[40px] font-bold text-[#1E1B18]"
+              style={{ 
+                fontFamily: 'var(--font-inter), sans-serif', 
+                fontWeight: 600,
+                letterSpacing: '-0.01em'
+              }}
+            >
+              What Sets Us Apart
+            </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E9E2D7]">
                 <img src="/authenticreceipe.png" alt="Authentic Recipes" className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-semibold text-[#1F1F1F] mb-2">Authentic Recipes</h3>
-              <p className="text-[#4B4B4B] text-sm">Traditional Tanzanian dishes made with authentic spices and techniques</p>
+              <h3 
+                className="text-[16px] md:text-[18px] lg:text-[20px] font-semibold text-[#1E1B18] mb-2"
+                style={{ 
+                  fontFamily: 'var(--font-inter), sans-serif', 
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em'
+                }}
+              >
+                Authentic Recipes
+              </h3>
+              <p className="text-[#6B5B55] text-sm">Traditional Tanzanian dishes made with authentic spices and techniques</p>
             </div>
             <div className="text-center">
-              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E9E2D7]">
                 <img src="/behind-3.jpg" alt="Expert Chefs" className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-semibold text-[#1F1F1F] mb-2">Expert Chefs</h3>
-              <p className="text-[#4B4B4B] text-sm">Passionate team with deep knowledge of East African cuisine</p>
+              <h3 className="font-semibold text-[#1E1B18] mb-2">Expert Chefs</h3>
+              <p className="text-[#6B5B55] text-sm">Passionate team with deep knowledge of East African cuisine</p>
             </div>
             <div className="text-center">
-              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E9E2D7]">
                 <img src="/food-7.jpg" alt="Tailored Service" className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-semibold text-[#1F1F1F] mb-2">Tailored Service</h3>
-              <p className="text-[#4B4B4B] text-sm">Custom menus designed around your event and preferences</p>
+              <h3 className="font-semibold text-[#1E1B18] mb-2">Tailored Service</h3>
+              <p className="text-[#6B5B55] text-sm">Custom menus designed around your event and preferences</p>
             </div>
             <div className="text-center">
-              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E6D9C8]">
+              <div className="aspect-square mb-4 rounded-lg overflow-hidden border border-[#E9E2D7]">
                 <img src="/nationwide.png" alt="Nationwide" className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-semibold text-[#1F1F1F] mb-2">Nationwide</h3>
-              <p className="text-[#4B4B4B] text-sm">Serving the Netherlands, Belgium, Germany, and beyond</p>
+              <h3 className="font-semibold text-[#1E1B18] mb-2">Nationwide</h3>
+              <p className="text-[#6B5B55] text-sm">Serving the Netherlands, Belgium, Germany, and beyond</p>
             </div>
           </div>
         </div>

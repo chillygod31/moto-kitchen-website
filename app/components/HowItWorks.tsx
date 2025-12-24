@@ -25,18 +25,18 @@ export default function HowItWorks({
 }: HowItWorksProps) {
   const styles = {
     dark: {
-      bg: "bg-[#3A2A24]",
+      bg: "bg-[#2B1E1A]",
       title: "text-white",
-      subtitle: "text-[#C9653B]",
+      subtitle: "text-[#C86A3A]",
       stepTitle: "text-white",
       stepDesc: "text-white/70",
     },
     light: {
-      bg: "bg-[#F1E7DA]",
-      title: "text-[#1F1F1F]",
-      subtitle: "text-[#C9653B]",
-      stepTitle: "text-[#1F1F1F]",
-      stepDesc: "text-[#4B4B4B]",
+      bg: "bg-[#FBF8F3]",
+      title: "text-[#1E1B18]",
+      subtitle: "text-[#C86A3A]",
+      stepTitle: "text-[#1E1B18]",
+      stepDesc: "text-[#6B5B55]",
     },
   };
 
@@ -47,27 +47,53 @@ export default function HowItWorks({
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <p className={`text-sm uppercase tracking-widest mb-4 ${s.subtitle}`}>Simple Process</p>
-          <h2 className={`text-3xl md:text-4xl font-bold ${s.title}`}>{title}</h2>
+          <h2 
+            className={`text-[32px] md:text-[36px] lg:text-[40px] font-bold ${s.title}`}
+            style={{ 
+              fontFamily: 'var(--font-inter), sans-serif', 
+              fontWeight: 600,
+              letterSpacing: '-0.01em'
+            }}
+          >
+            {title}
+          </h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="text-center">
-              <div className="w-16 h-16 bg-[#C9653B] rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-[#C86A3A] rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-white">{step.number}</span>
               </div>
-              <h3 className={`text-xl font-semibold mb-4 ${s.stepTitle}`}>{step.title}</h3>
+              <h3 
+                className={`text-[16px] md:text-[18px] lg:text-[20px] font-semibold mb-4 ${s.stepTitle}`}
+                style={{ 
+                  fontFamily: 'var(--font-inter), sans-serif', 
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em'
+                }}
+              >
+                {step.title}
+              </h3>
               {step.bullets ? (
-                <ul className={`${s.stepDesc} text-left space-y-2 max-w-xs mx-auto`}>
+                <ul 
+                  className={`${s.stepDesc} text-left space-y-2 max-w-xs mx-auto`}
+                  style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7' }}
+                >
                   {step.bullets.map((bullet, bulletIndex) => (
                     <li key={bulletIndex} className="flex items-start">
-                      <span className="text-[#C9653B] mr-2 mt-1">•</span>
+                      <span className="text-[#C86A3A] mr-2 mt-1">•</span>
                       <span>{bullet}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className={s.stepDesc}>{step.description}</p>
+                <p 
+                  className={s.stepDesc}
+                  style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7' }}
+                >
+                  {step.description}
+                </p>
               )}
             </div>
           ))}

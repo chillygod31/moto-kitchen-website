@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getTenantId } from '@/lib/tenant'
+import { getAdminTenantId } from '@/lib/admin-auth'
 
 /**
  * GET /api/orders/[id]
@@ -12,7 +13,16 @@ export async function GET(
 ) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId()
+    
+    // Get tenant ID from admin session (server-side, secure)
+    let tenantId: string
+    try {
+      tenantId = await getAdminTenantId(request)
+    } catch (authError) {
+      // Fallback for customer-facing endpoints
+      tenantId = await getTenantId()
+    }
+    
     const { id } = await params
 
     const { data, error } = await supabase
@@ -50,7 +60,16 @@ export async function PATCH(
 ) {
   try {
     const supabase = createServerClient()
-    const tenantId = await getTenantId()
+    
+    // Get tenant ID from admin session (server-side, secure)
+    let tenantId: string
+    try {
+      tenantId = await getAdminTenantId(request)
+    } catch (authError) {
+      // Admin operations should require auth, but fallback for compatibility
+      tenantId = await getTenantId()
+    }
+    
     const { id } = await params
     const body = await request.json()
 

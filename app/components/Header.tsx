@@ -31,7 +31,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#3A2A24]/95 backdrop-blur-sm h-[90px]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#2B1E1A]/95 backdrop-blur-sm h-[90px]">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center h-full py-2 gap-0">
           <Image
@@ -56,7 +56,7 @@ export default function Header() {
             onMouseEnter={() => setIsServicesOpen(true)}
             onMouseLeave={() => setIsServicesOpen(false)}
           >
-            <button style={{ fontFamily: 'var(--font-cinzel), serif' }} className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider flex items-center gap-1 py-2">
+            <button style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }} className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider flex items-center gap-1 py-2">
               Services
               <svg className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -68,7 +68,7 @@ export default function Header() {
                 <div className="w-48 bg-white rounded-md shadow-lg py-2 border border-[#E6D9C8]">
                   <Link
                     href="/services"
-                    style={{ fontFamily: 'var(--font-cinzel), serif' }}
+                    style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
                     className="block px-4 py-2 text-[#1F1F1F] hover:bg-[#F1E7DA] text-sm font-medium"
                   >
                     All Services
@@ -78,7 +78,7 @@ export default function Header() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      style={{ fontFamily: 'var(--font-cinzel), serif' }}
+                      style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400 }}
                       className="block px-4 py-2 text-[#1F1F1F] hover:bg-[#F1E7DA] text-sm"
                     >
                       {link.label}
@@ -93,14 +93,14 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              style={{ fontFamily: 'var(--font-cinzel), serif' }}
+              style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
               className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
             >
               {link.label}
             </Link>
           ))}
           
-          <Link href="/contact" style={{ fontFamily: 'var(--font-cinzel), serif', fontSize: '0.875rem', lineHeight: '1.25rem' }} className="btn-primary ml-2">
+          <Link href="/contact" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, fontSize: '0.875rem', padding: '0.625rem 1.5rem' }} className="btn-primary ml-2">
             Request a Quote
           </Link>
         </nav>
@@ -128,11 +128,11 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <nav className="lg:hidden bg-[#3A2A24] border-t border-white/10 px-6 py-4 max-h-[calc(100vh-80px)] overflow-y-auto">
+        <nav className="lg:hidden bg-[#2B1E1A] border-t border-white/10 px-6 py-4 max-h-[calc(100vh-80px)] overflow-y-auto">
           {/* Mobile CTA - Top */}
           <Link
             href="/contact"
-            style={{ fontFamily: 'var(--font-cinzel), serif', fontSize: '0.875rem', lineHeight: '1.25rem' }}
+            style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, fontSize: '1.125rem' }}
             className="btn-primary text-center block mb-6"
             onClick={() => setIsMenuOpen(false)}
           >
@@ -143,7 +143,7 @@ export default function Header() {
           <div className="mb-4">
             <button
               onClick={() => setIsServicesOpen(!isServicesOpen)}
-              style={{ fontFamily: 'var(--font-cinzel), serif' }}
+              style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
               className="w-full flex justify-between items-center py-3 text-white/80 text-sm uppercase tracking-wider"
             >
               Services
@@ -161,7 +161,7 @@ export default function Header() {
               <div className="pl-4 border-l border-white/10 ml-2 space-y-1">
                 <Link
                   href="/services"
-                  style={{ fontFamily: 'var(--font-cinzel), serif' }}
+                  style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400 }}
                   className="block py-2 text-white/60 hover:text-[#C9653B] transition-colors text-sm"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -171,7 +171,7 @@ export default function Header() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    style={{ fontFamily: 'var(--font-cinzel), serif' }}
+                    style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400 }}
                     className="block py-2 text-white/60 hover:text-[#C9653B] transition-colors text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -187,7 +187,7 @@ export default function Header() {
             <Link
               key={link.href}
               href={link.href}
-              style={{ fontFamily: 'var(--font-cinzel), serif' }}
+              style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
               className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider border-t border-white/5"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -198,7 +198,7 @@ export default function Header() {
           {/* FAQ Link */}
           <Link
             href="/faq"
-            style={{ fontFamily: 'var(--font-cinzel), serif' }}
+            style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
             className="block py-3 text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider border-t border-white/5"
             onClick={() => setIsMenuOpen(false)}
           >

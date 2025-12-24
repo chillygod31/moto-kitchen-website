@@ -16,12 +16,12 @@ export const pricingData: Record<ServiceType, PricingInfo> = {
     unit: "per person",
   },
   corporate: {
-    price: 20,
+    price: 15,
     currency: "€",
     unit: "per person",
   },
   weddings: {
-    price: 25,
+    price: 35,
     currency: "€",
     unit: "per person",
   },

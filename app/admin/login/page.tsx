@@ -24,9 +24,10 @@ export default function AdminLogin() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Store in sessionStorage
-        sessionStorage.setItem("admin_authenticated", "true");
+        // Session is now stored server-side in httpOnly cookie
+        // No need for sessionStorage - redirect to admin
         router.push("/admin/quotes");
+        router.refresh(); // Refresh to pick up new session
       } else {
         setError(data.error || "Incorrect password");
         setIsLoading(false);

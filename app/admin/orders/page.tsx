@@ -65,14 +65,22 @@ export default function AdminOrdersPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = sessionStorage.getItem("admin_authenticated");
-    if (!isAuthenticated) {
-      router.push("/admin/login");
-      return;
-    }
+    // Check authentication via API (server-side session)
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/admin/session");
+        if (!response.ok) {
+          router.push("/admin/login");
+          return;
+        }
+        fetchOrders();
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        router.push("/admin/login");
+      }
+    };
 
-    fetchOrders();
+    checkAuth();
   }, [statusFilter, paymentStatusFilter, router]);
 
   const fetchOrders = async () => {
@@ -208,40 +216,32 @@ export default function AdminOrdersPage() {
 
   if (loading && orders.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF6EF]">
-        <p className="text-[#4B4B4B]">Loading orders...</p>
+      <div className="flex items-center justify-center py-12">
+        <p style={{ color: 'var(--brand-muted, #4B4B4B)' }}>Loading orders...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF6EF] pt-24 pb-12">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-[#3A2A24] mb-2">Orders</h1>
-            <p className="text-[#4B4B4B]">Manage and track all customer orders</p>
-          </div>
-          <div className="flex gap-4">
-            <Link href="/admin/quotes" className="btn-secondary px-6">
-              View Quotes
-            </Link>
-            <button
-              onClick={() => {
-                sessionStorage.removeItem("admin_authenticated");
-                router.push("/admin/login");
-              }}
-              className="btn-secondary px-6"
-            >
-              Logout
-            </button>
-          </div>
+    <div>
+      {/* Page Header */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--brand-secondary, #3A2A24)' }}>
+            Orders
+          </h1>
+          <p style={{ color: 'var(--brand-muted, #4B4B4B)' }}>
+            Manage and track all customer orders
+          </p>
         </div>
+        <Link href="/admin/quotes" className="btn-secondary px-6 inline-block text-center">
+          View Quotes
+        </Link>
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg p-6 mb-6 border border-[#E6D9C8]">
-          <div className="grid md:grid-cols-3 gap-4">
+      {/* Filters */}
+      <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
+        <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
                 Order Status
@@ -286,12 +286,12 @@ export default function AdminOrdersPage() {
                 Clear Filters
               </button>
             </div>
-          </div>
         </div>
+      </div>
 
-        {/* Orders Table */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+      {/* Orders Table */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
             <div className="bg-white rounded-lg border border-[#E6D9C8] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -369,10 +369,10 @@ export default function AdminOrdersPage() {
                 </table>
               </div>
             </div>
-          </div>
+        </div>
 
-          {/* Order Details Sidebar */}
-          <div className="lg:col-span-1">
+        {/* Order Details Sidebar */}
+        <div className="lg:col-span-1">
             {selectedOrder ? (
               <div className="bg-white rounded-lg border border-[#E6D9C8] p-6 sticky top-24">
                 <div className="mb-6">
@@ -577,7 +577,6 @@ export default function AdminOrdersPage() {
                 <p className="text-[#4B4B4B]">Select an order to view details</p>
               </div>
             )}
-          </div>
         </div>
       </div>
     </div>

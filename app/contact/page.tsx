@@ -261,10 +261,18 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-32 pb-20 bg-[#3A2A24]">
+      <section className="pt-32 pb-20 bg-[#2B1E1A]">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Get in Touch</p>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <p className="text-[#C86A3A] text-sm uppercase tracking-widest mb-4">Get in Touch</p>
+          <h1 
+            className="text-4xl md:text-6xl font-bold text-white mb-6"
+            style={{ 
+              fontFamily: 'var(--font-dm-serif-display), serif', 
+              fontWeight: 500,
+              letterSpacing: '-0.02em',
+              lineHeight: '1.1'
+            }}
+          >
             Request a Quote
           </h1>
           <p className="text-xl text-white/80">
@@ -274,26 +282,42 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form & Info */}
-      <section className="section-padding bg-[#FAF6EF] overflow-x-hidden">
+      <section className="section-padding bg-white overflow-x-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 w-full">
           <div className="grid md:grid-cols-3 gap-6 md:gap-12">
             {/* Contact Info */}
             <div className="md:col-span-1">
-              <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">
+              <h2 
+                className="text-[28px] md:text-[32px] lg:text-[36px] font-bold text-[#1E1B18] mb-6"
+                style={{ 
+                  fontFamily: 'var(--font-inter), sans-serif', 
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em'
+                }}
+              >
                 Get in Touch
               </h2>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">Email</h3>
-                  <a href="mailto:contact@motokitchen.nl" className="text-[#C9653B] hover:underline">
+                  <h3 
+                    className="text-[16px] md:text-[18px] lg:text-[20px] font-semibold text-[#1E1B18] mb-2"
+                    style={{ 
+                      fontFamily: 'var(--font-inter), sans-serif', 
+                      fontWeight: 600,
+                      letterSpacing: '-0.01em'
+                    }}
+                  >
+                    Email
+                  </h3>
+                  <a href="mailto:contact@motokitchen.nl" className="text-[#C86A3A] hover:underline">
                     contact@motokitchen.nl
                   </a>
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">Instagram</h3>
-                  <a href="https://instagram.com/motokitchen.nl" target="_blank" rel="noopener noreferrer" className="text-[#C9653B] hover:underline flex items-center gap-2">
+                  <h3 className="font-semibold text-[#1E1B18] mb-2">Instagram</h3>
+                  <a href="https://instagram.com/motokitchen.nl" target="_blank" rel="noopener noreferrer" className="text-[#C86A3A] hover:underline flex items-center gap-2">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                     </svg>
@@ -302,8 +326,8 @@ export default function ContactPage() {
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">TikTok</h3>
-                  <a href="https://www.tiktok.com/@motokitchen.nl" target="_blank" rel="noopener noreferrer" className="text-[#C9653B] hover:underline flex items-center gap-2">
+                  <h3 className="font-semibold text-[#1E1B18] mb-2">TikTok</h3>
+                  <a href="https://www.tiktok.com/@motokitchen.nl" target="_blank" rel="noopener noreferrer" className="text-[#C86A3A] hover:underline flex items-center gap-2">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
                     </svg>
@@ -312,15 +336,15 @@ export default function ContactPage() {
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">Location</h3>
-                  <p className="text-[#4B4B4B]">Netherlands</p>
-                  <p className="text-[#4B4B4B] text-sm mt-1">Serving the Netherlands, Belgium, Germany, and beyond</p>
+                  <h3 className="font-semibold text-[#1E1B18] mb-2">Location</h3>
+                  <p className="text-[#6B5B55]">Netherlands</p>
+                  <p className="text-[#6B5B55] text-sm mt-1">Serving the Netherlands, Belgium, Germany, and beyond</p>
                 </div>
               </div>
 
-              <div className="mt-8 p-6 bg-[#F1E7DA] rounded-lg border border-[#E6D9C8]">
-                <p className="font-semibold text-[#1F1F1F] mb-2">Response Time</p>
-                <p className="text-[#4B4B4B] text-sm">
+              <div className="mt-8 p-6 bg-[#FBF8F3] rounded-lg border border-[#E9E2D7]">
+                <p className="font-semibold text-[#1E1B18] mb-2">Response Time</p>
+                <p className="text-[#6B5B55] text-sm">
                   We typically respond within 24 hours.
                 </p>
               </div>
@@ -329,7 +353,14 @@ export default function ContactPage() {
             {/* Form */}
             <div className="md:col-span-2 w-full min-w-0">
               <div className="card w-full max-w-full min-w-0">
-                <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">
+                <h2 
+                  className="text-[28px] md:text-[32px] lg:text-[36px] font-bold text-[#1E1B18] mb-6"
+                  style={{ 
+                    fontFamily: 'var(--font-inter), sans-serif', 
+                    fontWeight: 600,
+                    letterSpacing: '-0.01em'
+                  }}
+                >
                   Tell Us About Your Event
                 </h2>
 
@@ -354,14 +385,14 @@ export default function ContactPage() {
                   {/* Event Type & Date */}
                   <div className="grid md:grid-cols-2 gap-4 md:gap-6 w-full min-w-0">
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
-                        Event Type <span className="text-[#C9653B]">*</span>
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
+                        Event Type <span className="text-[#C86A3A]">*</span>
                       </label>
                       <select
                         required
                         value={formData.eventType}
                         onChange={(e) => setFormData({ ...formData, eventType: e.target.value, eventTypeOther: "" })}
-                        className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                        className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                       >
                         <option value="">Select event type</option>
                         <option value="private">Private Event</option>
@@ -378,14 +409,14 @@ export default function ContactPage() {
                             value={formData.eventTypeOther}
                             onChange={(e) => setFormData({ ...formData, eventTypeOther: e.target.value })}
                             placeholder="Please specify event type..."
-                            className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                            className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                           />
                         </div>
                       )}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
                         Event Date
                       </label>
                       <input
@@ -393,16 +424,16 @@ export default function ContactPage() {
                         value={formData.eventDate}
                         onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                         disabled={formData.dateFlexible}
-                        className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                       />
                       <label className="flex items-center gap-2 mt-2 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.dateFlexible}
                           onChange={(e) => setFormData({ ...formData, dateFlexible: e.target.checked, eventDate: "" })}
-                          className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] rounded focus:ring-[#C9653B]"
+                          className="w-4 h-4 text-[#C86A3A] border-[#E9E2D7] rounded focus:ring-[#C86A3A]"
                         />
-                        <span className="text-sm text-[#4B4B4B]">Date is flexible</span>
+                        <span className="text-sm text-[#6B5B55]">Date is flexible</span>
                       </label>
                     </div>
                   </div>
@@ -410,7 +441,7 @@ export default function ContactPage() {
                   {/* Guest Count & Location */}
                   <div className="grid md:grid-cols-2 gap-4 md:gap-6 w-full min-w-0">
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
                         Number of Guests <span className="text-[#C9653B]">*</span>
                       </label>
                       <input
@@ -419,13 +450,13 @@ export default function ContactPage() {
                         min="1"
                         value={formData.guestCount}
                         onChange={(e) => setFormData({ ...formData, guestCount: e.target.value })}
-                        className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                        className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                         placeholder="e.g. 50"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
                         City / Location <span className="text-[#C9653B]">*</span>
                       </label>
                       <input
@@ -433,7 +464,7 @@ export default function ContactPage() {
                         required
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                        className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                         placeholder="e.g. Amsterdam"
                       />
                     </div>
@@ -441,7 +472,7 @@ export default function ContactPage() {
 
                   {/* Service Type */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
+                    <label className="block text-sm font-semibold text-[#1E1B18] mb-3">
                       Service Type <span className="text-[#C9653B]">*</span>
                     </label>
                     <div className="space-y-2">
@@ -451,7 +482,7 @@ export default function ContactPage() {
                         { value: "pickup-only", label: "Pick-Up Only", description: "You collect from our location in Rotterdam" },
                         { value: "not-sure-service", label: "Not sure yet", description: "We'll help you decide" },
                       ].map((option) => (
-                        <label key={option.value} className="flex items-start gap-3 cursor-pointer p-3 border border-[#E6D9C8] rounded-md hover:bg-[#F1E7DA] transition-colors">
+                        <label key={option.value} className="flex items-start gap-3 cursor-pointer p-3 border border-[#E9E2D7] rounded-md hover:bg-[#FBF8F3] transition-colors">
                           <input
                             type="radio"
                             name="serviceType"
@@ -466,11 +497,11 @@ export default function ContactPage() {
                                 budget: (newServiceType === "pickup-only" || newServiceType === "not-sure-service") ? "" : formData.budget
                               });
                             }}
-                            className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B] mt-0.5 flex-shrink-0"
+                            className="w-4 h-4 text-[#C86A3A] border-[#E9E2D7] focus:ring-[#C86A3A] mt-0.5 flex-shrink-0"
                           />
                           <div className="flex-1">
-                            <span className="text-sm font-medium text-[#1F1F1F] block">{option.label}</span>
-                            <span className="text-xs text-[#4B4B4B] block mt-1">{option.description}</span>
+                            <span className="text-sm font-medium text-[#1E1B18] block">{option.label}</span>
+                            <span className="text-xs text-[#6B5B55] block mt-1">{option.description}</span>
                           </div>
                         </label>
                       ))}
@@ -479,7 +510,7 @@ export default function ContactPage() {
 
                   {/* Budget Range */}
                   <div className={isBudgetRequired() ? "" : "opacity-50 pointer-events-none"}>
-                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
+                    <label className="block text-sm font-semibold text-[#1E1B18] mb-3">
                       Estimated Budget {isBudgetRequired() && <span className="text-[#C9653B]">*</span>}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 w-full min-w-0">
@@ -492,7 +523,7 @@ export default function ContactPage() {
                         { value: "5000+", label: "€5,000+" },
                         { value: "not-sure", label: "Not sure yet" },
                       ].map((option) => (
-                        <label key={option.value} className={`flex items-center gap-2 p-3 border border-[#E6D9C8] rounded-md transition-colors min-w-0 ${isBudgetRequired() ? "cursor-pointer hover:bg-[#F1E7DA]" : "cursor-not-allowed"}`}>
+                        <label key={option.value} className={`flex items-center gap-2 p-3 border border-[#E9E2D7] rounded-md transition-colors min-w-0 ${isBudgetRequired() ? "cursor-pointer hover:bg-[#FBF8F3]" : "cursor-not-allowed"}`}>
                           <input
                             type="radio"
                             name="budget"
@@ -501,9 +532,9 @@ export default function ContactPage() {
                             value={option.value}
                             checked={formData.budget === option.value}
                             onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                            className="w-4 h-4 text-[#C9653B] border-[#E6D9C8] focus:ring-[#C9653B] flex-shrink-0"
+                            className="w-4 h-4 text-[#C86A3A] border-[#E9E2D7] focus:ring-[#C86A3A] flex-shrink-0"
                           />
-                          <span className="text-sm text-[#4B4B4B]">{option.label}</span>
+                          <span className="text-sm text-[#6B5B55]">{option.label}</span>
                         </label>
                       ))}
                     </div>
@@ -512,7 +543,7 @@ export default function ContactPage() {
                   {/* Contact Info */}
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
                         Name <span className="text-[#C9653B]">*</span>
                       </label>
                       <input
@@ -520,13 +551,13 @@ export default function ContactPage() {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                        className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                         placeholder="Your name"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
                         Email <span className="text-[#C9653B]">*</span>
                       </label>
                       <input
@@ -534,26 +565,26 @@ export default function ContactPage() {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                        className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                         placeholder="your@email.com"
                       />
                   </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                      <label className="block text-sm font-semibold text-[#1E1B18] mb-2">
                         Phone <span className="text-[#C9653B]">*</span>
                       </label>
-                      <div className="flex border border-[#E6D9C8] rounded-md focus-within:ring-2 focus-within:ring-[#C9653B] focus-within:border-transparent bg-white relative min-w-0">
+                      <div className="flex border border-[#E9E2D7] rounded-md focus-within:ring-2 focus-within:ring-[#C86A3A] focus-within:border-transparent bg-white relative min-w-0">
                         <div ref={countryDropdownRef} className="relative z-10 flex-shrink-0">
                           <button
                             type="button"
                             onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                            className="px-2 sm:px-3 py-3 border-0 border-r border-[#E6D9C8] focus:outline-none bg-white text-sm cursor-pointer flex items-center gap-1 sm:gap-1.5 hover:bg-gray-50 whitespace-nowrap"
+                            className="px-2 sm:px-3 py-3 border-0 border-r border-[#E9E2D7] focus:outline-none bg-white text-sm cursor-pointer flex items-center gap-1 sm:gap-1.5 hover:bg-gray-50 whitespace-nowrap"
                           >
                             <span className="text-base sm:text-lg">{selectedCountry.flag}</span>
                             <span className="text-xs sm:text-sm">{selectedCountry.code}</span>
                             <svg
-                              className={`w-3 h-3 sm:w-4 sm:h-4 text-[#4B4B4B] transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-180' : ''}`}
+                              className={`w-3 h-3 sm:w-4 sm:h-4 text-[#6B5B55] transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-180' : ''}`}
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -563,9 +594,9 @@ export default function ContactPage() {
                           </button>
                           
                           {isCountryDropdownOpen && (
-                            <div className="absolute top-full left-0 mt-1 bg-white border border-[#E6D9C8] rounded-md shadow-lg z-50 max-h-80 overflow-y-auto w-[280px] sm:w-80 max-w-[calc(100vw-3rem)]">
+                            <div className="absolute top-full left-0 mt-1 bg-white border border-[#E9E2D7] rounded-md shadow-lg z-50 max-h-80 overflow-y-auto w-[280px] sm:w-80 max-w-[calc(100vw-3rem)]">
                               <div className="py-1">
-                                <div className="px-3 py-2 text-xs font-semibold text-[#4B4B4B] bg-gray-50 sticky top-0">
+                                <div className="px-3 py-2 text-xs font-semibold text-[#6B5B55] bg-gray-50 sticky top-0">
                                   Primary Markets
                                 </div>
                                 {primaryMarkets.map((country) => (
@@ -574,14 +605,14 @@ export default function ContactPage() {
                                     type="button"
                                     onClick={() => handleCountrySelect(country.code)}
                                     className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${
-                                      formData.countryCode === country.code ? 'bg-[#F1E7DA]' : ''
+                                      formData.countryCode === country.code ? 'bg-[#FBF8F3]' : ''
                                     }`}
                                   >
                                     <span>{country.flag}</span>
                                     <span>{country.name} ({country.code})</span>
                                   </button>
                                 ))}
-                                <div className="px-3 py-2 text-xs font-semibold text-[#4B4B4B] bg-gray-50 sticky top-0 border-t border-[#E6D9C8] mt-1">
+                                <div className="px-3 py-2 text-xs font-semibold text-[#6B5B55] bg-gray-50 sticky top-0 border-t border-[#E9E2D7] mt-1">
                                   Other Countries
                                 </div>
                                 {otherCountries.map((country) => (
@@ -590,7 +621,7 @@ export default function ContactPage() {
                                     type="button"
                                     onClick={() => handleCountrySelect(country.code)}
                                     className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${
-                                      formData.countryCode === country.code ? 'bg-[#F1E7DA]' : ''
+                                      formData.countryCode === country.code ? 'bg-[#FBF8F3]' : ''
                                     }`}
                                   >
                                     <span>{country.flag}</span>
@@ -615,7 +646,7 @@ export default function ContactPage() {
 
                   {/* Dietary Requirements */}
                     <div>
-                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-3">
+                    <label className="block text-sm font-semibold text-[#1E1B18] mb-3">
                       Dietary Requirements
                       </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full min-w-0">
@@ -673,7 +704,7 @@ export default function ContactPage() {
                           value={formData.howFoundOther}
                           onChange={(e) => setFormData({ ...formData, howFoundOther: e.target.value })}
                           placeholder="Please specify..."
-                          className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent bg-white"
+                          className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white"
                         />
                       </div>
                     )}

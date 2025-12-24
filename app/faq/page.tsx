@@ -2,6 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-inter",
+});
 
 const faqs = [
   {
@@ -71,7 +78,7 @@ const faqs = [
       },
       {
         question: "Are all your dishes Halal?",
-        answer: "Yes, all our dishes are Halal certified. We use only Halal certified ingredients and follow strict Halal preparation guidelines. Our kitchen and all food handling processes comply with Halal standards, so you can be confident that all our food meets Halal requirements.",
+        answer: "Yes, all our dishes are Halal. We use only Halal ingredients and follow strict Halal preparation guidelines. Our kitchen and all food handling processes comply with Halal standards, so you can be confident that all our food meets Halal requirements.",
       },
       {
         question: "How spicy is your food?",
@@ -154,7 +161,7 @@ const faqs = [
     questions: [
       {
         question: "Do you offer wedding packages?",
-        answer: "Yes! We offer comprehensive wedding packages starting from €25 per person. Our wedding packages include menu selection, professional serving staff, all equipment, setup and cleanup, and coordination with your wedding planner or venue. We also offer complimentary tasting sessions for wedding bookings so you can sample dishes and finalize your menu. Contact us to discuss your wedding vision and we'll create a custom package that fits your needs and budget.",
+        answer: "Yes! We offer comprehensive wedding packages starting from €35 per person. Our wedding packages include menu selection, professional serving staff, all equipment, setup and cleanup, and coordination with your wedding planner or venue. We also offer complimentary tasting sessions for wedding bookings so you can sample dishes and finalize your menu. Contact us to discuss your wedding vision and we'll create a custom package that fits your needs and budget.",
       },
       {
         question: "Can you handle large weddings (100+ guests)?",
@@ -193,12 +200,20 @@ export default function FAQPage() {
   };
 
   return (
-    <>
+    <div className={inter.variable}>
       {/* Hero */}
       <section className="pt-32 pb-20 bg-[#3A2A24]">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">FAQ</p>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h1 
+            className="text-4xl md:text-6xl font-bold text-white mb-6"
+            style={{ 
+              fontFamily: 'var(--font-dm-serif-display), serif', 
+              fontWeight: 500,
+              letterSpacing: '-0.02em',
+              lineHeight: '1.1'
+            }}
+          >
             Frequently Asked Questions
           </h1>
           <p className="text-xl text-white/80">
@@ -208,11 +223,11 @@ export default function FAQPage() {
       </section>
 
       {/* FAQ Sections */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-3xl mx-auto">
           {faqs.map((section, sectionIndex) => (
             <div key={sectionIndex} className="mb-12">
-              <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6 pb-2 border-b-2 border-[#C9653B]">
+              <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6 pb-2 border-b-2 border-[#C9653B] uppercase">
                 {section.category}
               </h2>
               <div className="space-y-4">
@@ -226,7 +241,7 @@ export default function FAQPage() {
                         onClick={() => toggleItem(key)}
                         className="w-full flex justify-between items-center text-left gap-4"
                       >
-                        <span className="font-semibold text-[#1F1F1F]">{faq.question}</span>
+                        <span className="font-bold text-[#1F1F1F] text-[16px] md:text-[18px]" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, letterSpacing: '-0.01em' }}>{faq.question}</span>
                         <svg
                           className={`w-5 h-5 text-[#C9653B] flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
                           fill="none"
@@ -237,7 +252,7 @@ export default function FAQPage() {
                         </svg>
                       </button>
                       {isOpen && (
-                        <p className="mt-4 text-[#4B4B4B] leading-relaxed">{faq.answer}</p>
+                        <p className="mt-4 text-[#4B4B4B] text-[16px] md:text-[17px]" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7', maxWidth: '65ch', letterSpacing: '-0.01em' }}>{faq.answer}</p>
                       )}
                     </div>
                   );
@@ -249,20 +264,24 @@ export default function FAQPage() {
       </section>
 
       {/* CTA */}
-      <section className="section-padding bg-[#F1E7DA]">
+      <section className="section-padding bg-[#C86A3A]">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1F1F1F] mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Still Have Questions?
           </h2>
-          <p className="text-[#4B4B4B] text-lg mb-10">
+          <p className="text-white/90 text-lg mb-10">
             We&apos;re here to help. Get in touch and we&apos;ll get back to you within 24 hours.
           </p>
-          <Link href="/contact" className="btn-primary text-lg">
+          <Link 
+            href="/contact" 
+            className="btn-primary !bg-white !text-[#1E1B18] hover:!bg-[#FBF8F3] hover:!text-[#1E1B18]"
+            style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, fontSize: '1.125rem' }}
+          >
             Contact Us
           </Link>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 

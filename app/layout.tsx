@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Cinzel, Work_Sans, Cormorant_Garamond } from "next/font/google";
+import { Cinzel, Work_Sans, Cormorant_Garamond, DM_Serif_Display, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "./components/Header";
@@ -26,6 +26,18 @@ const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-heading-display",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  variable: "--font-dm-serif-display",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -115,7 +127,7 @@ export default function RootLayout({
           />
         </>
       )}
-      <body className={`${halimun.variable} ${cinzel.variable} ${workSans.variable} ${cormorantGaramond.variable} antialiased`}>
+      <body className={`${halimun.variable} ${cinzel.variable} ${workSans.variable} ${cormorantGaramond.variable} ${dmSerifDisplay.variable} ${inter.variable} antialiased`}>
         <Header />
         <main>{children}</main>
         <Footer />

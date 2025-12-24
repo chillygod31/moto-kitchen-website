@@ -373,12 +373,12 @@ export async function POST(request: Request) {
       </head>
       <body>
         <div class="container">
-          <div class="header">
+        <div class="header">
             <h1>New Quote Request • ${eventTypeLabel} • ${guestCount} pax • ${location} • ${shortDate} • ${formatBudgetForTitle(budget)} — ${name}${isUrgent && daysUntilEvent !== null ? `<span class="priority-badge urgent">URGENT — within ${daysUntilEvent} days</span>` : daysUntilEvent !== null ? `<span class="priority-badge">${priorityLevel}</span><span class="priority-badge">${daysUntilEvent} days away</span>` : ''}</h1>
             <p class="submitted">Submitted: ${new Date().toLocaleString('en-NL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
-          </div>
-          
-          <div class="content">
+        </div>
+        
+        <div class="content">
             <div class="section">
               <div class="section-header">
                 <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -406,9 +406,9 @@ export async function POST(request: Request) {
                 <span class="field-label">Service style:</span>
                 <span class="field-value">${formatServiceType(serviceType)}</span>
               </div>
-            </div>
+          </div>
 
-            <div class="section">
+          <div class="section">
               <div class="section-header">
                 <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
@@ -419,16 +419,16 @@ export async function POST(request: Request) {
                 <span class="field-label">Budget range:</span>
                 <span class="field-value">${budget ? formatBudgetRange(budget) : 'Not specified'}</span>
               </div>
-              ${(() => {
-                const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
+            ${(() => {
+              const perPerson = calculatePerPersonBudget(budget, parseInt(guestCount));
                 return perPerson ? `
                   <div class="field">
                     <span class="field-label">Approx per person:</span>
                     <span class="field-value">€${perPerson.min}–€${perPerson.max} (based on ${guestCount} guests)</span>
                   </div>
                 ` : '';
-              })()}
-            </div>
+            })()}
+          </div>
 
             <div class="section">
               <div class="section-header">
@@ -449,10 +449,10 @@ export async function POST(request: Request) {
                 <span class="field-label">Phone:</span>
                 <span class="field-value"><a href="tel:${phone}">${phone}</a></span>
               </div>
-            </div>
+          </div>
 
             ${dietaryList !== 'None specified' ? `
-            <div class="section">
+          <div class="section">
               <div class="section-header">
                 <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -461,12 +461,12 @@ export async function POST(request: Request) {
               </div>
               <div class="field">
                 <span class="field-value">${dietaryList}</span>
-              </div>
-            </div>
+          </div>
+          </div>
             ` : ''}
 
-            ${message ? `
-            <div class="section">
+          ${message ? `
+          <div class="section">
               <div class="section-header">
                 <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
@@ -476,10 +476,10 @@ export async function POST(request: Request) {
               <div class="field">
                 <span class="field-value">${message}</span>
               </div>
-            </div>
-            ` : ''}
+          </div>
+          ` : ''}
 
-            <div class="section">
+          <div class="section">
               <div class="section-header">
                 <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -489,17 +489,17 @@ export async function POST(request: Request) {
               <div class="field">
                 <span class="field-value">${howFound || "Not specified"}</span>
               </div>
-            </div>
+          </div>
 
             <div class="button-container">
-              <a href="mailto:${email}?subject=Re: Your Quote Request for ${eventTypeLabel}" class="button">
+            <a href="mailto:${email}?subject=Re: Your Quote Request for ${eventTypeLabel}" class="button">
                 Reply
-              </a>
-            </div>
+            </a>
           </div>
-          
-          <div class="footer">
-            <p><strong>Quote Request ID:</strong> ${quoteRequest?.id || 'N/A'}</p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Quote Request ID:</strong> ${quoteRequest?.id || 'N/A'}</p>
           </div>
         </div>
       </body>

@@ -31,10 +31,18 @@ export default function MenuPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-32 pb-20 bg-[#3A2A24]">
+      <section className="pt-32 pb-20 bg-[#2B1E1A]">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-[#C9653B] text-sm uppercase tracking-widest mb-4">Our Food</p>
-          <h1 className="text-4xl md:text-6xl text-white mb-6">
+          <p className="text-[#C86A3A] text-sm uppercase tracking-widest mb-4">Our Food</p>
+          <h1 
+            className="text-4xl md:text-6xl text-white mb-6"
+            style={{ 
+              fontFamily: 'var(--font-dm-serif-display), serif', 
+              fontWeight: 500,
+              letterSpacing: '-0.02em',
+              lineHeight: '1.1'
+            }}
+          >
             Menu
           </h1>
           <p className="text-xl text-white/80">
@@ -44,18 +52,23 @@ export default function MenuPage() {
       </section>
 
       {/* Category Tabs */}
-      <section className="py-6 bg-[#F1E7DA] border-b border-[#E6D9C8] sticky top-[72px] z-40">
+      <section className="py-6 bg-white border-b border-[#E9E2D7] sticky top-[72px] z-40">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-2">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
-                style={{ fontFamily: 'var(--font-heading-display), serif', fontWeight: 400 }}
-                className={`px-4 py-2 rounded-full text-lg transition-colors ${
+                style={{ 
+                  fontFamily: 'var(--font-inter), sans-serif', 
+                  fontWeight: activeCategory === category.id ? 600 : 500,
+                  letterSpacing: '0.04em',
+                  textTransform: 'none'
+                }}
+                className={`px-4 py-2 rounded-full transition-colors text-[13px] md:text-[14px] ${
                   activeCategory === category.id
-                    ? "bg-[#C9653B] text-white"
-                    : "bg-white border border-[#E6D9C8] text-[#4B4B4B] hover:bg-[#C9653B] hover:text-white hover:border-[#C9653B]"
+                    ? "bg-[#C86A3A] text-white"
+                    : "bg-white border border-[#E9E2D7] text-[#6B5B55] hover:bg-[#C86A3A] hover:text-white hover:border-[#C86A3A]"
                 }`}
               >
                 {category.label}
@@ -66,14 +79,14 @@ export default function MenuPage() {
       </section>
 
       {/* Menu Grid */}
-      <section className="section-padding bg-[#FAF6EF]">
+      <section className="section-padding bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDishes.map((dish) => {
               const { swahili, english } = parseDishName(dish.name);
               return (
               <div key={dish.id} className="card">
-                <div className="relative aspect-[4/3] bg-[#F1E7DA] rounded-lg mb-4 overflow-hidden border border-[#E6D9C8] flex items-center justify-center">
+                <div className="relative aspect-[4/3] bg-[#FBF8F3] rounded-lg mb-4 overflow-hidden border border-[#E9E2D7] flex items-center justify-center">
                   {dish.image ? (
                     <Image
                       src={`/${dish.image}`}
@@ -137,9 +150,9 @@ export default function MenuPage() {
       </section>
 
       {/* Note */}
-      <section className="py-12 bg-[#F1E7DA]">
+      <section className="py-12 bg-[#FBF8F3]">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-[#4B4B4B]">
+          <p className="text-[#6B5B55]">
             <strong>Note:</strong> We create custom menus for each event based on your preferences, 
             guest count, and dietary requirements. Contact us to discuss your perfect menu.
           </p>
