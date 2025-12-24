@@ -290,7 +290,7 @@ export default function PrivateEventsPage() {
                 >
                   {step.title}
                 </h3>
-                {step.bullets ? (
+                {step.bullets && (
                   <ul className="text-white/70 text-left space-y-2 max-w-xs mx-auto" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7' }}>
                     {step.bullets.map((bullet, bulletIndex) => (
                       <li key={bulletIndex} className="flex items-start">
@@ -299,10 +299,6 @@ export default function PrivateEventsPage() {
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-white/70" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, lineHeight: '1.7' }}>
-                    {step.description}
-                  </p>
                 )}
               </div>
             ))}
