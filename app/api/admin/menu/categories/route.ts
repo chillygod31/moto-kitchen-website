@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           message: 'Validation failed', 
-          errors: validationResult.error.errors.map(e => ({
+          errors: validationResult.error.issues.map(e => ({
             path: e.path.join('.'),
             message: e.message
           }))
