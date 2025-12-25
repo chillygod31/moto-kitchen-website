@@ -10,7 +10,7 @@ export const metadata = {
 const includedItems = [
   { icon: "🚗", title: "Nationwide Delivery", description: "We deliver across the Netherlands, Belgium, Germany, and beyond" },
   { icon: "📦", title: "Flexible Ordering", description: "Order in advance or same-day when available" },
-  { icon: "🍽️", title: "Fresh Prepared", description: "All meals prepared fresh and ready to enjoy" },
+  { icon: "🍽️", title: "Freshly Prepared", description: "All meals prepared fresh and ready to enjoy" },
   { icon: "📍", title: "Pick-Up Available", description: "Convenient pick-up from our kitchen location" },
   { icon: "⏰", title: "Scheduled Delivery", description: "Choose your preferred delivery time slot" },
   { icon: "💳", title: "Easy Payment", description: "Secure online payment or cash on delivery" },
