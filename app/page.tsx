@@ -3,7 +3,7 @@ import Image from "next/image";
 import { getRandomGalleryImages } from "../lib/gallery-data";
 import { findDishByName } from "../lib/menu-data";
 import { parseDishName } from "../lib/utils";
-import HeroVideo from "../components/HeroVideo";
+import HeroVideo from "./components/HeroVideo";
 
 export default function Home() {
   const signatureDishNames = [
