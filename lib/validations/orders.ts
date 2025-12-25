@@ -16,9 +16,7 @@ export const createOrderSchema = z.object({
   customerName: z.string().min(1, 'Customer name is required').max(200),
   customerEmail: z.string().email('Invalid email address').optional().nullable(),
   customerPhone: z.string().min(1, 'Phone number is required').max(50),
-  fulfillmentType: z.enum(['pickup', 'delivery'], {
-    errorMap: () => ({ message: 'Fulfillment type must be pickup or delivery' }),
-  }),
+  fulfillmentType: z.enum(['pickup', 'delivery']),
   deliveryAddress: z.string().max(500).optional().nullable(),
   postcode: z.string().max(20).optional().nullable(),
   city: z.string().max(100).optional().nullable(),
