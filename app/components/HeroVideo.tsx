@@ -9,13 +9,12 @@ export default function HeroVideo() {
     const video = videoRef.current
     if (!video) return
 
-    // Try to play the video - if it fails (Low Power Mode), video will show first frame
+    // Try to play the video - if it fails (Low Power Mode), poster image will show
     const playPromise = video.play()
     
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Autoplay was prevented - video will show first frame as poster
-        // No user interaction needed, video element will handle it
+        // Autoplay was prevented - poster image will show instead
       })
     }
 
@@ -26,7 +25,7 @@ export default function HeroVideo() {
           if (entry.isIntersecting) {
             // Try to play when in view, ignore errors (Low Power Mode will prevent it)
             video.play().catch(() => {
-              // Silently fail - video will show first frame
+              // Silently fail - poster image will show
             })
           }
         })
@@ -52,8 +51,13 @@ export default function HeroVideo() {
       controls={false}
       disablePictureInPicture
       disableRemotePlayback
-      className="w-full h-full object-cover"
-      style={{ objectPosition: 'center', zIndex: 0 }}
+      poster="/behind-5.jpg"
+      className="w-full h-full object-cover hero-video"
+      style={{ 
+        objectPosition: 'center', 
+        zIndex: 0,
+        pointerEvents: 'none',
+      } as React.CSSProperties}
     >
       <source src="/hero-video.MP4" type="video/mp4" />
     </video>

@@ -266,23 +266,76 @@ h3, h4, h5, h6 {
   display: none;  /* Chrome, Safari and Opera */
 }
 
-/* Hide native video controls on mobile */
+/* Hide native video controls on mobile - comprehensive rules */
 video::-webkit-media-controls {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 video::-webkit-media-controls-enclosure {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 video::-webkit-media-controls-panel {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 video::-webkit-media-controls-play-button {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 video::-webkit-media-controls-start-playback-button {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+video::--webkit-media-controls-overlay-enclosure {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Additional rules for iOS Safari */
+video {
+  pointer-events: none;
+}
+
+video::-webkit-media-controls-overlay {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Hero video specific - hide all controls aggressively */
+.hero-video::-webkit-media-controls,
+.hero-video::-webkit-media-controls-enclosure,
+.hero-video::-webkit-media-controls-panel,
+.hero-video::-webkit-media-controls-play-button,
+.hero-video::-webkit-media-controls-start-playback-button,
+.hero-video::-webkit-media-controls-overlay-play-button,
+.hero-video::-webkit-media-controls-overlay,
+.hero-video::-webkit-media-controls-overlay-enclosure {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
