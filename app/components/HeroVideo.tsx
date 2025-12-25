@@ -9,13 +9,13 @@ export default function HeroVideo() {
     const video = videoRef.current
     if (!video) return
 
-    // Ensure video plays on mobile
+    // Try to play the video - if it fails (Low Power Mode), video will show first frame
     const playPromise = video.play()
     
     if (playPromise !== undefined) {
-      playPromise.catch((error) => {
-        // Autoplay was prevented, try to play on user interaction
-        console.log('Autoplay prevented, video will play on interaction')
+      playPromise.catch(() => {
+        // Autoplay was prevented - video will show first frame as poster
+        // No user interaction needed, video element will handle it
       })
     }
 
@@ -24,8 +24,9 @@ export default function HeroVideo() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            // Try to play when in view, ignore errors (Low Power Mode will prevent it)
             video.play().catch(() => {
-              // Ignore play errors
+              // Silently fail - video will show first frame
             })
           }
         })
