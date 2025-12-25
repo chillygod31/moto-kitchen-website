@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getRandomGalleryImages } from "../lib/gallery-data";
 import { findDishByName } from "../lib/menu-data";
 import { parseDishName } from "../lib/utils";
+import HeroVideo from "../components/HeroVideo";
 
 export default function Home() {
   const signatureDishNames = [
@@ -67,17 +68,7 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center bg-[#2B1E1A] overflow-hidden">
         {/* Background Video/Image */}
         <div className="absolute inset-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: 'center', zIndex: 0 }}
-          >
-            <source src="/hero-video.MP4" type="video/mp4" />
-          </video>
+          <HeroVideo />
           <div className="absolute inset-0 bg-black/50 z-10" />
         </div>
         
