@@ -253,6 +253,55 @@ function OrderSuccessContent() {
             </div>
           )}
 
+          {/* What Happens Next */}
+          {order && (
+            <div className="bg-[#FBF8F3] border border-[#E9E2D7] rounded-xl p-6 mb-8">
+              <h2 className="text-xl font-semibold mb-4">What happens next?</h2>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-[#C86A3A] text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold">1</div>
+                  <div>
+                    <p className="font-medium text-[#1E1B18] mb-1">Confirmation Email</p>
+                    <p className="text-sm text-[#6B5B55]">
+                      {order.customer_email 
+                        ? `We've sent a confirmation email to ${order.customer_email} with your order details and pickup/delivery instructions.`
+                        : 'You\'ll receive a confirmation email with your order details and pickup/delivery instructions.'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-[#C86A3A] text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold">2</div>
+                  <div>
+                    <p className="font-medium text-[#1E1B18] mb-1">Preparation</p>
+                    <p className="text-sm text-[#6B5B55]">
+                      Our team will prepare your order and have it ready by your scheduled time.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-[#C86A3A] text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold">3</div>
+                  <div>
+                    <p className="font-medium text-[#1E1B18] mb-1">
+                      {order.fulfillment_type === 'pickup' ? 'Pickup' : 'Delivery'}
+                    </p>
+                    <p className="text-sm text-[#6B5B55]">
+                      {order.fulfillment_type === 'pickup'
+                        ? 'Come to our location at the scheduled time. We\'ll have everything ready for you!'
+                        : 'We\'ll deliver your order to the address provided at the scheduled time.'}
+                    </p>
+                  </div>
+                </div>
+                {order.fulfillment_type === 'pickup' && (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-[#E9E2D7]">
+                    <p className="text-sm text-[#6B5B55]">
+                      <strong className="text-[#1E1B18]">Allergens or dietary requests?</strong> Reply to your confirmation email and we'll make sure to accommodate your needs.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Contact Information */}
           <div className="bg-[#FAF6EF] rounded-xl p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">Questions about your order?</h2>

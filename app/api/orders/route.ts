@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAuthClient } from '@/lib/supabase/server-auth'
+import { createServerAppClient } from '@/lib/supabase/server-app'
 import { getTenantId } from '@/lib/tenant'
-import { getAdminTenantId } from '@/lib/admin-auth'
+import { getAdminTenantId } from '@/lib/auth/server-admin'
 import { generateOrderNumber, extractPostcodePrefix, checkMinimumOrder } from '@/lib/utils'
+import { createOrderSchema } from '@/lib/validations/orders'
+import { rateLimitMiddleware, rateLimitConfigs } from '@/lib/rate-limit'
 
 /**
  * GET /api/orders
@@ -11,17 +14,12 @@ import { generateOrderNumber, extractPostcodePrefix, checkMinimumOrder } from '@
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     
     // Get tenant ID from admin session (server-side, secure)
-    let tenantId: string
-    try {
-      tenantId = await getAdminTenantId(request)
-    } catch (authError) {
-      // Fallback to auto-detect for customer-facing endpoints
-      // But this should ideally require admin auth
-      tenantId = await getTenantId()
-    }
+    // Admin routes require authentication
+    const tenantId = await getAdminTenantId(request)
 
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
@@ -64,11 +62,33 @@ export async function GET(request: NextRequest) {
  * Create a new order
  */
 export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimit = rateLimitMiddleware(request, rateLimitConfigs.orderCreation)
+  if (!rateLimit.allowed) {
+    return rateLimit.response as NextResponse
+  }
+
   try {
-    const supabase = createServerClient()
+    const supabase = createServerAppClient()
     const tenantId = await getTenantId()
 
     const body = await request.json()
+    
+    // Validate request body
+    const validationResult = createOrderSchema.safeParse(body)
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { 
+          message: 'Validation failed', 
+          errors: validationResult.error.errors.map(e => ({
+            path: e.path.join('.'),
+            message: e.message
+          }))
+        },
+        { status: 400 }
+      )
+    }
+    
     const {
       customerName,
       customerEmail,
@@ -85,29 +105,7 @@ export async function POST(request: NextRequest) {
       adminFee,
       total,
       notes,
-    } = body
-
-    // Validation
-    if (!customerName || !customerPhone || !cartItems || cartItems.length === 0) {
-      return NextResponse.json(
-        { message: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    if (fulfillmentType === 'delivery' && (!deliveryAddress || !postcode || !city)) {
-      return NextResponse.json(
-        { message: 'Delivery address is required for delivery orders' },
-        { status: 400 }
-      )
-    }
-
-    if (!scheduledFor) {
-      return NextResponse.json(
-        { message: 'Time slot is required' },
-        { status: 400 }
-      )
-    }
+    } = validationResult.data
 
     // Validate minimum order
     const { data: businessSettings } = await supabase
@@ -238,7 +236,12 @@ export async function POST(request: NextRequest) {
       console.error('Error fetching created order:', fetchError)
     }
 
-    return NextResponse.json(fullOrder || order, { status: 201 })
+    // Add rate limit headers to successful response
+    const response = NextResponse.json(fullOrder || order, { status: 201 })
+    response.headers.set('X-RateLimit-Limit', rateLimitConfigs.orderCreation.maxRequests.toString())
+    response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimit.resetAt.toString())
+    return response
   } catch (error: any) {
     console.error('Error in POST /api/orders:', error)
     return NextResponse.json(

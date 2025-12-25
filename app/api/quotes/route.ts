@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createServerAuthClient } from "@/lib/supabase/server-auth";
+import { verifyCsrfToken } from '@/lib/csrf'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient();
     const { searchParams } = new URL(request.url);
     
     const status = searchParams.get('status');
@@ -54,8 +56,18 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  // Verify CSRF token
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const supabase = createServerClient();
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient();
     const body = await request.json();
     
     const { id, status, notes } = body;

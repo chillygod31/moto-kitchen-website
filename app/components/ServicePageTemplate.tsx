@@ -163,7 +163,9 @@ export default function ServicePageTemplate({
       )}
 
       {/* How It Works */}
-      <HowItWorks steps={howItWorksSteps} />
+      {howItWorksSteps && howItWorksSteps.length > 0 && (
+        <HowItWorks steps={howItWorksSteps} />
+      )}
 
       {/* Gallery Strip */}
       {galleryImages.length > 0 && (

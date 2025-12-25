@@ -1,34 +1,80 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminSession } from "@/lib/admin-auth";
+import { createServerAuthClientForApi } from "@/lib/supabase/server-auth-api";
+import { verifyCsrfToken } from '@/lib/csrf'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 
 /**
  * POST /api/admin/auth
- * Admin authentication endpoint
- * Creates server-side session with tenant context
+ * Admin authentication endpoint using Supabase Auth
+ * Signs in user and creates JWT session stored in cookies
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { password, tenantSlug } = body;
+    const { email, password } = body;
 
-    const correctPassword = process.env.ADMIN_PASSWORD || "admin123";
-
-    if (password !== correctPassword) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: "Incorrect password" },
+        { error: "Email and password are required" },
+        { status: 400 }
+      );
+    }
+
+    // Create Supabase client for auth with cookie handling
+    const { supabase, response: authResponse } = createServerAuthClientForApi(request);
+
+    // Sign in with email and password
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError || !authData.user) {
+      console.error('Admin auth error:', authError);
+      return NextResponse.json(
+        { error: "Invalid email or password" },
         { status: 401 }
       );
     }
 
-    // Create admin session with tenant context
-    // Default to 'moto-kitchen' for MVP, but allow override for future multi-tenant
-    const slug = tenantSlug || 'moto-kitchen';
-    const session = await createAdminSession(slug);
+    // Verify user is a member of at least one tenant
+    const supabaseAdmin = createServerAdminClient();
+    const { data: memberships, error: membershipError } = await supabaseAdmin
+      .from('tenant_members')
+      .select('tenant_id, role, tenants(slug, name)')
+      .eq('user_id', authData.user.id);
 
-    return NextResponse.json({ 
+    if (membershipError || !memberships || memberships.length === 0) {
+      // User is not a member of any tenant - sign them out
+      await supabase.auth.signOut();
+      return NextResponse.json(
+        { error: "User is not authorized as admin" },
+        { status: 403 }
+      );
+    }
+
+    // Get the primary tenant (for MVP, use first membership)
+    // In future, could allow user to select tenant or use tenantSlug from request
+    const primaryMembership = memberships[0];
+    const tenantSlug = (primaryMembership.tenants as any)?.slug || 'moto-kitchen';
+
+    // Create JSON response with auth cookies
+    const jsonResponse = NextResponse.json({ 
       success: true,
-      tenantSlug: session.tenantSlug
+      user: {
+        id: authData.user.id,
+        email: authData.user.email,
+      },
+      tenantSlug,
+      role: primaryMembership.role,
     });
+
+    // Copy cookies from authResponse to jsonResponse
+    authResponse.cookies.getAll().forEach(cookie => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+
+    return jsonResponse;
   } catch (error: any) {
     console.error('Admin auth error:', error);
     return NextResponse.json(
@@ -41,14 +87,30 @@ export async function POST(request: NextRequest) {
 /**
  * DELETE /api/admin/auth
  * Admin logout endpoint
- * Clears server-side session
+ * Signs out user and clears Supabase Auth session
  */
 export async function DELETE(request: NextRequest) {
+  // Verify CSRF token for logout
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const { clearAdminSession } = await import("@/lib/admin-auth");
-    await clearAdminSession();
+    const { supabase, response: authResponse } = createServerAuthClientForApi(request);
+    await supabase.auth.signOut();
     
-    return NextResponse.json({ success: true });
+    const jsonResponse = NextResponse.json({ success: true });
+    
+    // Copy cookies from authResponse (which will have cleared auth cookies)
+    authResponse.cookies.getAll().forEach(cookie => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    
+    return jsonResponse;
   } catch (error: any) {
     console.error('Admin logout error:', error);
     return NextResponse.json(

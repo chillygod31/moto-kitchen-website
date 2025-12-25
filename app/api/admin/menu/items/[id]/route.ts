@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { getAdminTenantId } from '@/lib/admin-auth'
+import { createServerAuthClient } from '@/lib/supabase/server-auth'
+import { getAdminTenantId } from '@/lib/auth/server-admin'
+import { verifyCsrfToken } from '@/lib/csrf'
 
 /**
  * GET /api/admin/menu/items/[id]
@@ -11,7 +12,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
     const { id } = await params
 
@@ -55,8 +57,18 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Verify CSRF token
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
     const { id } = await params
     const body = await request.json()
@@ -151,8 +163,18 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Verify CSRF token
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
     const { id } = await params
 

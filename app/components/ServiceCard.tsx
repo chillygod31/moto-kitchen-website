@@ -66,13 +66,6 @@ export default function ServiceCard({
         </ul>
       )}
 
-      {/* Pricing */}
-      {pricing && (
-        <p className="text-[#C86A3A] font-semibold text-sm mb-4">
-          {pricing}
-        </p>
-      )}
-
       {/* Link */}
       <span 
         className="inline-flex items-center justify-center gap-1 text-[#C86A3A] font-semibold text-sm mt-auto"

@@ -1,11 +1,11 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { isAdminAuthenticated, getAdminTenantId } from '@/lib/admin-auth'
+import { isAdminAuthenticated, getAdminTenantId } from '@/lib/auth/server-admin'
 import { getMergedBranding, generateBrandingCSS } from '@/lib/admin-branding'
 import AdminHeader from '@/components/admin/AdminHeader'
 import AdminSidebar from '@/components/admin/AdminSidebar'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard',
@@ -50,7 +50,7 @@ export default async function AdminLayout({
   const branding = await getMergedBranding(tenantId)
   
   // Get tenant name for header
-  const supabase = createServerClient()
+  const supabase = createServerAdminClient()
   const { data: tenant } = await supabase
     .from('tenants')
     .select('name')

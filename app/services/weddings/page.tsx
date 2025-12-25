@@ -21,7 +21,7 @@ const faqs = [
   { question: "Do you offer tasting sessions?", answer: "Yes! Complimentary tasting sessions are available for weddings with 50+ guests. This allows you to sample dishes and finalize your menu." },
   { question: "Can you accommodate dietary restrictions?", answer: "Absolutely. We can prepare vegetarian, vegan, gluten-free, halal, and other dietary options. Please inform us during the planning process." },
   { question: "What service styles do you offer?", answer: "We offer buffet, family-style, plated service, and cocktail reception formats. We'll help you choose the best style for your venue and vision." },
-  { question: "Do you provide serving staff?", answer: "Yes, professional serving staff is included. The number of staff depends on your guest count and service style." },
+  { question: "Do you provide serving staff?", answer: "Yes, we provide professional serving staff. Serving staff is an additional cost. The number of staff depends on your guest count and service style, and we'll include this in your custom quote." },
   { question: "What is your pricing structure?", answer: "Pricing is based on guest count, menu selection, and service style. We provide custom quotes after understanding your specific needs." },
   { question: "Do you travel throughout the Netherlands?", answer: "Yes, we cater weddings anywhere in the Netherlands. Travel fees may apply for locations far from our base." },
   { question: "What is your cancellation policy?", answer: "Cancellations more than 30 days before receive a full deposit refund. Please see our terms for full details." },

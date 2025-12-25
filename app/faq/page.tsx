@@ -60,10 +60,6 @@ const faqs = [
         answer: "We charge a travel fee based on distance from our location. We'll provide a detailed quote that includes all travel costs when you book. Contact us with your event location for an accurate estimate.",
       },
       {
-        question: "What's included in your per-person pricing?",
-        answer: "Our per-person pricing includes: the selected menu items, professional serving staff, all serving equipment (chafing dishes, serving utensils), setup and cleanup, and basic tableware (disposable or premium depending on package). Additional services like premium tableware upgrades, extra staff, or special equipment may incur additional costs. We'll provide a detailed breakdown in your custom quote.",
-      },
-      {
         question: "What is your cancellation policy?",
         answer: "Cancellations made more than 14 days before the event receive a full deposit refund. Cancellations within 14 days may forfeit the deposit, depending on circumstances.",
       },
@@ -127,7 +123,7 @@ const faqs = [
       },
       {
         question: "Do you provide serving staff?",
-        answer: "Yes, we provide professional serving staff for all events. The number of staff depends on your guest count and service style.",
+        answer: "Yes, we provide professional serving staff for all events. Serving staff is an additional cost. The number of staff depends on your guest count and service style, and we'll include this in your custom quote.",
       },
       {
         question: "Do you provide plates, cutlery, and serving equipment?",
@@ -142,10 +138,6 @@ const faqs = [
   {
     category: "Food Safety & Quality",
     questions: [
-      {
-        question: "Are you licensed and insured?",
-        answer: "Yes, we are fully licensed by the NVWA (Netherlands Food and Consumer Product Safety Authority) and carry comprehensive liability insurance. We operate from a certified commercial kitchen that meets all Dutch food safety standards. You can have complete peace of mind knowing we comply with all legal requirements and safety regulations.",
-      },
       {
         question: "How do you ensure food quality and freshness?",
         answer: "We source the freshest ingredients from trusted suppliers and prepare everything in our certified commercial kitchen. All food is prepared fresh for your event, we don't use pre made or frozen dishes. Our team follows strict food safety protocols, including proper storage, temperature control, and hygiene practices. We take pride in serving only the highest quality, authentic Tanzanian cuisine.",

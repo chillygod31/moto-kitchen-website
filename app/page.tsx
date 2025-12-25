@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { getRandomGalleryImages } from "../lib/gallery-data";
 import { findDishByName } from "../lib/menu-data";
-import { formatPricing } from "../lib/pricing-data";
 import { parseDishName } from "../lib/utils";
 
 export default function Home() {
@@ -22,52 +21,6 @@ export default function Home() {
     return dish || { name, description: "", image: null };
   });
 
-  const trustPoints = [
-    { 
-      top: "Family-owned", 
-      topMobile: "Family-owned",
-      bottom: "Since 2010",
-      bottomMobile: "Since 2010",
-      icon: (
-        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-        </svg>
-      )
-    },
-    { 
-      top: "100% Halal", 
-      topMobile: "100% Halal",
-      bottom: "",
-      bottomMobile: "",
-      icon: (
-        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    { 
-      top: "250+ events", 
-      topMobile: "250+ events",
-      bottom: "Catered since 2023",
-      bottomMobile: "Since 2023",
-      icon: (
-        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    { 
-      top: "Embassy of Tanzania (NL)", 
-      topMobile: "Embassy of Tanzania",
-      bottom: "Official caterer",
-      bottomMobile: "Official caterer",
-      icon: (
-        <svg className="w-[18px] h-[18px] text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-        </svg>
-      )
-    },
-  ];
 
   const howItWorks = [
     { 
@@ -153,31 +106,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="mt-4 py-5 bg-white border-y border-[#E9E2D7]">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="grid grid-cols-2 gap-4">
-            {trustPoints.map((point, index) => (
-              <div 
-                key={index} 
-                className="bg-white/80 rounded-xl border border-black/10 shadow-sm px-4 py-3 h-full"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  {point.icon}
-                  <div className="text-[13px] font-medium tracking-tight text-stone-900">
-                    <span className="md:hidden">{point.topMobile}</span>
-                    <span className="hidden md:inline">{point.top}</span>
-                  </div>
-                </div>
-                <div className="text-[11px] text-stone-600 ml-[26px]">
-                  <span className="md:hidden">{point.bottomMobile}</span>
-                  <span className="hidden md:inline">{point.bottom}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* About Preview Section */}
       <section className="section-padding bg-white">
@@ -253,22 +181,19 @@ export default function Home() {
                 href: "/services/private-events",
                 image: "/food-8.jpg",
                 title: "Private Events",
-                description: "Birthday parties, anniversaries, family gatherings, and intimate celebrations with authentic flavours.",
-                pricing: formatPricing("private-events")
+                description: "Birthday parties, anniversaries, family gatherings, and intimate celebrations with authentic flavours."
               },
               {
                 href: "/services/private-events",
                 image: "/corporate-2.jpg",
                 title: "Corporate Events",
-                description: "Professional catering for team lunches, conferences, client meetings, and company celebrations.",
-                pricing: formatPricing("corporate")
+                description: "Professional catering for team lunches, conferences, client meetings, and company celebrations."
               },
               {
                 href: "/services/private-events",
                 image: "/private-3.jpg",
                 title: "Weddings",
-                description: "Make your special day unforgettable with authentic Tanzanian cuisine for your wedding celebration.",
-                pricing: formatPricing("weddings")
+                description: "Make your special day unforgettable with authentic Tanzanian cuisine for your wedding celebration."
               },
               {
                 href: "/services/pick-up-delivery",
@@ -307,11 +232,6 @@ export default function Home() {
                 >
                   {service.description}
                 </p>
-                {service.pricing && (
-                  <p className="text-[#C9653B] font-semibold text-sm mb-4 text-center">
-                    {service.pricing}
-                  </p>
-                )}
                 <span className="inline-flex items-center gap-1 mt-auto text-[#C9653B] font-semibold text-sm justify-center w-full">
                   Learn more
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

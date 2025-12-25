@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { getAdminTenantId } from '@/lib/admin-auth'
+import { createServerAuthClient } from '@/lib/supabase/server-auth'
+import { getAdminTenantId } from '@/lib/auth/server-admin'
+import { createMenuItemSchema } from '@/lib/validations/menu'
+import { verifyCsrfToken } from '@/lib/csrf'
 
 /**
  * GET /api/admin/menu/items
@@ -8,7 +10,8 @@ import { getAdminTenantId } from '@/lib/admin-auth'
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
 
     // Get menu items
@@ -49,8 +52,18 @@ export async function GET(request: NextRequest) {
  * Create a new menu item (admin only)
  */
 export async function POST(request: NextRequest) {
+  // Verify CSRF token
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
 
     const body = await request.json()

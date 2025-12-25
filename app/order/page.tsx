@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 import MenuClient from './MenuClient'
 import { MenuItem, MenuCategory } from '@/types'
@@ -14,7 +14,9 @@ interface MenuData {
 
 async function getBusinessSettings() {
   try {
-    const supabase = createServerClient()
+    // Temporary: Use service role because RLS blocks anon SELECT
+    // Tenant isolation enforced via app-level filtering (.eq('tenant_id', ...))
+    const supabase = createServerAdminClient()
     const tenantId = await getTenantId()
 
     const { data: settings } = await supabase
@@ -42,7 +44,9 @@ async function getMenuData(): Promise<{ data: MenuData | null; error: string | n
       }
     }
 
-    const supabase = createServerClient()
+    // Temporary: Use service role because RLS blocks anon SELECT
+    // Tenant isolation enforced via app-level filtering (.eq('tenant_id', ...))
+    const supabase = createServerAdminClient()
     
     // Get tenant ID
     let tenantId: string

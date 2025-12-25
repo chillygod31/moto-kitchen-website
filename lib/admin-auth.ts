@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 
 /**

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { getTenantId } from '@/lib/tenant'
-import { getAdminTenantId } from '@/lib/admin-auth'
+import { createServerAuthClient } from '@/lib/supabase/server-auth'
+import { getAdminTenantId } from '@/lib/auth/server-admin'
+import { updateOrderStatusSchema } from '@/lib/validations/admin'
+import { verifyCsrfToken } from '@/lib/csrf'
 
 /**
  * GET /api/orders/[id]
@@ -12,16 +13,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     
     // Get tenant ID from admin session (server-side, secure)
-    let tenantId: string
-    try {
-      tenantId = await getAdminTenantId(request)
-    } catch (authError) {
-      // Fallback for customer-facing endpoints
-      tenantId = await getTenantId()
-    }
+    const tenantId = await getAdminTenantId(request)
     
     const { id } = await params
 
@@ -58,27 +54,41 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Verify CSRF token
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     
     // Get tenant ID from admin session (server-side, secure)
-    let tenantId: string
-    try {
-      tenantId = await getAdminTenantId(request)
-    } catch (authError) {
-      // Admin operations should require auth, but fallback for compatibility
-      tenantId = await getTenantId()
-    }
+    const tenantId = await getAdminTenantId(request)
     
     const { id } = await params
     const body = await request.json()
 
-    const { status, payment_status, ...otherUpdates } = body
+    // Validate request body
+    const validationResult = updateOrderStatusSchema.safeParse(body)
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { 
+          message: 'Validation failed', 
+          errors: validationResult.error.errors.map(e => ({
+            path: e.path.join('.'),
+            message: e.message
+          }))
+        },
+        { status: 400 }
+      )
+    }
 
-    const updateData: any = {}
-    if (status) updateData.status = status
-    if (payment_status) updateData.payment_status = payment_status
-    Object.assign(updateData, otherUpdates)
+    const updateData = validationResult.data
 
     const { data, error } = await supabase
       .from('orders')

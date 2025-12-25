@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAppClient } from '@/lib/supabase/server-app'
 import { getTenantId } from '@/lib/tenant'
 
 /**
@@ -8,8 +8,8 @@ import { getTenantId } from '@/lib/tenant'
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    const supabase = createServerAppClient()
+    const tenantId = await getTenantId()
 
     const { data: deliveryZones, error } = await supabase
       .from('delivery_zones')

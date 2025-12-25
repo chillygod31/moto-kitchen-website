@@ -1,6 +1,5 @@
 import ServiceCard from "../components/ServiceCard";
 import CTASection from "../components/CTASection";
-import { formatPricing } from "../../lib/pricing-data";
 
 export const metadata = {
   title: "Catering Services | Moto Kitchen",
@@ -13,7 +12,6 @@ const services = [
     title: "Private Events",
     description: "Birthday parties, anniversaries, family gatherings, and intimate celebrations with authentic flavours.",
     image: "/food-8.jpg",
-    pricing: formatPricing("private-events"),
     features: [
       "Personalized menus",
       "Intimate to large groups",
@@ -26,7 +24,6 @@ const services = [
     title: "Corporate",
     description: "Professional catering for team lunches, conferences, client meetings, and company celebrations.",
     image: "/corporate-2.jpg",
-    pricing: formatPricing("corporate"),
     features: [
       "Flexible packages",
       "Punctual delivery",
@@ -39,7 +36,6 @@ const services = [
     title: "Weddings",
     description: "Make your special day unforgettable with authentic Tanzanian cuisine for your wedding celebration.",
     image: "/private-3.jpg",
-    pricing: formatPricing("weddings"),
     features: [
       "Custom menu planning",
       "Tasting sessions",

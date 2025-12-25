@@ -24,8 +24,8 @@ const faqs = [
   { question: "Do you cater cultural celebrations?", answer: "Absolutely! We specialize in Tanzanian cuisine and can create authentic menus for cultural celebrations and heritage events." },
   { question: "What about dietary restrictions?", answer: "We accommodate all dietary needs including vegetarian, vegan, gluten free, and allergies. Just let us know." },
   { question: "Can I request specific dishes?", answer: "Yes! If there's a specific Tanzanian dish you love or want to try, let us know and we'll include it." },
-  { question: "Do you provide serving staff for home events?", answer: "Yes, we can provide servers for your home event so you can relax and enjoy with your guests." },
-  { question: "What's included in the price?", answer: "Our quotes include food, serving equipment, setup, and cleanup. Staff is included for full-service packages." },
+  { question: "Do you provide serving staff for home events?", answer: "Yes, we can provide servers for your home event so you can relax and enjoy with your guests. Serving staff is an additional cost that we'll include in your custom quote." },
+  { question: "What's included in the price?", answer: "Our quotes include food, serving equipment, setup, and cleanup. Serving staff is an additional cost that we'll include in your custom quote." },
   { question: "How far in advance should I book?", answer: "We recommend 2 to 3 weeks for most private events. For larger gatherings or peak seasons, book earlier." },
 ];
 

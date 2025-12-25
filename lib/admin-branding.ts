@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 
 /**
  * Default branding values (fallback)
@@ -69,7 +69,7 @@ export interface MergedBranding {
  * Returns null if not found
  */
 export async function getTenantBranding(tenantId: string): Promise<TenantBranding | null> {
-  const supabase = createServerClient()
+  const supabase = createServerAdminClient()
   
   const { data, error } = await supabase
     .from('tenant_branding')

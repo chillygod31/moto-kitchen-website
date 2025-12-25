@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -18,18 +19,19 @@ export default function AdminLogin() {
       const response = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // Include cookies
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Session is now stored server-side in httpOnly cookie
-        // No need for sessionStorage - redirect to admin
+        // JWT session is now stored in httpOnly cookies
+        // Redirect to admin dashboard
         router.push("/admin/quotes");
         router.refresh(); // Refresh to pick up new session
       } else {
-        setError(data.error || "Incorrect password");
+        setError(data.error || "Invalid email or password");
         setIsLoading(false);
       }
     } catch (err) {
@@ -55,6 +57,21 @@ export default function AdminLogin() {
             )}
 
             <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div>
               <label htmlFor="password" className="block text-sm font-semibold text-[#1F1F1F] mb-2">
                 Password
               </label>
@@ -65,7 +82,6 @@ export default function AdminLogin() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] focus:border-transparent"
                 required
-                autoFocus
               />
             </div>
 

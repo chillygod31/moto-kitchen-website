@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 
 /**
  * GET /api/time-slots
  * Get available time slots for the next 7 days
+ * 
+ * NOTE: Uses service role client temporarily because RLS blocks public SELECT.
+ * Tenant isolation is enforced via .eq('tenant_id', tenantId) filtering.
+ * TODO: Future - use proper tenant-scoped access when implemented.
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
-    const tenantId = await getTenantId('moto-kitchen')
+    // Temporary: Use service role because RLS blocks anon SELECT
+    // Tenant isolation enforced via app-level filtering (.eq('tenant_id', ...))
+    const supabase = createServerAdminClient()
+    const tenantId = await getTenantId()
 
     const now = new Date()
     const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)

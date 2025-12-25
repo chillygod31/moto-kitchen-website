@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
-import { getAdminTenantId } from '@/lib/admin-auth'
+import { createServerAuthClient } from '@/lib/supabase/server-auth'
+import { getAdminTenantId } from '@/lib/auth/server-admin'
+import { createMenuCategorySchema } from '@/lib/validations/menu'
+import { verifyCsrfToken } from '@/lib/csrf'
 
 /**
  * GET /api/admin/menu/categories
@@ -8,7 +10,8 @@ import { getAdminTenantId } from '@/lib/admin-auth'
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
 
     const { data: categories, error } = await supabase
@@ -48,26 +51,44 @@ export async function GET(request: NextRequest) {
  * Create a new menu category (admin only)
  */
 export async function POST(request: NextRequest) {
+  // Verify CSRF token
+  const isValidCsrf = await verifyCsrfToken(request)
+  if (!isValidCsrf) {
+    return NextResponse.json(
+      { message: 'CSRF token missing or invalid' },
+      { status: 403 }
+    )
+  }
+
   try {
-    const supabase = createServerClient()
+    // Use JWT-based client so RLS policies apply
+    const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
 
     const body = await request.json()
-    const { name, description, is_active, sort_order } = body
-
-    if (!name) {
+    
+    // Validate request body
+    const validationResult = createMenuCategorySchema.safeParse(body)
+    if (!validationResult.success) {
       return NextResponse.json(
-        { message: 'Category name is required' },
+        { 
+          message: 'Validation failed', 
+          errors: validationResult.error.errors.map(e => ({
+            path: e.path.join('.'),
+            message: e.message
+          }))
+        },
         { status: 400 }
       )
     }
+    
+    const { name, is_active, sort_order } = validationResult.data
 
     const { data: category, error } = await supabase
       .from('menu_categories')
       .insert({
         tenant_id: tenantId,
         name,
-        description: description || null,
         is_active: is_active !== false, // Default to true
         sort_order: sort_order || 0,
       })

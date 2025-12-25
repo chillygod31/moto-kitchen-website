@@ -1,10 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { createServerClient } from "@/lib/supabase/server";
+import { createServerAdminClient } from "@/lib/supabase/server-admin";
+import { rateLimitMiddleware, rateLimitConfigs } from '@/lib/rate-limit'
 import fs from "fs";
 import path from "path";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimit = rateLimitMiddleware(request, rateLimitConfigs.quoteSubmit)
+  if (!rateLimit.allowed) {
+    return rateLimit.response as NextResponse
+  }
+
   try {
     // Check Supabase environment variables
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -60,7 +67,7 @@ export async function POST(request: Request) {
     // Save to database FIRST (so we don't lose data if email fails)
     let quoteRequest = null;
     try {
-      const supabase = createServerClient();
+      const supabase = createServerAdminClient();
       const { data, error: dbError } = await supabase
         .from('quote_requests')
         .insert({
@@ -727,10 +734,15 @@ contact@motokitchen.nl
       console.log("Auto-reply email is disabled. Set ENABLE_AUTO_REPLY=true to enable.");
     }
 
-    return NextResponse.json({ 
+    // Add rate limit headers to successful response
+    const response = NextResponse.json({ 
       success: true,
       quoteId: quoteRequest?.id 
-    });
+    })
+    response.headers.set('X-RateLimit-Limit', rateLimitConfigs.quoteSubmit.maxRequests.toString())
+    response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', rateLimit.resetAt.toString())
+    return response
   } catch (error) {
     console.error("Contact form error:", error);
     return NextResponse.json(

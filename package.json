@@ -6,27 +6,33 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify-phase-a": "tsx scripts/verify-phase-a.ts",
+    "test:tenant-isolation": "tsx scripts/test-tenant-isolation.ts"
   },
   "dependencies": {
     "@sanity/client": "^6.15.0",
     "@sanity/image-url": "^1.0.2",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "next": "16.0.10",
     "next-sanity": "^9.0.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "resend": "^4.0.0",
-    "sanity": "^3.30.0"
+    "sanity": "^3.30.0",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
