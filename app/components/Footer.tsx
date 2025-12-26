@@ -89,7 +89,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-white/50 text-sm">
-          <p>© 2023 Moto Kitchen. All rights reserved.</p>
+          <p>© 2026 Moto Kitchen. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-[#C9653B] transition-colors">Privacy</Link>
             <Link href="/cookies" className="hover:text-[#C9653B] transition-colors">Cookies</Link>
