@@ -158,7 +158,6 @@ export default function AdminQuotesPage() {
 
   const formatBudgetRange = (budgetRange: string) => {
     const budgetMap: Record<string, string> = {
-      "100-250": "€100-250",
       "250-500": "€250-500",
       "500-1000": "€500-1,000",
       "1000-2500": "€1,000-2,500",

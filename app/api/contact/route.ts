@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createServerAdminClient } from "@/lib/supabase/server-admin";
 import { rateLimitMiddleware, rateLimitConfigs } from '@/lib/rate-limit'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 import fs from "fs";
 import path from "path";
 
 export async function POST(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('POST', '/api/contact', context)
+  
   // Apply rate limiting
   const rateLimit = rateLimitMiddleware(request, rateLimitConfigs.quoteSubmit)
   if (!rateLimit.allowed) {
+    logger.warn('Rate limit exceeded for contact form', context)
     return rateLimit.response as NextResponse
   }
 
@@ -18,7 +24,8 @@ export async function POST(request: NextRequest) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Supabase environment variables not set:", {
+      logger.error('Supabase environment variables not set', undefined, {
+        ...context,
         hasUrl: !!supabaseUrl,
         hasKey: !!supabaseServiceKey
       });
@@ -28,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Initialize Resend only at runtime, not during build
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      console.error("RESEND_API_KEY is not set");
+      logger.error('RESEND_API_KEY is not set', undefined, context)
       return NextResponse.json(
         { error: "Email service not configured" },
         { status: 500 }
@@ -89,21 +96,24 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (dbError) {
-        console.error("Database error:", JSON.stringify(dbError, null, 2));
-        console.error("Error details:", {
-          message: dbError.message,
-          details: dbError.details,
-          hint: dbError.hint,
-          code: dbError.code
+        logger.api.error('POST', '/api/contact', dbError as Error, {
+          ...context,
+          errorDetails: {
+            message: dbError.message,
+            details: dbError.details,
+            hint: dbError.hint,
+            code: dbError.code
+          }
         });
+        captureException(dbError as Error, context);
         // Still continue to send email, but log the error clearly
       } else {
         quoteRequest = data;
-        console.log("Quote request saved successfully:", quoteRequest.id);
+        logger.info("Quote request saved successfully", { ...context, quoteRequestId: quoteRequest.id });
       }
     } catch (dbError: any) {
-      console.error("Database connection error:", dbError);
-      console.error("Error stack:", dbError?.stack);
+      logger.api.error('POST', '/api/contact', dbError, context);
+      captureException(dbError, context);
       // Continue to send email even if database fails
     }
 
@@ -155,7 +165,6 @@ export async function POST(request: NextRequest) {
     const formatBudgetRange = (budgetRange: string | null) => {
       if (!budgetRange) return "Not specified";
       const budgetMap: Record<string, string> = {
-        "100-250": "€100-250",
         "250-500": "€250-500",
         "500-1000": "€500-1,000",
         "1000-2500": "€1,000-2,500",
@@ -170,7 +179,6 @@ export async function POST(request: NextRequest) {
     const formatBudgetForSubject = (budgetRange: string | null) => {
       if (!budgetRange || budgetRange === "not-sure") return "Budget TBD";
       const budgetMap: Record<string, string> = {
-        "100-250": "€100–250",
         "250-500": "€250–500",
         "500-1000": "€500–1,000",
         "1000-2500": "€1,000–2,500",
@@ -184,7 +192,6 @@ export async function POST(request: NextRequest) {
     const formatBudgetForTitle = (budgetRange: string | null) => {
       if (!budgetRange || budgetRange === "not-sure") return "Budget TBD";
       const budgetMap: Record<string, string> = {
-        "100-250": "€100–250",
         "250-500": "€250–500",
         "500-1000": "€500–1,000",
         "1000-2500": "€1,000–2,500",
@@ -212,7 +219,6 @@ export async function POST(request: NextRequest) {
       if (!budgetRange || budgetRange === "not-sure" || guestCount <= 0) return null;
       
       const budgetMap: Record<string, { min: number; max: number }> = {
-        "100-250": { min: 100, max: 250 },
         "250-500": { min: 250, max: 500 },
         "500-1000": { min: 500, max: 1000 },
         "1000-2500": { min: 1000, max: 2500 },
@@ -569,7 +575,8 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
     });
 
     if (emailError) {
-      console.error("Resend error:", emailError);
+      logger.api.error('POST', '/api/contact', emailError as Error, { ...context, quoteRequestId: quoteRequest?.id });
+      captureException(emailError as Error, { ...context, quoteRequestId: quoteRequest?.id });
       // Don't fail the request if email fails - data is already saved
     }
 
@@ -725,16 +732,17 @@ contact@motokitchen.nl
       });
 
       if (autoReplyError) {
-        console.error("Auto-reply email error:", autoReplyError);
+        logger.warn("Auto-reply email error", { ...context, email, error: autoReplyError });
         // Don't fail the request if auto-reply fails
       } else {
-        console.log("Auto-reply email sent successfully to:", email);
+        logger.info("Auto-reply email sent successfully", { ...context, email, quoteRequestId: quoteRequest?.id });
       }
     } else {
-      console.log("Auto-reply email is disabled. Set ENABLE_AUTO_REPLY=true to enable.");
+      logger.debug("Auto-reply email is disabled", context);
     }
 
     // Add rate limit headers to successful response
+    logger.info("Contact form submitted successfully", { ...context, quoteRequestId: quoteRequest?.id, eventType, guestCount });
     const response = NextResponse.json({ 
       success: true,
       quoteId: quoteRequest?.id 
@@ -743,8 +751,9 @@ contact@motokitchen.nl
     response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString())
     response.headers.set('X-RateLimit-Reset', rateLimit.resetAt.toString())
     return response
-  } catch (error) {
-    console.error("Contact form error:", error);
+  } catch (error: any) {
+    logger.api.error('POST', '/api/contact', error, context);
+    captureException(error, context);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

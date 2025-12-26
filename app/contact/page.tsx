@@ -515,7 +515,6 @@ export default function ContactPage() {
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 w-full min-w-0">
                       {[
-                        { value: "100-250", label: "€100-250" },
                         { value: "250-500", label: "€250-500" },
                         { value: "500-1000", label: "€500-1,000" },
                         { value: "1000-2500", label: "€1,000-2,500" },
