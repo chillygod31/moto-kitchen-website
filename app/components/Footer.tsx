@@ -33,9 +33,6 @@ export default function Footer() {
                 <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>
               </div>
             </div>
-            <p className="text-white/70 mb-4 text-sm">
-              Serving the Netherlands, Belgium, Germany, and beyond.
-            </p>
           </div>
 
           {/* Services */}
@@ -88,7 +85,6 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-            <p className="text-white/50 text-xs mt-4">Serving the Netherlands, Belgium, Germany, and beyond</p>
           </div>
         </div>
 
