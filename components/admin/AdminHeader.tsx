@@ -54,29 +54,6 @@ export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHead
         </Link>
 
         <div className="flex items-center gap-6">
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/admin/quotes"
-              className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-              style={{ fontFamily: 'var(--font-cinzel), serif' }}
-            >
-              Quotes
-            </Link>
-            <Link
-              href="/admin/orders"
-              className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-              style={{ fontFamily: 'var(--font-cinzel), serif' }}
-            >
-              Orders
-            </Link>
-            <Link
-              href="/admin/menu"
-              className="text-white/80 hover:text-[#C9653B] transition-colors text-sm uppercase tracking-wider"
-              style={{ fontFamily: 'var(--font-cinzel), serif' }}
-            >
-              Menu
-            </Link>
-          </nav>
           <button
             onClick={handleLogout}
             disabled={loggingOut}
