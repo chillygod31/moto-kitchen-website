@@ -84,7 +84,7 @@ export default function Home() {
               Request a Quote
             </Link>
             <Link href="/menu" className="btn-secondary !text-white !border-white hover:!bg-white hover:!text-[#1F1F1F]">
-              View Sample Menus
+              View Menus
             </Link>
           </div>
         </div>
