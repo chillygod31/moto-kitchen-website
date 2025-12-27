@@ -122,10 +122,9 @@ export async function POST(
     })
 
     if (emailError) {
-      logger.error('Failed to send admin alert email', { 
+      logger.api.error('POST', `/api/orders/${id}/send-admin-alert`, emailError as Error, { 
         ...context, 
-        orderId: id, 
-        error: emailError.message 
+        orderId: id
       })
       return NextResponse.json(
         { message: 'Failed to send email', error: emailError.message },

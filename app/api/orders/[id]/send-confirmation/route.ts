@@ -119,10 +119,9 @@ export async function POST(
     })
 
     if (emailError) {
-      logger.error('Failed to send confirmation email', { 
+      logger.api.error('POST', `/api/orders/${orderId}/send-confirmation`, emailError as Error, { 
         ...context, 
-        orderId, 
-        error: emailError.message 
+        orderId
       })
       
       // Update email status
