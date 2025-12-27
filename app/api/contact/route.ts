@@ -269,7 +269,6 @@ export async function POST(request: NextRequest) {
       <html>
       <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
@@ -296,20 +295,6 @@ export async function POST(request: NextRequest) {
             font-weight: 600;
             margin: 0 0 8px 0;
             letter-spacing: 0.3px;
-            word-wrap: break-word;
-            line-height: 1.4;
-          }
-          @media only screen and (max-width: 600px) {
-            .header {
-              padding: 20px 16px;
-            }
-            .header h1 {
-              font-size: 16px;
-              line-height: 1.5;
-            }
-            .content {
-              padding: 24px 16px !important;
-            }
           }
           .submitted {
             font-size: 12px;
@@ -365,19 +350,6 @@ export async function POST(request: NextRequest) {
             color: #1F1F1F;
             font-weight: 500;
           }
-          @media only screen and (max-width: 600px) {
-            .field {
-              margin: 0 0 12px 0;
-            }
-            .field-label {
-              display: block;
-              min-width: auto;
-              margin-bottom: 2px;
-            }
-            .field-value {
-              display: block;
-            }
-          }
           .button-container {
             text-align: center; 
             margin: 32px 0 24px 0;
@@ -428,14 +400,6 @@ export async function POST(request: NextRequest) {
           .priority-badge.urgent {
             background: #ffc107;
             color: #3A2A24;
-          }
-          @media only screen and (max-width: 600px) {
-            .priority-badge {
-              display: block;
-              margin-left: 0;
-              margin-top: 8px;
-              width: fit-content;
-            }
           }
         </style>
       </head>
