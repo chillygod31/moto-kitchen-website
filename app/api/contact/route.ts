@@ -583,7 +583,7 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
 
     // Send admin notification email via Resend
     const { error: emailError } = await resend.emails.send({
-      from: "Moto Kitchen Website <onboarding@resend.dev>",
+      from: "Moto Kitchen <contact@motokitchen.nl>",
       to: ["chilechhaa@gmail.com"],
       replyTo: email,
       subject: subject,
@@ -622,7 +622,7 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
       // Read logo and convert to base64
       // Use hosted logo URL instead of data URI for better mobile compatibility
       // Data URIs are often blocked by Gmail and other mobile email clients
-      const logoUrl = "https://motokitchen.nl/motoemaillogo.jpg";
+      const logoUrl = "https://www.motokitchen.nl/motoemaillogo.jpg";
 
       const autoReplyHtml = `
         <!DOCTYPE html>
@@ -852,6 +852,12 @@ contact@motokitchen.nl
         subject: "✓ We received your quote request - Moto Kitchen",
         html: autoReplyHtml,
         text: autoReplyText,
+        tags: [
+          { name: 'category', value: 'auto-reply' }
+        ],
+        headers: {
+          'X-Entity-Ref-ID': quoteRequest?.id || 'unknown',
+        }
       });
 
       if (autoReplyError) {

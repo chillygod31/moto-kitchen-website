@@ -14,15 +14,16 @@ const resend = new Resend(process.env.RESEND_API_KEY)
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const context = getTenantContextFromHeaders(request.headers)
-  logger.api.request('POST', `/api/orders/${params.id}/send-admin-alert`, context)
+  logger.api.request('POST', `/api/orders/${id}/send-admin-alert`, context)
   
   try {
     const tenantId = await getAdminTenantId(request)
     const supabase = createServerAdminClient()
-    const orderId = params.id
+    const orderId = id
 
     // Get order with items
     const { data: order, error: orderError } = await supabase
@@ -123,7 +124,7 @@ export async function POST(
     if (emailError) {
       logger.error('Failed to send admin alert email', { 
         ...context, 
-        orderId, 
+        orderId: id, 
         error: emailError.message 
       })
       return NextResponse.json(
@@ -134,7 +135,7 @@ export async function POST(
 
     logger.info('Admin alert email sent successfully', { 
       ...context, 
-      orderId, 
+      orderId: id, 
       emailId: emailResult?.id 
     })
 
@@ -149,7 +150,7 @@ export async function POST(
         { status: 401 }
       )
     }
-    logger.api.error('POST', `/api/orders/${params.id}/send-admin-alert`, error, context)
+    logger.api.error('POST', `/api/orders/${id}/send-admin-alert`, error, context)
     captureException(error, context)
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },

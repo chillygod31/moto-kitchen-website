@@ -15,25 +15,24 @@ export default function MarketingClickTracker() {
 
       const href = anchor.getAttribute('href') || ''
 
-      let eventName: 'phone_click' | 'whatsapp_click' | 'email_click' | null =
-        null
+      let contactMethod: 'phone' | 'email' | 'whatsapp' | null = null
 
       if (href.startsWith('tel:')) {
-        eventName = 'phone_click'
+        contactMethod = 'phone'
       } else if (href.startsWith('mailto:')) {
-        eventName = 'email_click'
+        contactMethod = 'email'
       } else if (
         href.includes('wa.me') ||
         href.includes('api.whatsapp.com') ||
         href.includes('whatsapp.com')
       ) {
-        eventName = 'whatsapp_click'
+        contactMethod = 'whatsapp'
       }
 
-      if (!eventName) return
+      if (!contactMethod) return
 
       const now = Date.now()
-      const key = `${eventName}:${window.location.pathname}`
+      const key = `contact_click:${contactMethod}:${window.location.pathname}`
       const last = lastFiredRef.current[key] || 0
       if (now - last < COOLDOWN_MS) return
       lastFiredRef.current[key] = now
@@ -41,7 +40,8 @@ export default function MarketingClickTracker() {
       // No PII: do NOT send phone number or email address.
       ;(window as any).dataLayer = (window as any).dataLayer || []
       ;(window as any).dataLayer.push({
-        event: eventName,
+        event: 'contact_click',
+        contact_method: contactMethod,
         page_path: window.location.pathname,
       })
     }

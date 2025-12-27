@@ -198,16 +198,14 @@ export default function AdminQuotesPage() {
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
-  if (loading && quotes.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF6EF]">
-        <p className="text-[#4B4B4B]">Loading quotes...</p>
-      </div>
-    );
-  }
-
   return (
-    <div>
+    <div suppressHydrationWarning>
+      {loading && quotes.length === 0 ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-[#4B4B4B]">Loading quotes...</p>
+        </div>
+      ) : (
+        <>
       {/* Page Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -229,16 +227,16 @@ export default function AdminQuotesPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
-          <div className="grid md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+          <div className="grid md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Status
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+                className="w-full px-3 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] text-sm"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -248,7 +246,7 @@ export default function AdminQuotesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Search
               </label>
               <div className="flex gap-2">
@@ -258,9 +256,9 @@ export default function AdminQuotesPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   placeholder="Name, email, or location"
-                  className="flex-1 px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+                  className="flex-1 px-3 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] text-sm"
                 />
-                <button onClick={handleSearch} className="btn-primary px-6">
+                <button onClick={handleSearch} className="btn-primary px-5 py-2 text-sm">
                   Search
                 </button>
               </div>
@@ -272,7 +270,7 @@ export default function AdminQuotesPage() {
                   setSearchTerm("");
                   fetchQuotes();
                 }}
-                className="btn-secondary w-full"
+                className="btn-secondary w-full py-2 text-sm"
               >
                 Clear Filters
               </button>
@@ -452,6 +450,8 @@ export default function AdminQuotesPage() {
             </div>
           </div>
         )}
+        </>
+      )}
     </div>
   );
 }
