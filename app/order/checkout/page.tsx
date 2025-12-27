@@ -15,6 +15,7 @@ import PaymentMethodSelector from '../components/PaymentMethodSelector'
 interface TimeSlot {
   id: string
   slot_time: string
+  start_time?: string  // Optional: new field for delivery time slots
   max_orders: number
   current_orders: number
 }
