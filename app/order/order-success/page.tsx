@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { Order } from '@/types'
 import { formatCurrency, formatDate, copyToClipboard, getGoogleMapsUrl } from '@/lib/utils'
 import { trackPurchase } from '@/lib/analytics'
+import { clearCart } from '@/lib/cart'
 import { orderRoutes } from '@/lib/routes'
 import OrderTimeline from '../components/OrderTimeline'
 
@@ -14,18 +15,97 @@ function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const orderNumber = searchParams.get('orderNumber')
+  const sessionId = searchParams.get('session_id')
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [businessSettings, setBusinessSettings] = useState<any>(null)
   const [copiedAddress, setCopiedAddress] = useState(false)
+  const [verifyingSession, setVerifyingSession] = useState(false)
 
   useEffect(() => {
-    if (orderId) {
+    // Scroll to top on mount
+    window.scrollTo(0, 0)
+    
+    // Disable Next.js automatic scroll restoration for this page
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    
+    if (sessionId) {
+      verifyStripeSession(sessionId)
+    } else if (orderId) {
       fetchOrder(orderId)
     } else {
       setLoading(false)
     }
-  }, [orderId])
+    
+    return () => {
+      // Re-enable scroll restoration when leaving page
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
+      }
+    }
+  }, [sessionId, orderId])
+
+  const verifyStripeSession = async (sessionId: string) => {
+    setVerifyingSession(true)
+    try {
+      // Poll for order creation (webhook might be delayed)
+      let attempts = 0
+      const maxAttempts = 10
+      
+      while (attempts < maxAttempts) {
+        const response = await fetch(`/api/payments/verify-session?session_id=${sessionId}`)
+        if (response.ok) {
+          const data = await response.json()
+          
+          if (data.order_created && data.order) {
+            setOrder(data.order)
+            
+            // Clear cart after successful order confirmation
+            clearCart()
+            
+            // Track purchase
+            if (data.order && data.order.order_items) {
+              trackPurchase(
+                data.order.order_number || data.order.id,
+                data.order.total || 0,
+                data.order.order_items.map((item: any) => ({
+                  item_id: item.menu_item_id || item.id,
+                  item_name: item.name_snapshot || 'Unknown',
+                  price: item.unit_price || item.price || 0,
+                  quantity: item.quantity || 1,
+                }))
+              )
+            }
+            
+            // Fetch business settings
+            const settingsRes = await fetch('/api/business-settings')
+            if (settingsRes.ok) {
+              const settings = await settingsRes.json()
+              setBusinessSettings(settings)
+            }
+            
+            setLoading(false)
+            setVerifyingSession(false)
+            return
+          }
+        }
+        
+        // Wait before next attempt
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        attempts++
+      }
+      
+      // If order not created after max attempts, show error
+      setLoading(false)
+      setVerifyingSession(false)
+    } catch (error) {
+      console.error('Error verifying Stripe session:', error)
+      setLoading(false)
+      setVerifyingSession(false)
+    }
+  }
 
   const fetchOrder = async (id: string) => {
     try {
@@ -33,6 +113,9 @@ function OrderSuccessContent() {
       if (response.ok) {
         const data = await response.json()
         setOrder(data)
+        
+        // Clear cart after successful order fetch
+        clearCart()
         
         // Track purchase
         if (data && data.order_items) {
@@ -77,12 +160,19 @@ function OrderSuccessContent() {
     }
   }
 
-  if (loading) {
+  if (loading || verifyingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF6EF]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9653B] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">
+            {verifyingSession ? 'Processing your payment...' : 'Loading...'}
+          </p>
+          {verifyingSession && (
+            <p className="text-sm text-gray-500 mt-2">
+              This may take a few seconds
+            </p>
+          )}
         </div>
       </div>
     )
@@ -120,7 +210,7 @@ function OrderSuccessContent() {
                 />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
               Order Confirmed!
             </h1>
             <p className="text-gray-600">
@@ -147,11 +237,15 @@ function OrderSuccessContent() {
               {/* Order Details */}
               <div>
                 <div className="text-left bg-[#FAF6EF] rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+                  <h2 className="text-lg font-semibold mb-4">Order Details</h2>
                   <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Order Number:</span>
-                      <span className="font-semibold">{order.order_number}</span>
+                    <div>
+                      <div className="text-xl font-bold text-[#C9653B] mb-1">
+                        Order #{order.order_number?.split('-').pop() || order.order_number}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Full reference: {order.order_number}
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Customer:</span>
@@ -256,7 +350,7 @@ function OrderSuccessContent() {
           {/* What Happens Next */}
           {order && (
             <div className="bg-[#FBF8F3] border border-[#E9E2D7] rounded-xl p-6 mb-8">
-              <h2 className="text-xl font-semibold mb-4">What happens next?</h2>
+              <h2 className="text-lg font-semibold mb-4">What happens next?</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-[#C86A3A] text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold">1</div>
@@ -304,7 +398,7 @@ function OrderSuccessContent() {
 
           {/* Contact Information */}
           <div className="bg-[#FAF6EF] rounded-xl p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Questions about your order?</h2>
+            <h2 className="text-lg font-semibold mb-4">Questions about your order?</h2>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,13 +451,13 @@ function OrderSuccessContent() {
           <div className="space-y-3">
             <Link
                       href={orderRoutes.menu()}
-              className="block w-full text-center px-6 py-3 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold min-h-[56px] flex items-center justify-center touch-manipulation"
+              className="block w-full text-center px-6 py-3 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold text-base min-h-[48px] flex items-center justify-center touch-manipulation"
             >
               Order Again
             </Link>
             <Link
                       href={orderRoutes.menu()}
-              className="block w-full text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition min-h-[56px] flex items-center justify-center touch-manipulation"
+              className="block w-full text-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-base min-h-[48px] flex items-center justify-center touch-manipulation"
             >
               Back to Menu
             </Link>

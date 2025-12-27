@@ -7,12 +7,24 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "verify-phase-a": "tsx scripts/verify-phase-a.ts",
-    "test:tenant-isolation": "tsx scripts/test-tenant-isolation.ts"
+    "test:phase-a": "tsx scripts/run-phase-a-tests.ts",
+    "test:rls-isolation": "tsx scripts/test-rls-isolation-admin.ts",
+    "test:public-safety": "tsx scripts/test-public-ordering-safety.ts",
+    "test:tenant-resolution": "tsx scripts/test-tenant-resolution.ts",
+    "test:security": "tsx scripts/test-security-hardening.ts",
+    "test:rbac": "tsx scripts/test-rbac-permissions.ts",
+    "test:tenant-isolation": "tsx scripts/test-tenant-isolation.ts",
+    "test:setup-sandbox": "tsx scripts/setup-test-sandbox.ts",
+    "test:go-live": "tsx scripts/test-go-live.ts"
   },
   "dependencies": {
     "@sanity/client": "^6.15.0",
     "@sanity/image-url": "^1.0.2",
+    "@stripe/stripe-js": "^8.6.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "next": "16.0.10",
@@ -21,17 +33,22 @@
     "react-dom": "19.2.1",
     "resend": "^4.0.0",
     "sanity": "^3.30.0",
+    "stripe": "^20.1.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "jest": "^30.2.0",
+    "jest-environment-node": "^30.2.0",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }

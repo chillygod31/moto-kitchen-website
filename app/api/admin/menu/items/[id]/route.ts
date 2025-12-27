@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerAuthClient } from '@/lib/supabase/server-auth'
 import { getAdminTenantId } from '@/lib/auth/server-admin'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 /**
  * GET /api/admin/menu/items/[id]
@@ -11,11 +13,14 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const context = getTenantContextFromHeaders(request.headers)
+  const { id } = await params
+  logger.api.request('GET', `/api/admin/menu/items/${id}`, context)
+  
   try {
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
-    const { id } = await params
 
     const { data: menuItem, error } = await supabase
       .from('menu_items')
@@ -25,15 +30,19 @@ export async function GET(
       .single()
 
     if (error || !menuItem) {
+      logger.api.error('GET', `/api/admin/menu/items/${id}`, error as Error, { ...context, tenantId, menuItemId: id })
+      if (error) captureException(error as Error, { ...context, tenantId, menuItemId: id })
       return NextResponse.json(
         { message: 'Menu item not found', error: error?.message },
         { status: 404 }
       )
     }
 
+    logger.info('Menu item fetched successfully', { ...context, tenantId, menuItemId: id })
     return NextResponse.json(menuItem)
   } catch (error: any) {
-    console.error('Error in GET /api/admin/menu/items/[id]:', error)
+    logger.api.error('GET', `/api/admin/menu/items/${id}`, error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
@@ -57,9 +66,14 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const context = getTenantContextFromHeaders(request.headers)
+  const { id } = await params
+  logger.api.request('PATCH', `/api/admin/menu/items/${id}`, context)
+  
   // Verify CSRF token
   const isValidCsrf = await verifyCsrfToken(request)
   if (!isValidCsrf) {
+    logger.warn('CSRF token missing or invalid', { ...context, path: `/api/admin/menu/items/${id}` })
     return NextResponse.json(
       { message: 'CSRF token missing or invalid' },
       { status: 403 }
@@ -70,7 +84,6 @@ export async function PATCH(
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
-    const { id } = await params
     const body = await request.json()
 
     const {
@@ -122,7 +135,8 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating menu item:', error)
+      logger.api.error('PATCH', `/api/admin/menu/items/${id}`, error as Error, { ...context, tenantId, menuItemId: id })
+      captureException(error as Error, { ...context, tenantId, menuItemId: id })
       return NextResponse.json(
         { message: 'Failed to update menu item', error: error.message },
         { status: 500 }
@@ -130,15 +144,18 @@ export async function PATCH(
     }
 
     if (!menuItem) {
+      logger.warn('Menu item not found after update', { ...context, tenantId, menuItemId: id })
       return NextResponse.json(
         { message: 'Menu item not found' },
         { status: 404 }
       )
     }
 
+    logger.info('Menu item updated successfully', { ...context, tenantId, menuItemId: id })
     return NextResponse.json(menuItem)
   } catch (error: any) {
-    console.error('Error in PATCH /api/admin/menu/items/[id]:', error)
+    logger.api.error('PATCH', `/api/admin/menu/items/${id}`, error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
@@ -163,9 +180,14 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const context = getTenantContextFromHeaders(request.headers)
+  const { id } = await params
+  logger.api.request('DELETE', `/api/admin/menu/items/${id}`, context)
+  
   // Verify CSRF token
   const isValidCsrf = await verifyCsrfToken(request)
   if (!isValidCsrf) {
+    logger.warn('CSRF token missing or invalid', { ...context, path: `/api/admin/menu/items/${id}` })
     return NextResponse.json(
       { message: 'CSRF token missing or invalid' },
       { status: 403 }
@@ -176,7 +198,6 @@ export async function DELETE(
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
     const tenantId = await getAdminTenantId(request)
-    const { id } = await params
 
     // Soft delete by setting is_available to false
     const { data: menuItem, error } = await supabase
@@ -188,7 +209,8 @@ export async function DELETE(
       .single()
 
     if (error) {
-      console.error('Error deleting menu item:', error)
+      logger.api.error('DELETE', `/api/admin/menu/items/${id}`, error as Error, { ...context, tenantId, menuItemId: id })
+      captureException(error as Error, { ...context, tenantId, menuItemId: id })
       return NextResponse.json(
         { message: 'Failed to delete menu item', error: error.message },
         { status: 500 }
@@ -196,15 +218,18 @@ export async function DELETE(
     }
 
     if (!menuItem) {
+      logger.warn('Menu item not found for deletion', { ...context, tenantId, menuItemId: id })
       return NextResponse.json(
         { message: 'Menu item not found' },
         { status: 404 }
       )
     }
 
+    logger.info('Menu item deleted successfully', { ...context, tenantId, menuItemId: id })
     return NextResponse.json({ success: true, menuItem })
   } catch (error: any) {
-    console.error('Error in DELETE /api/admin/menu/items/[id]:', error)
+    logger.api.error('DELETE', `/api/admin/menu/items/${id}`, error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(

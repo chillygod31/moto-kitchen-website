@@ -211,10 +211,10 @@ export default function AdminQuotesPage() {
       {/* Page Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--brand-secondary, #3A2A24)' }}>
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
             Quote Requests
           </h1>
-          <p style={{ color: 'var(--brand-muted, #4B4B4B)' }}>
+          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
             Manage and track all quote requests
           </p>
         </div>
@@ -232,7 +232,7 @@ export default function AdminQuotesPage() {
       <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Status
               </label>
               <select
@@ -248,7 +248,7 @@ export default function AdminQuotesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Search
               </label>
               <div className="flex gap-2">
@@ -383,7 +383,7 @@ export default function AdminQuotesPage() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50" onClick={() => setSelectedQuote(null)}>
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <div className="p-6 border-b border-[#E6D9C8] flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-[#3A2A24]">Quote Details</h2>
+                <h2 className="text-lg font-semibold text-[#3A2A24] mb-4" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Quote Details</h2>
                 <button
                   onClick={() => setSelectedQuote(null)}
                   className="text-[#4B4B4B] hover:text-[#1F1F1F]"
@@ -393,13 +393,13 @@ export default function AdminQuotesPage() {
               </div>
               <div className="p-6 space-y-6">
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">Contact Information</h3>
+                  <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Contact Information</h3>
                   <p><strong>Name:</strong> {selectedQuote.name}</p>
                   <p><strong>Email:</strong> <a href={`mailto:${selectedQuote.email}`} className="text-[#C9653B]">{selectedQuote.email}</a></p>
                   <p><strong>Phone:</strong> <a href={`tel:${selectedQuote.phone}`} className="text-[#C9653B]">{selectedQuote.phone}</a></p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">Event Details</h3>
+                  <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Event Details</h3>
                   <p><strong>Type:</strong> {selectedQuote.event_type}</p>
                   <p><strong>Date:</strong> {selectedQuote.event_date || "Flexible"}</p>
                   <p><strong>Guests:</strong> {selectedQuote.guest_count}</p>
@@ -413,24 +413,24 @@ export default function AdminQuotesPage() {
                 </div>
                 {selectedQuote.dietary_requirements && selectedQuote.dietary_requirements.length > 0 && (
                   <div>
-                    <h3 className="font-semibold text-[#1F1F1F] mb-2">Dietary Requirements</h3>
+                    <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Dietary Requirements</h3>
                     <p>{selectedQuote.dietary_requirements.join(", ")}</p>
                   </div>
                 )}
                 {selectedQuote.message && (
                   <div>
-                    <h3 className="font-semibold text-[#1F1F1F] mb-2">Message</h3>
+                    <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Message</h3>
                     <p className="text-[#4B4B4B]">{selectedQuote.message}</p>
                   </div>
                 )}
                 {selectedQuote.how_found && (
                   <div>
-                    <h3 className="font-semibold text-[#1F1F1F] mb-2">How They Found Us</h3>
+                    <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>How They Found Us</h3>
                     <p className="text-[#4B4B4B]">{selectedQuote.how_found}</p>
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2">Internal Notes</h3>
+                  <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Internal Notes</h3>
                   <textarea
                     value={selectedQuote.notes || ""}
                     onChange={(e) => {

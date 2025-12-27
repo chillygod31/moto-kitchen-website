@@ -19,6 +19,7 @@ export interface MenuItemFormData {
   image_url: string
   dietary_tags: string[]
   is_available: boolean
+  is_published: boolean
   sort_order: number
 }
 
@@ -39,6 +40,7 @@ export default function MenuItemForm({
     image_url: item?.image_url || '',
     dietary_tags: item?.dietary_tags || [],
     is_available: item?.is_available !== false,
+    is_published: item?.is_published !== false,
     sort_order: item?.sort_order || 0,
   })
 
@@ -54,6 +56,7 @@ export default function MenuItemForm({
         image_url: item.image_url || '',
         dietary_tags: item.dietary_tags || [],
         is_available: item.is_available !== false,
+        is_published: item.is_published !== false,
         sort_order: item.sort_order || 0,
       })
     }
@@ -199,6 +202,15 @@ export default function MenuItemForm({
             className="mr-2"
           />
           <span className="text-sm text-gray-700">Available</span>
+        </label>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={formData.is_published}
+            onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
+            className="mr-2"
+          />
+          <span className="text-sm text-gray-700">Published (visible on public menu)</span>
         </label>
       </div>
 

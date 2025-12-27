@@ -3,6 +3,8 @@ import { createServerAuthClient } from '@/lib/supabase/server-auth'
 import { getAdminTenantId } from '@/lib/auth/server-admin'
 import { updateOrderStatusSchema } from '@/lib/validations/admin'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 /**
  * GET /api/orders/[id]
@@ -12,14 +14,16 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const context = getTenantContextFromHeaders(request.headers)
+  const { id } = await params
+  logger.api.request('GET', `/api/orders/${id}`, context)
+  
   try {
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
     
     // Get tenant ID from admin session (server-side, secure)
     const tenantId = await getAdminTenantId(request)
-    
-    const { id } = await params
 
     const { data, error } = await supabase
       .from('orders')
@@ -29,16 +33,19 @@ export async function GET(
       .single()
 
     if (error) {
-      console.error('Error fetching order:', error)
+      logger.api.error('GET', `/api/orders/${id}`, error as Error, { ...context, tenantId, orderId: id })
+      captureException(error as Error, { ...context, tenantId, orderId: id })
       return NextResponse.json(
         { message: 'Order not found', error: error.message },
         { status: 404 }
       )
     }
 
+    logger.info('Order fetched successfully', { ...context, tenantId, orderId: id })
     return NextResponse.json(data)
   } catch (error: any) {
-    console.error('Error in GET /api/orders/[id]:', error)
+    logger.api.error('GET', `/api/orders/${id}`, error, context)
+    captureException(error, context)
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
       { status: 500 }
@@ -54,9 +61,14 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const context = getTenantContextFromHeaders(request.headers)
+  const { id } = await params
+  logger.api.request('PATCH', `/api/orders/${id}`, context)
+  
   // Verify CSRF token
   const isValidCsrf = await verifyCsrfToken(request)
   if (!isValidCsrf) {
+    logger.warn('CSRF token missing or invalid', { ...context, path: `/api/orders/${id}` })
     return NextResponse.json(
       { message: 'CSRF token missing or invalid' },
       { status: 403 }
@@ -69,8 +81,6 @@ export async function PATCH(
     
     // Get tenant ID from admin session (server-side, secure)
     const tenantId = await getAdminTenantId(request)
-    
-    const { id } = await params
     const body = await request.json()
 
     // Validate request body
@@ -99,16 +109,19 @@ export async function PATCH(
       .single()
 
     if (error) {
-      console.error('Error updating order:', error)
+      logger.api.error('PATCH', `/api/orders/${id}`, error as Error, { ...context, tenantId, orderId: id })
+      captureException(error as Error, { ...context, tenantId, orderId: id })
       return NextResponse.json(
         { message: 'Failed to update order', error: error.message },
         { status: 500 }
       )
     }
 
+    logger.info('Order updated successfully', { ...context, tenantId, orderId: id })
     return NextResponse.json(data)
   } catch (error: any) {
-    console.error('Error in PATCH /api/orders/[id]:', error)
+    logger.api.error('PATCH', `/api/orders/${id}`, error, context)
+    captureException(error, context)
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
       { status: 500 }

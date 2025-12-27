@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { headers } from "next/headers";
 import { Cinzel, Work_Sans, Cormorant_Garamond, DM_Serif_Display, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import CookieConsent from "./components/CookieConsent";
+import MarketingClickTracker from "./components/MarketingClickTracker";
 
 const halimun = localFont({
   src: "../public/fonts/Halimun.ttf",
@@ -96,41 +99,74 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const enableMarketingAnalytics =
+    !!gtmId && !pathname.startsWith("/admin") && !pathname.startsWith("/order");
 
   return (
     <html lang="en">
-      {gaMeasurementId && (
-        <>
-          <Script
-            strategy="afterInteractive"
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-          />
-          <Script
-            id="google-analytics"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaMeasurementId}', {
-                  page_path: window.location.pathname,
-                });
-              `,
-            }}
-          />
-        </>
-      )}
+      <head>
+        {enableMarketingAnalytics && (
+          <>
+            {/* Consent Mode (EU): default denied until user accepts in cookie banner */}
+            <Script
+              id="consent-default"
+              strategy="beforeInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('consent', 'default', {
+                    ad_storage: 'denied',
+                    analytics_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    wait_for_update: 500
+                  });
+                `,
+              }}
+            />
+
+            {/* Google Tag Manager */}
+            <Script
+              id="gtm"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                  })(window,document,'script','dataLayer','${gtmId}');
+                `,
+              }}
+            />
+          </>
+        )}
+      </head>
       <body className={`${halimun.variable} ${cinzel.variable} ${workSans.variable} ${cormorantGaramond.variable} ${dmSerifDisplay.variable} ${inter.variable} antialiased`}>
+        {enableMarketingAnalytics && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        )}
+        {enableMarketingAnalytics && <MarketingClickTracker />}
         <Header />
         <main>{children}</main>
         <Footer />
+        {enableMarketingAnalytics && <CookieConsent />}
       </body>
     </html>
   );

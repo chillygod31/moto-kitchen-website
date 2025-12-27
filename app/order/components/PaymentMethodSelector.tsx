@@ -13,6 +13,8 @@ export default function PaymentMethodSelector({
     { 
       id: 'ideal', 
       name: 'iDEAL',
+      disabled: true,
+      comingSoon: true,
       logo: (
         <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="2" y="4" width="36" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
@@ -23,6 +25,8 @@ export default function PaymentMethodSelector({
     { 
       id: 'card', 
       name: 'Card',
+      disabled: false,
+      comingSoon: false,
       logo: (
         <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="2" y="6" width="36" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
@@ -35,6 +39,8 @@ export default function PaymentMethodSelector({
     { 
       id: 'paypal', 
       name: 'PayPal',
+      disabled: true,
+      comingSoon: true,
       logo: (
         <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M8 8C8 8 10 6 14 6C18 6 20 8 20 12C20 16 18 18 14 18H10L8 22H4L6 18H8V8Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
@@ -50,10 +56,12 @@ export default function PaymentMethodSelector({
         {paymentMethods.map((method) => (
           <label
             key={method.id}
-            className={`flex-1 flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition min-h-[60px] touch-manipulation ${
-              selectedMethod === method.id
-                ? 'border-[#C9653B] bg-[#C9653B]/5'
-                : 'border-gray-300 hover:border-gray-400'
+            className={`flex-1 flex flex-col items-center justify-center p-4 border rounded-lg transition min-h-[60px] touch-manipulation relative ${
+              method.disabled
+                ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+                : selectedMethod === method.id
+                ? 'border-[#C9653B] bg-[#C9653B]/5 cursor-pointer'
+                : 'border-gray-300 hover:border-gray-400 cursor-pointer'
             }`}
           >
             <input
@@ -61,7 +69,8 @@ export default function PaymentMethodSelector({
               name="paymentMethod"
               value={method.id}
               checked={selectedMethod === method.id}
-              onChange={() => onSelect(method.id)}
+              onChange={() => !method.disabled && onSelect(method.id)}
+              disabled={method.disabled}
               className="sr-only"
             />
             <div className={`mb-2 transition ${selectedMethod === method.id ? 'text-[#C9653B]' : 'text-gray-400 grayscale'}`}>
@@ -70,6 +79,11 @@ export default function PaymentMethodSelector({
             <span className={`text-xs font-medium ${selectedMethod === method.id ? 'text-[#C9653B]' : 'text-gray-600'}`}>
               {method.name}
             </span>
+            {method.comingSoon && (
+              <span className="absolute top-1 right-1 text-[8px] font-semibold text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">
+                Coming soon
+              </span>
+            )}
           </label>
         ))}
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -34,6 +34,7 @@ export default function CheckoutPage() {
   const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const submissionRef = useRef(false) // Prevent double submissions
 
   // Form state
   const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('pickup')
@@ -48,6 +49,7 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [acceptedAllergenPolicy, setAcceptedAllergenPolicy] = useState(false)
 
   const [deliveryFee, setDeliveryFee] = useState(0)
   const [businessSettings, setBusinessSettings] = useState<{ min_order_value: number } | null>(null)
@@ -99,9 +101,24 @@ export default function CheckoutPage() {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
     
+    // Backup cart on page unload
+    const handleBeforeUnload = () => {
+      try {
+        const currentCart = getCart()
+        if (currentCart.length > 0) {
+          saveCart(currentCart)
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   }, [])
 
@@ -127,8 +144,37 @@ export default function CheckoutPage() {
         }
       }
       autoFillCity()
+      
+      // Fetch delivery slots after postcode is validated
+      if (/^\d{4}[A-Z]{2}$/i.test(postcode.replace(/\s/g, ''))) {
+        // Find delivery zone for this postcode
+        const postcodePrefix = postcode.substring(0, 4)
+        const zone = deliveryZones.find(z => z.postcode_prefix === postcodePrefix)
+        const zoneId = zone?.id
+        
+        // Only fetch if we have a valid delivery zone or if zones aren't required
+        if (zone || deliveryZones.length === 0) {
+          fetchTimeSlots(zoneId)
+        } else {
+          // Clear slots if postcode doesn't match any zone
+          setTimeSlots([])
+          setSelectedTimeSlot('')
+        }
+      } else {
+        // Clear slots if postcode is invalid
+        setTimeSlots([])
+        setSelectedTimeSlot('')
+      }
     } else {
       setDeliveryFee(0)
+      // For pickup, fetch slots immediately
+      if (fulfillmentType === 'pickup') {
+        fetchTimeSlots()
+      } else {
+        // Clear slots when switching away from delivery
+        setTimeSlots([])
+        setSelectedTimeSlot('')
+      }
     }
   }, [fulfillmentType, postcode, deliveryZones, city, fieldErrors])
 
@@ -144,35 +190,60 @@ export default function CheckoutPage() {
     }
   }, [selectedTimeSlot, timeSlots, selectedDate])
 
-  // Scroll input into view on mobile when focused
+  // Disable scroll restoration and ensure page starts at top
   useEffect(() => {
-    const handleFocus = (e: FocusEvent) => {
-      const target = e.target as HTMLElement
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        // Delay scroll to ensure keyboard has appeared
-        setTimeout(() => {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }, 300)
+    // Scroll to top on mount
+    window.scrollTo(0, 0)
+    
+    // Disable Next.js automatic scroll restoration for this page
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    
+    return () => {
+      // Re-enable scroll restoration when leaving page
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
       }
     }
-
-    window.addEventListener('focusin', handleFocus)
-    return () => window.removeEventListener('focusin', handleFocus)
   }, [])
+
+  // Redirect to cart if empty (must be before any early returns)
+  useEffect(() => {
+    if (cart.length === 0 && !loading) {
+      router.push(orderRoutes.cart())
+    }
+  }, [cart.length, loading, router])
 
   const validateCartItems = async () => {
     try {
       const currentCart = getCart()
-      if (currentCart.length === 0) return
+      if (currentCart.length === 0) {
+        setCart([])
+        return
+      }
 
       // Fetch all menu items to validate cart items
       const response = await fetch('/api/menu')
-      if (!response.ok) return
+      if (!response.ok) {
+        // If menu fetch fails, keep cart as is (don't clear it)
+        console.warn('Menu validation failed, keeping cart as is')
+        setCart(currentCart)
+        return
+      }
 
       const menuData = await response.json()
-      const validItemIds = new Set(
-        menuData.categories?.flatMap((cat: any) => cat.items?.map((item: any) => item.id) || []) || []
-      )
+      
+      // Get all valid item IDs from menu
+      const allItems = menuData.allItems || []
+      const validItemIds = new Set(allItems.map((item: any) => item.id))
+
+      // If no valid items found in menu response, don't clear cart (might be a menu API issue)
+      if (validItemIds.size === 0) {
+        console.warn('No menu items found in API response, keeping cart as is')
+        setCart(currentCart)
+        return
+      }
 
       // Filter out invalid items
       const validCart = currentCart.filter((item) => validItemIds.has(item.id))
@@ -193,12 +264,49 @@ export default function CheckoutPage() {
         // Show error about removed items
         setError(`Some items in your cart are no longer available and have been removed. Please add items again.`)
       } else {
-        setCart(validCart)
+        // All items are valid, just set the cart
+        setCart(currentCart)
       }
     } catch (error) {
       console.error('Error validating cart:', error)
-      // If validation fails, keep the cart as is
-      setCart(getCart())
+      // If validation fails, keep the cart as is (don't clear it)
+      const currentCart = getCart()
+      setCart(currentCart)
+    }
+  }
+
+  const fetchTimeSlots = async (deliveryZoneId?: string) => {
+    try {
+      const slotsController = new AbortController()
+      const slotsTimeout = setTimeout(() => slotsController.abort(), 10000) // 10 second timeout
+      
+      try {
+        // Build URL with fulfillment_type and optional delivery_zone_id
+        const params = new URLSearchParams()
+        params.append('fulfillment_type', fulfillmentType)
+        if (fulfillmentType === 'delivery' && deliveryZoneId) {
+          params.append('delivery_zone_id', deliveryZoneId)
+        }
+        
+        const slotsRes = await fetch(`/api/time-slots?${params.toString()}`, { signal: slotsController.signal })
+        clearTimeout(slotsTimeout)
+        if (slotsRes.ok) {
+          const slots = await slotsRes.json()
+          setTimeSlots(slots)
+          return slots
+        } else if (!slotsRes.ok) {
+          throw new Error('Failed to load time slots')
+        }
+      } catch (err: any) {
+        clearTimeout(slotsTimeout)
+        if (err.name === 'AbortError') {
+          setNetworkError('Request timed out. Please check your connection and try again.')
+        } else {
+          throw err
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching time slots:', error)
     }
   }
 
@@ -221,26 +329,9 @@ export default function CheckoutPage() {
         return
       }
 
-      // Fetch time slots with timeout
-      const slotsController = new AbortController()
-      const slotsTimeout = setTimeout(() => slotsController.abort(), 10000) // 10 second timeout
-      
-      try {
-        const slotsRes = await fetch('/api/time-slots', { signal: slotsController.signal })
-        clearTimeout(slotsTimeout)
-        if (slotsRes.ok) {
-          const slots = await slotsRes.json()
-          setTimeSlots(slots)
-        } else if (!slotsRes.ok) {
-          throw new Error('Failed to load time slots')
-        }
-      } catch (err: any) {
-        clearTimeout(slotsTimeout)
-        if (err.name === 'AbortError') {
-          setNetworkError('Request timed out. Please check your connection and try again.')
-        } else {
-          throw err
-        }
+      // Fetch time slots (pickup only at this point, delivery slots fetched after postcode)
+      if (fulfillmentType === 'pickup') {
+        await fetchTimeSlots()
       }
 
       // Fetch delivery zones
@@ -314,15 +405,17 @@ export default function CheckoutPage() {
   const uniqueDates = Object.keys(slotsByDate).sort((a, b) => {
     // Find any slot for each date key to get the timestamp
     const slotA = timeSlots.find(s => {
-      const d = new Date(s.slot_time)
+      const d = s.start_time ? new Date(s.start_time) : new Date(s.slot_time)
       return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) === a
     })
     const slotB = timeSlots.find(s => {
-      const d = new Date(s.slot_time)
+      const d = s.start_time ? new Date(s.start_time) : new Date(s.slot_time)
       return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) === b
     })
     if (!slotA || !slotB) return 0
-    return new Date(slotA.slot_time).getTime() - new Date(slotB.slot_time).getTime()
+    const timeA = slotA.start_time ? new Date(slotA.start_time).getTime() : new Date(slotA.slot_time).getTime()
+    const timeB = slotB.start_time ? new Date(slotB.start_time).getTime() : new Date(slotB.slot_time).getTime()
+    return timeA - timeB
   })
 
   // Form validation function
@@ -402,6 +495,11 @@ export default function CheckoutPage() {
       errors.paymentMethod = 'Please select a payment method'
     }
     
+    // Validate allergen policy acceptance
+    if (!acceptedAllergenPolicy) {
+      errors.allergenPolicy = 'You must read and understand the allergen policy to continue'
+    }
+    
     // Validate terms acceptance
     if (!acceptedTerms) {
       errors.terms = 'You must accept the Terms & Conditions to continue'
@@ -414,9 +512,15 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Prevent double submissions
+    if (submissionRef.current || submitting) {
+      return
+    }
+    
     // Clear previous errors
     setError(null)
     setFieldErrors({})
+    setNetworkError(null)
     
     // Validate form
     if (!validateForm()) {
@@ -430,8 +534,27 @@ export default function CheckoutPage() {
       return
     }
 
+    // Re-validate selected slot is still available
+    if (selectedTimeSlot) {
+      const selectedSlot = timeSlots.find((s) => s.id === selectedTimeSlot)
+      if (!selectedSlot) {
+        setError('The selected time slot is no longer available. Please select another slot.')
+        // Refresh time slots
+        fetchTimeSlots()
+        return
+      }
+      
+      // Check if slot is full
+      if (selectedSlot.current_orders >= selectedSlot.max_orders) {
+        setError('The selected time slot is now full. Please select another slot.')
+        // Refresh time slots
+        fetchTimeSlots()
+        return
+      }
+    }
+
+    submissionRef.current = true
     setSubmitting(true)
-    setNetworkError(null)
 
     // Save form data to localStorage as backup
     try {
@@ -454,7 +577,8 @@ export default function CheckoutPage() {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
-      const response = await fetch('/api/orders', {
+      // Create Stripe checkout session
+      const response = await fetch('/api/payments/create-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -483,20 +607,21 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Server error' }))
-        console.error('Order creation error - Full details:', JSON.stringify(errorData, null, 2))
-        console.error('Error message:', errorData.message)
-        console.error('Error details:', errorData.details)
-        console.error('Error code:', errorData.code)
-        throw new Error(errorData.message || errorData.error || 'Failed to create order')
+        console.error('Stripe session creation error:', JSON.stringify(errorData, null, 2))
+        throw new Error(errorData.message || errorData.error || 'Failed to create payment session')
       }
 
-      const order = await response.json()
+      const { url, sessionId } = await response.json()
       
-      // Clear form backup on success
+      if (!url) {
+        throw new Error('No checkout URL returned')
+      }
+
+      // Clear form backup before redirecting
       localStorage.removeItem('checkout-form-backup')
       
-      clearCart()
-              router.push(`${orderRoutes.success()}?orderId=${order.id}&orderNumber=${order.order_number}`)
+      // Redirect to Stripe Checkout
+      window.location.href = url
     } catch (error: any) {
       console.error('Error submitting order:', error)
       
@@ -508,6 +633,7 @@ export default function CheckoutPage() {
         setError(error.message || 'Failed to place order. Please try again.')
       }
       
+      submissionRef.current = false
       setSubmitting(false)
     }
   }
@@ -537,15 +663,14 @@ export default function CheckoutPage() {
       </div>
     )
   }
-
+  
   if (cart.length === 0) {
-    router.push(orderRoutes.cart())
     return null
   }
 
   return (
     <div className="min-h-screen bg-[#FAF6EF]">
-      <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
+      <header className="bg-[#3A2A24] fixed top-0 left-0 right-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
                     <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
@@ -573,8 +698,8 @@ export default function CheckoutPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-10">Checkout</h1>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
         {(error || networkError) && (
           <div className="mb-6">
@@ -606,10 +731,10 @@ export default function CheckoutPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form Section */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
           {/* Fulfillment Type */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Delivery or Pickup?</h2>
+            <h2 className="text-lg font-semibold mb-4">Delivery or Pickup?</h2>
             <div className="flex space-x-4">
               <label className="flex items-center">
                 <input
@@ -638,7 +763,7 @@ export default function CheckoutPage() {
 
           {/* Customer Information */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Your Information</h2>
+            <h2 className="text-lg font-semibold mb-4">Your Information</h2>
             <div className="space-y-4">
               <div>
                 <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -655,7 +780,7 @@ export default function CheckoutPage() {
                       setFieldErrors({ ...fieldErrors, customerName: '' })
                     }
                   }}
-                  className={`w-full px-4 py-3 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
+                  className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
                     fieldErrors.customerName ? 'border-red-300' : 'border-gray-300'
                   }`}
                   aria-invalid={!!fieldErrors.customerName}
@@ -681,7 +806,7 @@ export default function CheckoutPage() {
                       setFieldErrors({ ...fieldErrors, customerEmail: '' })
                     }
                   }}
-                  className={`w-full px-4 py-3 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
+                  className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
                     fieldErrors.customerEmail ? 'border-red-300' : 'border-gray-300'
                   }`}
                   aria-invalid={!!fieldErrors.customerEmail}
@@ -708,7 +833,7 @@ export default function CheckoutPage() {
                       setFieldErrors({ ...fieldErrors, customerPhone: '' })
                     }
                   }}
-                  className={`w-full px-4 py-3 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
+                  className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
                     fieldErrors.customerPhone ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="+31 6 1234 5678 or 06 1234 5678"
@@ -725,7 +850,7 @@ export default function CheckoutPage() {
           {/* Delivery Address */}
           {fulfillmentType === 'delivery' && (
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
+              <h2 className="text-lg font-semibold mb-4">Delivery Address</h2>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="deliveryAddress" className="block text-sm font-medium text-gray-700 mb-1">
@@ -743,7 +868,7 @@ export default function CheckoutPage() {
                         setFieldErrors({ ...fieldErrors, deliveryAddress: '' })
                       }
                     }}
-                    className={`w-full px-4 py-3 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
+                    className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
                       fieldErrors.deliveryAddress ? 'border-red-300' : 'border-gray-300'
                     }`}
                     aria-invalid={!!fieldErrors.deliveryAddress}
@@ -771,7 +896,7 @@ export default function CheckoutPage() {
                           setFieldErrors({ ...fieldErrors, postcode: '' })
                         }
                       }}
-                      className={`w-full px-4 py-3 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
+                      className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
                         fieldErrors.postcode ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="1012AB"
@@ -798,7 +923,7 @@ export default function CheckoutPage() {
                           setFieldErrors({ ...fieldErrors, city: '' })
                         }
                       }}
-                      className={`w-full px-4 py-3 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
+                      className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
                         fieldErrors.city ? 'border-red-300' : 'border-gray-300'
                       }`}
                       aria-invalid={!!fieldErrors.city}
@@ -820,13 +945,27 @@ export default function CheckoutPage() {
 
           {/* Time Slot Selection */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2">Select Time Slot *</h2>
-            <p className="text-sm text-gray-600 mb-4">Choose your pickup window (15 min early/late is fine).</p>
+            <h2 className="text-lg font-semibold mb-4">Select Time Slot *</h2>
+            {fulfillmentType === 'pickup' ? (
+              <p className="text-sm text-gray-600 mb-4">Choose your pickup window (15 min early/late is fine).</p>
+            ) : (
+              <>
+                <p className="text-sm text-gray-600 mb-2">Choose your delivery window.</p>
+                <p className="text-sm text-gray-500 mb-4 italic">We deliver within the selected time window. We'll message you when we're on the way.</p>
+              </>
+            )}
+            {fulfillmentType === 'delivery' && (!postcode || !/^\d{4}[A-Z]{2}$/i.test(postcode.replace(/\s/g, ''))) && (
+              <p className="text-sm text-amber-600 mb-4">Please enter a valid postcode to see available delivery windows.</p>
+            )}
             {fieldErrors.timeSlot && (
               <p className="mb-4 text-sm text-red-600">{fieldErrors.timeSlot}</p>
             )}
             {timeSlots.length === 0 ? (
-              <p className="text-gray-600">No available time slots</p>
+              <p className="text-gray-600">
+                {fulfillmentType === 'delivery' && (!postcode || !/^\d{4}[A-Z]{2}$/i.test(postcode.replace(/\s/g, '')))
+                  ? 'Enter a valid postcode to see delivery windows'
+                  : 'No available time slots'}
+              </p>
             ) : (
               <div className="space-y-4">
                 {/* Date Chips - Horizontally Scrollable */}
@@ -859,20 +998,29 @@ export default function CheckoutPage() {
                 {/* Time Chips - Only show when date is selected */}
                 {selectedDate && availableTimes.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {fulfillmentType === 'delivery' ? 'Select Delivery Window' : 'Select Time'}
+                    </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {availableTimes.map((slot) => {
-                        const slotDate = new Date(slot.slot_time)
+                        // Use start_time/end_time for delivery windows, fall back to slot_time for pickup/backward compatibility
+                        const startTime = slot.start_time 
+                          ? new Date(slot.start_time)
+                          : new Date(slot.slot_time)
+                        const endTime = slot.end_time
+                          ? new Date(slot.end_time)
+                          : new Date(startTime.getTime() + (slot.duration_minutes || 60) * 60 * 1000)
+                        
                         const isFull = slot.current_orders >= slot.max_orders
-                        const startTime = slotDate.toLocaleTimeString('en-GB', {
+                        const startTimeStr = startTime.toLocaleTimeString('en-GB', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })
-                        // Calculate end time (assuming 1 hour slot, adjust if needed)
-                        const endTime = new Date(slotDate.getTime() + 60 * 60 * 1000).toLocaleTimeString('en-GB', {
+                        const endTimeStr = endTime.toLocaleTimeString('en-GB', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })
+                        
                         return (
                           <button
                             key={slot.id}
@@ -892,8 +1040,8 @@ export default function CheckoutPage() {
                                 : 'border-gray-300 bg-white text-gray-700 hover:border-[#C9653B]'
                             }`}
                           >
-                            <div className="text-sm">
-                              {startTime}–{endTime}
+                            <div className="text-sm font-medium">
+                              {startTimeStr}–{endTimeStr}
                             </div>
                             {isFull && (
                               <div className="text-xs mt-1 text-gray-400">Full</div>
@@ -908,9 +1056,37 @@ export default function CheckoutPage() {
             )}
           </div>
 
+          {/* Allergen Disclaimer */}
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Allergen & Dietary Information</h2>
+            <p className="text-sm text-gray-700 mb-4">
+              Please inform us of any allergies or dietary restrictions. While we take precautions, we cannot guarantee an allergen-free environment. If you have specific dietary requirements, please include them in your order notes or contact us directly.
+            </p>
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={acceptedAllergenPolicy}
+                onChange={(e) => {
+                  setAcceptedAllergenPolicy(e.target.checked)
+                  if (fieldErrors.allergenPolicy) {
+                    setFieldErrors({ ...fieldErrors, allergenPolicy: '' })
+                  }
+                }}
+                className="mt-1 rounded border-gray-300 text-[#C9653B] focus:ring-[#C9653B]"
+                required
+              />
+              <span className="text-sm text-gray-700">
+                I have read and understand the allergen policy *
+              </span>
+            </label>
+            {fieldErrors.allergenPolicy && (
+              <p className="mt-2 text-sm text-red-600">{fieldErrors.allergenPolicy}</p>
+            )}
+          </div>
+
           {/* Payment Method Selection */}
           <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Payment Method *</h2>
+            <h2 className="text-lg font-semibold mb-4">Payment Method *</h2>
             {fieldErrors.paymentMethod && (
               <p className="mb-4 text-sm text-red-600">{fieldErrors.paymentMethod}</p>
             )}
@@ -942,7 +1118,20 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Terms & Conditions */}
+          {/* Notes */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Additional Notes (optional)
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent"
+            />
+          </div>
+
+          {/* Terms & Conditions - Moved closer to submit button */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <label className="flex items-start gap-3 cursor-pointer min-h-[44px]">
               <input
@@ -975,35 +1164,26 @@ export default function CheckoutPage() {
             </label>
           </div>
 
-          {/* Notes */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Additional Notes (optional)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent"
-            />
-          </div>
-
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={submitting || !isFormValid()}
-            className={`w-full px-6 py-4 min-h-[56px] rounded-lg transition font-semibold text-lg touch-manipulation ${
-              isFormValid() && !submitting
+            disabled={submitting || !isFormValid() || submissionRef.current}
+            className={`w-full px-6 py-3 min-h-[48px] rounded-lg transition font-semibold text-base touch-manipulation flex items-center justify-center gap-2 ${
+              isFormValid() && !submitting && !submissionRef.current
                 ? 'bg-[#C9653B] text-white hover:bg-[#B8552B]'
                 : 'bg-gray-400 opacity-60 text-white cursor-not-allowed'
             }`}
-            aria-label={submitting ? 'Placing order...' : fulfillmentType === 'pickup' ? 'Confirm pickup order' : 'Place pre-order'}
+            aria-label={submitting ? 'Placing order...' : `Pay ${formatCurrency(total)} & place order`}
           >
+            {submitting && (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
             {submitting 
               ? 'Placing Order...' 
-              : fulfillmentType === 'pickup' 
-                ? 'Confirm Pickup Order' 
-                : 'Place Pre-Order'}
+              : `Pay ${formatCurrency(total)} & Place Order`}
           </button>
         </form>
           </div>
@@ -1011,7 +1191,7 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-[73px] bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+              <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
               <div className="space-y-2 mb-4 max-h-[300px] overflow-y-auto">
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">

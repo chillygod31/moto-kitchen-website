@@ -34,6 +34,7 @@ export interface MenuItem {
   image_url: string | null
   dietary_tags: string[] | null
   is_available: boolean
+  is_published: boolean
   sort_order: number
   created_at: string
   updated_at: string
@@ -75,6 +76,23 @@ export interface OrderItem {
   line_total: number
   notes: string | null
   created_at: string
+}
+
+// Time Slot Types
+export interface TimeSlot {
+  id: string
+  tenant_id: string
+  slot_time: string // Legacy: single timestamp (for backward compatibility)
+  start_time?: string | null // New: window start time
+  end_time?: string | null // New: window end time
+  fulfillment_type?: 'pickup' | 'delivery' | null
+  duration_minutes?: number | null
+  delivery_zone_id?: string | null
+  max_orders: number
+  current_orders: number
+  is_available: boolean
+  created_at: string
+  updated_at: string
 }
 
 // Subscription Types

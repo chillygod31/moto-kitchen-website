@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerAppClient } from '@/lib/supabase/server-app'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 
 /**
@@ -8,7 +8,9 @@ import { getTenantId } from '@/lib/tenant'
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerAppClient()
+    // Use service role key to bypass RLS
+    // Tenant isolation is enforced in application code via tenantId
+    const supabase = createServerAdminClient()
     const tenantId = await getTenantId()
 
     const { data: deliveryZones, error } = await supabase

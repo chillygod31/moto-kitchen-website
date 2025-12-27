@@ -47,7 +47,22 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
   const [orderStats, setOrderStats] = useState<{ ordersToday: number; popularItems: { itemId: string; name?: string; count: number }[] } | null>(null)
 
   useEffect(() => {
+    // Scroll to top on mount
+    window.scrollTo(0, 0)
+    
+    // Disable Next.js automatic scroll restoration for this page
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    
     updateCartCount()
+    
+    return () => {
+      // Re-enable scroll restoration when leaving page
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
+      }
+    }
     
     // Track menu view
     trackViewMenu()
@@ -237,7 +252,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
   return (
     <div className="min-h-screen bg-[#FAF6EF]">
       {/* Header */}
-      <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
+      <header className="bg-[#3A2A24] fixed top-0 left-0 right-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
@@ -276,12 +291,39 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
       </header>
 
       {/* Hero Section */}
-      <section className="bg-[#3A2A24] text-white py-12">
+      <section className="bg-[#3A2A24] text-white py-12 pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Menu</h1>
-          <p className="text-xl text-white/80">Authentic Tanzanian dishes crafted with traditional recipes</p>
+          <h1 className="text-3xl font-bold mb-2">Our Menu</h1>
+          <p className="text-base text-white/80">Authentic Tanzanian dishes crafted with traditional recipes</p>
         </div>
       </section>
+
+      {/* Category Tabs */}
+      <div className="bg-white border-b border-[#E7E1D9]">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex space-x-1 overflow-x-auto scrollbar-hide px-2 sm:px-4 lg:px-8" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {menuData.categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={`px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap transition border-b-2 flex-shrink-0 text-sm sm:text-base font-semibold tracking-tight ${
+                  activeCategory === category.id
+                    ? 'text-[#C9653B] border-[#C9653B]'
+                    : 'text-gray-600 hover:text-gray-900 border-transparent hover:border-gray-300'
+                }`}
+                style={{ fontFamily: 'var(--font-body, Inter, sans-serif)' }}
+              >
+                {category.name}
+                {category.items.length > 0 && (
+                  <span className="ml-2 text-xs sm:text-sm opacity-75">
+                    ({category.items.length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Service Info Banner */}
       <ServiceInfoBanner settings={businessSettings || null} />
@@ -297,32 +339,6 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
           </div>
         </div>
       )}
-
-      {/* Category Tabs */}
-      <div className="bg-white border-b border-[#E7E1D9] sticky top-[73px] z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex space-x-1 overflow-x-auto scrollbar-hide px-2 sm:px-4 lg:px-8" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {menuData.categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap font-medium transition border-b-2 flex-shrink-0 text-sm sm:text-base ${
-                  activeCategory === category.id
-                    ? 'text-[#C9653B] border-[#C9653B]'
-                    : 'text-gray-600 hover:text-gray-900 border-transparent hover:border-gray-300'
-                }`}
-              >
-                {category.name}
-                {category.items.length > 0 && (
-                  <span className="ml-2 text-xs sm:text-sm opacity-75">
-                    ({category.items.length})
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Search Bar */}
       <div className="bg-white border-b border-[#E7E1D9] px-4 sm:px-6 lg:px-8 py-4">
@@ -371,7 +387,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
       )}
 
       {/* Menu Items */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
         {filteredItems.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((item) => (
@@ -396,11 +412,11 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                   </div>
                 )}
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">
                     {item.name}
                   </h3>
                   {item.description && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
                       {item.description}
                     </p>
                   )}
@@ -418,7 +434,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                   )}
                   <div className="pt-4 border-t border-[#E7E1D9]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-semibold text-[#C9653B]">
+                      <span className="text-base font-semibold text-[#C9653B]">
                         {formatCurrency(item.price)}
                       </span>
                     </div>
@@ -427,17 +443,17 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                         <div className="flex items-center border border-[#E7E1D9] rounded-lg">
                           <button
                             onClick={() => handleQuantityChange(item.id, -1)}
-                            className="px-3 py-2 hover:bg-gray-100 transition font-semibold text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            className="px-3 py-2 hover:bg-gray-100 transition font-medium text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center text-base"
                             aria-label="Decrease quantity"
                           >
                             −
                           </button>
-                          <span className="px-4 py-2 min-w-[3rem] text-center font-medium min-h-[44px] flex items-center justify-center">
+                          <span className="px-3 py-2 min-w-[2.5rem] text-center font-medium min-h-[44px] flex items-center justify-center text-sm">
                             {itemQuantities[item.id] || 1}
                           </span>
                           <button
                             onClick={() => handleQuantityChange(item.id, 1)}
-                            className="px-3 py-2 hover:bg-gray-100 transition font-semibold text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            className="px-3 py-2 hover:bg-gray-100 transition font-medium text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center text-base"
                             aria-label="Increase quantity"
                           >
                             +
@@ -445,7 +461,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                         </div>
                         <button
                           onClick={() => handleAddToCart(item)}
-                          className="flex-1 px-4 py-2 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
+                          className="flex-1 px-4 py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
                           aria-label={`Add ${item.name} to cart`}
                         >
                           Add
@@ -454,10 +470,10 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                     ) : (
                       <button
                         onClick={() => handleSelectItem(item.id)}
-                        className="w-full px-4 py-2 border border-[#C9653B] text-[#C9653B] rounded-lg hover:bg-[#C9653B] hover:text-white transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
-                        aria-label={`Select ${item.name}`}
+                        className="w-full px-4 py-2.5 border border-[#C9653B] text-[#C9653B] rounded-lg hover:bg-[#C9653B] hover:text-white transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
+                        aria-label={`Add ${item.name} to cart`}
                       >
-                        Select
+                        Add to cart
                       </button>
                     )}
                   </div>

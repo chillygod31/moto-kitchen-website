@@ -3,12 +3,17 @@ import { createServerAuthClient } from '@/lib/supabase/server-auth'
 import { getAdminTenantId } from '@/lib/auth/server-admin'
 import { createMenuItemSchema } from '@/lib/validations/menu'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 /**
  * GET /api/admin/menu/items
  * Get all menu items for the tenant (admin only)
  */
 export async function GET(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('GET', '/api/admin/menu/items', context)
+  
   try {
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
@@ -22,16 +27,19 @@ export async function GET(request: NextRequest) {
       .order('sort_order', { ascending: true })
 
     if (error) {
-      console.error('Error fetching menu items:', error)
+      logger.api.error('GET', '/api/admin/menu/items', error as Error, { ...context, tenantId })
+      captureException(error as Error, { ...context, tenantId })
       return NextResponse.json(
         { message: 'Failed to fetch menu items', error: error.message },
         { status: 500 }
       )
     }
 
+    logger.info('Menu items fetched successfully', { ...context, tenantId, count: menuItems?.length || 0 })
     return NextResponse.json(menuItems || [])
   } catch (error: any) {
-    console.error('Error in GET /api/admin/menu/items:', error)
+    logger.api.error('GET', '/api/admin/menu/items', error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
@@ -52,9 +60,13 @@ export async function GET(request: NextRequest) {
  * Create a new menu item (admin only)
  */
 export async function POST(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('POST', '/api/admin/menu/items', context)
+  
   // Verify CSRF token
   const isValidCsrf = await verifyCsrfToken(request)
   if (!isValidCsrf) {
+    logger.warn('CSRF token missing or invalid', { ...context, path: '/api/admin/menu/items' })
     return NextResponse.json(
       { message: 'CSRF token missing or invalid' },
       { status: 403 }
@@ -121,16 +133,19 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating menu item:', error)
+      logger.api.error('POST', '/api/admin/menu/items', error as Error, { ...context, tenantId })
+      captureException(error as Error, { ...context, tenantId })
       return NextResponse.json(
         { message: 'Failed to create menu item', error: error.message },
         { status: 500 }
       )
     }
 
+    logger.info('Menu item created successfully', { ...context, tenantId, menuItemId: menuItem?.id })
     return NextResponse.json(menuItem, { status: 201 })
   } catch (error: any) {
-    console.error('Error in POST /api/admin/menu/items:', error)
+    logger.api.error('POST', '/api/admin/menu/items', error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(

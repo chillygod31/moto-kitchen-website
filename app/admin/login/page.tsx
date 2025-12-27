@@ -45,8 +45,8 @@ export default function AdminLogin() {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-lg p-8 border border-[#E6D9C8]">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-[#3A2A24] mb-2">Admin Login</h1>
-            <p className="text-[#4B4B4B]">Moto Kitchen Quote Management</p>
+            <h1 className="text-3xl font-bold text-[#3A2A24] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600 }}>Admin Login</h1>
+            <p className="text-[#4B4B4B]" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400 }}>Moto Kitchen Quote Management</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -57,7 +57,7 @@ export default function AdminLogin() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Email
               </label>
               <input
@@ -72,7 +72,7 @@ export default function AdminLogin() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Password
               </label>
               <input

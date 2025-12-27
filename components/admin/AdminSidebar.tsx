@@ -13,6 +13,7 @@ const navItems: NavItem[] = [
   { href: '/admin/quotes', label: 'Quotes' },
   { href: '/admin/orders', label: 'Orders' },
   { href: '/admin/menu', label: 'Menu' },
+  { href: '/admin/settings', label: 'Settings' },
 ]
 
 export default function AdminSidebar() {
@@ -35,6 +36,7 @@ export default function AdminSidebar() {
                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                 }
               `}
+              style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
             >
               {item.icon}
               {item.label}

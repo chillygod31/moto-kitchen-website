@@ -33,6 +33,7 @@ interface Order {
   status: string;
   payment_status: string;
   notes: string | null;
+  admin_notes: string | null;
   created_at: string;
   updated_at: string;
   order_items: OrderItem[];
@@ -63,6 +64,9 @@ export default function AdminOrdersPage() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   useEffect(() => {
     // Check authentication via API (server-side session)
@@ -227,23 +231,49 @@ export default function AdminOrdersPage() {
       {/* Page Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--brand-secondary, #3A2A24)' }}>
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
             Orders
           </h1>
-          <p style={{ color: 'var(--brand-muted, #4B4B4B)' }}>
+          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
             Manage and track all customer orders
           </p>
         </div>
-        <Link href="/admin/quotes" className="btn-secondary px-6 inline-block text-center">
-          View Quotes
-        </Link>
+      </div>
+
+      {/* Search */}
+      <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search by customer name, email, or order number..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 pl-10 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+          />
+          <svg
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Order Status
               </label>
               <select
@@ -259,7 +289,7 @@ export default function AdminOrdersPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Payment Status
               </label>
               <select
@@ -274,14 +304,39 @@ export default function AdminOrdersPage() {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+                Date From
+              </label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+                Date To
+              </label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+              />
+            </div>
             <div className="flex items-end">
               <button
                 onClick={() => {
                   setStatusFilter("all");
                   setPaymentStatusFilter("all");
+                  setSearchQuery("");
+                  setDateFrom("");
+                  setDateTo("");
                   fetchOrders();
                 }}
-                className="btn-secondary w-full"
+                className="text-sm text-[#C9653B] hover:underline"
               >
                 Clear Filters
               </button>
@@ -297,46 +352,97 @@ export default function AdminOrdersPage() {
                 <table className="w-full">
                   <thead className="bg-[#F1E7DA]">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Order #
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Total
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Date
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E6D9C8]">
-                    {orders.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-[#4B4B4B]">
-                          No orders found
-                        </td>
-                      </tr>
-                    ) : (
-                      orders.map((order) => (
+                    {(() => {
+                      // Apply search and date filters
+                      let filteredOrders = orders;
+                      
+                      // Search filter
+                      if (searchQuery) {
+                        filteredOrders = filteredOrders.filter((order) => {
+                          const query = searchQuery.toLowerCase();
+                          return (
+                            order.order_number?.toLowerCase().includes(query) ||
+                            order.customer_name?.toLowerCase().includes(query) ||
+                            order.customer_email?.toLowerCase().includes(query)
+                          );
+                        });
+                      }
+                      
+                      // Date range filter
+                      if (dateFrom) {
+                        const fromDate = new Date(dateFrom);
+                        fromDate.setHours(0, 0, 0, 0);
+                        filteredOrders = filteredOrders.filter((order) => {
+                          const orderDate = new Date(order.created_at);
+                          return orderDate >= fromDate;
+                        });
+                      }
+                      
+                      if (dateTo) {
+                        const toDate = new Date(dateTo);
+                        toDate.setHours(23, 59, 59, 999);
+                        filteredOrders = filteredOrders.filter((order) => {
+                          const orderDate = new Date(order.created_at);
+                          return orderDate <= toDate;
+                        });
+                      }
+
+                      return filteredOrders.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-[#4B4B4B]">
+                            {searchQuery ? "No orders match your search" : "No orders found"}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredOrders.map((order) => (
                         <tr
                           key={order.id}
                           className={`hover:bg-[#FAF6EF] cursor-pointer ${
                             selectedOrder?.id === order.id ? "bg-[#FAF6EF]" : ""
                           }`}
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={async () => {
+                            // Fetch full order details with items
+                            try {
+                              const response = await fetch(`/api/orders/${order.id}`)
+                              if (response.ok) {
+                                const fullOrder = await response.json()
+                                setSelectedOrder(fullOrder)
+                              } else {
+                                // Fallback to order from list if fetch fails
+                                setSelectedOrder(order)
+                              }
+                            } catch (error) {
+                              console.error('Error fetching order details:', error)
+                              // Fallback to order from list
+                              setSelectedOrder(order)
+                            }
+                          }}
                         >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1F1F1F]">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-[#1F1F1F]">
                             {order.order_number}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
                             <div>
                               <div className="font-medium">{order.customer_name}</div>
                               {order.customer_email && (
@@ -344,13 +450,13 @@ export default function AdminOrdersPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
                             <span className="capitalize">{order.fulfillment_type}</span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#1F1F1F]">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-[#1F1F1F]">
                             {formatCurrency(order.total)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <span
                               className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                                 order.status
@@ -359,12 +465,13 @@ export default function AdminOrdersPage() {
                               {order.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
                             {formatDate(order.created_at)}
                           </td>
                         </tr>
-                      ))
-                    )}
+                        ))
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -376,17 +483,96 @@ export default function AdminOrdersPage() {
             {selectedOrder ? (
               <div className="bg-white rounded-lg border border-[#E6D9C8] p-6 sticky top-24">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-[#3A2A24] mb-2">
+                  <h2 className="text-lg font-semibold text-[#3A2A24] mb-3" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                     Order {selectedOrder.order_number}
                   </h2>
-                  <p className="text-sm text-[#4B4B4B]">
+                  <p className="text-sm text-[#4B4B4B] mb-4">
                     Created: {formatDate(selectedOrder.created_at)}
                   </p>
+                  
+                  {/* Quick Actions */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {selectedOrder.payment_status === 'unpaid' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(`/api/orders/${selectedOrder.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ payment_status: 'paid' }),
+                            });
+                            if (response.ok) {
+                              fetchOrders();
+                              const updated = await response.json();
+                              setSelectedOrder(updated);
+                            }
+                          } catch (error) {
+                            console.error("Error updating payment status:", error);
+                          }
+                        }}
+                        className="px-4 py-2 text-sm font-medium bg-green-100 text-green-700 rounded hover:bg-green-200 transition min-h-[36px]"
+                      >
+                        Mark Paid
+                      </button>
+                    )}
+                    {selectedOrder.status !== 'ready' && selectedOrder.status !== 'completed' && (
+                      <button
+                        onClick={() => updateStatus(selectedOrder.id, 'ready')}
+                        className="px-4 py-2 text-sm font-medium bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition min-h-[36px]"
+                      >
+                        Mark Ready
+                      </button>
+                    )}
+                    {selectedOrder.status !== 'cancelled' && (
+                      <button
+                        onClick={() => {
+                          if (confirm('Are you sure you want to cancel this order?')) {
+                            updateStatus(selectedOrder.id, 'cancelled');
+                          }
+                        }}
+                        className="px-4 py-2 text-sm font-medium bg-red-100 text-red-700 rounded hover:bg-red-200 transition min-h-[36px]"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <Link
+                      href={`/admin/orders/${selectedOrder.id}/ticket`}
+                      target="_blank"
+                      className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition inline-block min-h-[36px] flex items-center justify-center"
+                    >
+                      Print Ticket
+                    </Link>
+                    {selectedOrder.customer_email && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Resend confirmation email to customer?')) return
+                          try {
+                            const response = await fetch(`/api/orders/${selectedOrder.id}/send-confirmation`, {
+                              method: 'POST',
+                            })
+                            if (response.ok) {
+                              alert('Confirmation email sent successfully!')
+                              fetchOrders()
+                            } else {
+                              const error = await response.json()
+                              alert(error.message || 'Failed to send email')
+                            }
+                          } catch (error) {
+                            console.error('Error sending confirmation email:', error)
+                            alert('Failed to send email')
+                          }
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
+                      >
+                        Resend Email
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Customer Info */}
                 <div className="mb-6 pb-6 border-b border-[#E6D9C8]">
-                  <h3 className="font-semibold text-[#1F1F1F] mb-3">Customer Details</h3>
+                  <h3 className="font-semibold text-[#1F1F1F] mb-3" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Customer Details</h3>
                   <div className="space-y-2 text-sm text-[#4B4B4B]">
                     <div>
                       <span className="font-medium">Name:</span> {selectedOrder.customer_name}
@@ -416,7 +602,7 @@ export default function AdminOrdersPage() {
 
                 {/* Order Items */}
                 <div className="mb-6 pb-6 border-b border-[#E6D9C8]">
-                  <h3 className="font-semibold text-[#1F1F1F] mb-3">Order Items</h3>
+                  <h3 className="font-semibold text-[#1F1F1F] mb-3" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Order Items</h3>
                   <div className="space-y-3">
                     {selectedOrder.order_items?.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
@@ -438,7 +624,7 @@ export default function AdminOrdersPage() {
 
                 {/* Order Summary */}
                 <div className="mb-6 pb-6 border-b border-[#E6D9C8]">
-                  <h3 className="font-semibold text-[#1F1F1F] mb-3">Order Summary</h3>
+                  <h3 className="font-semibold text-[#1F1F1F] mb-3" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Order Summary</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-[#4B4B4B]">Subtotal:</span>
@@ -511,15 +697,45 @@ export default function AdminOrdersPage() {
                 {/* Notes */}
                 {selectedOrder.notes && (
                   <div className="mb-6 pb-6 border-b border-[#E6D9C8]">
-                    <h3 className="font-semibold text-[#1F1F1F] mb-3">Notes</h3>
+                    <h3 className="font-semibold text-[#1F1F1F] mb-3" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Customer Notes</h3>
                     <p className="text-sm text-[#4B4B4B]">{selectedOrder.notes}</p>
                   </div>
                 )}
 
+                {/* Internal Notes (Admin Only) */}
+                <div className="mb-6 pb-6 border-b border-[#E6D9C8]">
+                  <h3 className="font-semibold text-[#1F1F1F] mb-3" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Internal Notes</h3>
+                  <textarea
+                    value={selectedOrder.admin_notes || ''}
+                    onChange={async (e) => {
+                      const newNotes = e.target.value
+                      setSelectedOrder({ ...selectedOrder, admin_notes: newNotes })
+                      // Auto-save after 1 second of no typing
+                      setTimeout(async () => {
+                        try {
+                          await fetch(`/api/orders/${selectedOrder.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ admin_notes: newNotes }),
+                          })
+                        } catch (error) {
+                          console.error('Error saving admin notes:', error)
+                        }
+                      }, 1000)
+                    }}
+                    placeholder="Add internal notes (not visible to customer)..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] text-sm"
+                  />
+                  <p className="text-xs text-[#4B4B4B] mt-1">
+                    These notes are only visible to admin staff
+                  </p>
+                </div>
+
                 {/* Status Updates */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                       Update Order Status
                     </label>
                     <select
@@ -537,7 +753,7 @@ export default function AdminOrdersPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
+                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                       Update Payment Status
                     </label>
                     <select

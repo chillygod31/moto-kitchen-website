@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerAuthClient } from '@/lib/supabase/server-auth'
 import { createServerAppClient } from '@/lib/supabase/server-app'
+import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 import { getAdminTenantId } from '@/lib/auth/server-admin'
 import { generateOrderNumber, extractPostcodePrefix, checkMinimumOrder } from '@/lib/utils'
 import { createOrderSchema } from '@/lib/validations/orders'
 import { rateLimitMiddleware, rateLimitConfigs } from '@/lib/rate-limit'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 /**
  * GET /api/orders
@@ -13,6 +16,9 @@ import { rateLimitMiddleware, rateLimitConfigs } from '@/lib/rate-limit'
  * Uses admin session for tenant context
  */
 export async function GET(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('GET', '/api/orders', context)
+  
   try {
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
@@ -40,16 +46,19 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching orders:', error)
+      logger.api.error('GET', '/api/orders', error as Error, { ...context, tenantId })
+      captureException(error as Error, { ...context, tenantId })
       return NextResponse.json(
         { message: 'Failed to fetch orders', error: error.message },
         { status: 500 }
       )
     }
 
+    logger.info('Orders fetched successfully', { ...context, tenantId, count: data?.length || 0 })
     return NextResponse.json(data || [])
   } catch (error: any) {
-    console.error('Error in GET /api/orders:', error)
+    logger.api.error('GET', '/api/orders', error, context)
+    captureException(error, context)
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
       { status: 500 }
@@ -62,14 +71,20 @@ export async function GET(request: NextRequest) {
  * Create a new order
  */
 export async function POST(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('POST', '/api/orders', context)
+  
   // Apply rate limiting
   const rateLimit = rateLimitMiddleware(request, rateLimitConfigs.orderCreation)
   if (!rateLimit.allowed) {
+    logger.warn('Rate limit exceeded for order creation', context)
     return rateLimit.response as NextResponse
   }
 
   try {
-    const supabase = createServerAppClient()
+    // Use service role key for order creation to bypass RLS
+    // Tenant isolation is enforced in application code via tenantId
+    const supabase = createServerAdminClient()
     const tenantId = await getTenantId()
 
     const body = await request.json()
@@ -154,7 +169,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (orderError) {
-      console.error('Error creating order:', orderError)
+      logger.api.error('POST', '/api/orders', orderError as Error, { ...context, tenantId })
+      captureException(orderError as Error, { ...context, tenantId })
       return NextResponse.json(
         { message: 'Failed to create order', error: orderError.message },
         { status: 500 }
@@ -170,7 +186,8 @@ export async function POST(request: NextRequest) {
       .in('id', menuItemIds)
 
     if (menuCheckError) {
-      console.error('Error checking menu items:', menuCheckError)
+      logger.api.error('POST', '/api/orders', menuCheckError as Error, { ...context, tenantId, orderId: order.id })
+      captureException(menuCheckError as Error, { ...context, tenantId, orderId: order.id })
       await supabase.from('orders').delete().eq('id', order.id)
       return NextResponse.json(
         { message: 'Failed to validate menu items', error: menuCheckError.message },
@@ -181,7 +198,7 @@ export async function POST(request: NextRequest) {
     if (!existingMenuItems || existingMenuItems.length !== menuItemIds.length) {
       const existingIds = existingMenuItems?.map((m: any) => m.id) || []
       const missingIds = menuItemIds.filter((id: string) => !existingIds.includes(id))
-      console.error('Some menu items not found:', missingIds)
+      logger.warn('Some menu items not found', { ...context, tenantId, orderId: order.id, missingIds })
       await supabase.from('orders').delete().eq('id', order.id)
       return NextResponse.json(
         { message: `Menu items not found: ${missingIds.join(', ')}` },
@@ -207,11 +224,13 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (itemsError) {
-      console.error('Error creating order items:', itemsError)
-      console.error('Order items data attempted:', JSON.stringify(orderItemsData, null, 2))
-      console.error('Tenant ID:', tenantId)
-      console.error('Order ID:', order.id)
-      console.error('Full error object:', JSON.stringify(itemsError, null, 2))
+      logger.api.error('POST', '/api/orders', itemsError as Error, { 
+        ...context, 
+        tenantId, 
+        orderId: order.id,
+        orderItemsData: JSON.stringify(orderItemsData)
+      })
+      captureException(itemsError as Error, { ...context, tenantId, orderId: order.id })
       // Rollback order creation
       await supabase.from('orders').delete().eq('id', order.id)
       return NextResponse.json(
@@ -233,9 +252,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (fetchError) {
-      console.error('Error fetching created order:', fetchError)
+      logger.warn('Error fetching created order', { ...context, tenantId, orderId: order.id, error: fetchError.message })
     }
 
+    logger.info('Order created successfully', { ...context, tenantId, orderId: order.id, orderNumber: orderNumber })
+    
     // Add rate limit headers to successful response
     const response = NextResponse.json(fullOrder || order, { status: 201 })
     response.headers.set('X-RateLimit-Limit', rateLimitConfigs.orderCreation.maxRequests.toString())
@@ -243,7 +264,8 @@ export async function POST(request: NextRequest) {
     response.headers.set('X-RateLimit-Reset', rateLimit.resetAt.toString())
     return response
   } catch (error: any) {
-    console.error('Error in POST /api/orders:', error)
+    logger.api.error('POST', '/api/orders', error, context)
+    captureException(error, context)
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
       { status: 500 }

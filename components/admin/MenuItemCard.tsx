@@ -7,6 +7,7 @@ interface MenuItemCardProps {
   item: MenuItem & { menu_categories?: { name: string } }
   onEdit: (item: MenuItem) => void
   onToggleAvailability: (item: MenuItem) => void
+  onTogglePublished: (item: MenuItem) => void
   onDelete: (item: MenuItem) => void
 }
 
@@ -14,6 +15,7 @@ export default function MenuItemCard({
   item,
   onEdit,
   onToggleAvailability,
+  onTogglePublished,
   onDelete,
 }: MenuItemCardProps) {
   return (
@@ -41,13 +43,25 @@ export default function MenuItemCard({
               </p>
             )}
           </div>
-          <span className={`px-2 py-1 text-xs font-medium rounded ${
-            item.is_available
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-600'
-          }`}>
-            {item.is_available ? 'Available' : 'Unavailable'}
-          </span>
+          <div className="flex gap-2">
+            <span className={`px-2 py-1 text-xs font-medium rounded ${
+              item.is_available
+                ? 'bg-green-100 text-green-800'
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              {item.is_available ? 'Available' : 'Unavailable'}
+            </span>
+            <span className={`px-2 py-1 text-xs font-medium rounded cursor-pointer ${
+              item.is_published
+                ? 'bg-blue-100 text-blue-800'
+                : 'bg-yellow-100 text-yellow-800'
+            }`}
+            onClick={() => onTogglePublished(item)}
+            title={item.is_published ? 'Click to unpublish' : 'Click to publish'}
+            >
+              {item.is_published ? 'Published' : 'Draft'}
+            </span>
+          </div>
         </div>
         
         {item.description && (

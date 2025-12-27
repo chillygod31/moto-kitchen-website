@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 /**
  * GET /api/business-settings
@@ -13,6 +15,9 @@ import { getTenantId } from '@/lib/tenant'
  * TODO: Future - use proper tenant-scoped access when implemented.
  */
 export async function GET(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('GET', '/api/business-settings', context)
+  
   try {
     // Temporary: Use service role because RLS blocks anon SELECT
     // Tenant isolation enforced via app-level filtering (.eq('tenant_id', ...))
@@ -28,7 +33,7 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error fetching business settings:', error)
+      logger.warn('Error fetching business settings, returning defaults', { ...context, tenantId, error: error.message })
       // Return default settings if not found
       return NextResponse.json({
         min_order_value: 0,
@@ -40,6 +45,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    logger.info('Business settings fetched successfully', { ...context, tenantId })
     return NextResponse.json(settings || {
       min_order_value: 0,
       timezone: 'Europe/Amsterdam',
@@ -49,7 +55,8 @@ export async function GET(request: NextRequest) {
       accepting_orders: true,
     })
   } catch (error: any) {
-    console.error('Error in GET /api/business-settings:', error)
+    logger.api.error('GET', '/api/business-settings', error, context)
+    captureException(error, context)
     return NextResponse.json(
       { message: 'Internal server error', error: error.message },
       { status: 500 }

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerAuthClient } from "@/lib/supabase/server-auth";
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 export async function GET(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('GET', '/api/quotes', context)
+  
   try {
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient();
@@ -38,16 +43,19 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching quotes:", error);
+      logger.api.error('GET', '/api/quotes', error as Error, context)
+      captureException(error as Error, context)
       return NextResponse.json(
         { error: "Failed to fetch quotes" },
         { status: 500 }
       );
     }
 
+    logger.info('Quotes fetched successfully', { ...context, count: data?.length || 0 })
     return NextResponse.json({ quotes: data || [] });
-  } catch (error) {
-    console.error("Quotes API error:", error);
+  } catch (error: any) {
+    logger.api.error('GET', '/api/quotes', error, context)
+    captureException(error, context)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -56,9 +64,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('PATCH', '/api/quotes', context)
+  
   // Verify CSRF token
   const isValidCsrf = await verifyCsrfToken(request)
   if (!isValidCsrf) {
+    logger.warn('CSRF token missing or invalid', { ...context, path: '/api/quotes' })
     return NextResponse.json(
       { message: 'CSRF token missing or invalid' },
       { status: 403 }
@@ -91,16 +103,19 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Error updating quote:", error);
+      logger.api.error('PATCH', '/api/quotes', error as Error, { ...context, quoteId: id })
+      captureException(error as Error, { ...context, quoteId: id })
       return NextResponse.json(
         { error: "Failed to update quote" },
         { status: 500 }
       );
     }
 
+    logger.info('Quote updated successfully', { ...context, quoteId: id })
     return NextResponse.json({ quote: data });
-  } catch (error) {
-    console.error("Update quote error:", error);
+  } catch (error: any) {
+    logger.api.error('PATCH', '/api/quotes', error, context)
+    captureException(error, context)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

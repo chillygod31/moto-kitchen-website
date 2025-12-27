@@ -21,6 +21,7 @@ dotenv.config({ path: envPath })
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error('❌ Missing Supabase environment variables')
@@ -43,10 +44,18 @@ interface TestResult {
 
 const results: TestResult[] = []
 
-// Create Supabase client using anon key (same as your API routes)
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// Create Supabase client using anon key (for RLS blocking test)
+const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: false },
 })
+
+// Create Supabase client using service role key (for application-level filtering tests)
+// This matches how the actual app works - menu routes use service role because RLS blocks anon SELECT
+const supabaseService = SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    })
+  : null
 
 /**
  * Test helper - runs async test and tracks results
@@ -77,17 +86,21 @@ async function runTests() {
 
   // Test 1: Query without tenant context - should be blocked by RLS
   await runTest('Test 1: Query menu_items without tenant filter (RLS should block)', async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
       .from('menu_items')
       .select('*')
       .limit(10)
 
     // RLS should block this (no tenant context set)
-    // If RLS is working, data should be empty array (not null)
+    // If RLS is working, data should be empty array (not null) or error
     if (error) {
       // Some RLS policies might return error instead of empty
-      console.log(`   RLS blocked with error: ${error.message}`)
-      return // This is acceptable
+      if (error.message.includes('permission denied') || error.message.includes('RLS')) {
+        console.log(`   ✅ RLS blocked with error: ${error.message}`)
+        return // This is acceptable - RLS is working
+      }
+      // Other errors might be connection issues
+      throw error
     }
 
     if (data && data.length > 0) {
@@ -102,7 +115,14 @@ async function runTests() {
 
   // Test 2: Query tenant_a with application-level filter (how your app works)
   await runTest('Test 2: Query tenant_a items with filter (application-level)', async () => {
-    const { data, error } = await supabase
+    // Use service role key (like the actual app does) because RLS blocks anon SELECT
+    if (!supabaseService) {
+      console.log('   ⚠️  Skipping: SUPABASE_SERVICE_ROLE_KEY not set')
+      console.log('   ℹ️  This test requires service role key to test application-level filtering')
+      return
+    }
+
+    const { data, error } = await supabaseService
       .from('menu_items')
       .select('*')
       .eq('tenant_id', TENANT_A_ID)
@@ -131,7 +151,13 @@ async function runTests() {
 
   // Test 3: Query tenant_b with application-level filter
   await runTest('Test 3: Query tenant_b items with filter (application-level)', async () => {
-    const { data, error } = await supabase
+    // Use service role key (like the actual app does)
+    if (!supabaseService) {
+      console.log('   ⚠️  Skipping: SUPABASE_SERVICE_ROLE_KEY not set')
+      return
+    }
+
+    const { data, error } = await supabaseService
       .from('menu_items')
       .select('*')
       .eq('tenant_id', TENANT_B_ID)
@@ -160,7 +186,13 @@ async function runTests() {
 
   // Test 4: Verify tenant isolation - tenant_a filter should not return tenant_b items
   await runTest('Test 4: Verify tenant isolation (tenant_a filter excludes tenant_b)', async () => {
-    const { data, error } = await supabase
+    // Use service role key (like the actual app does)
+    if (!supabaseService) {
+      console.log('   ⚠️  Skipping: SUPABASE_SERVICE_ROLE_KEY not set')
+      return
+    }
+
+    const { data, error } = await supabaseService
       .from('menu_items')
       .select('*')
       .eq('tenant_id', TENANT_A_ID)
@@ -183,7 +215,13 @@ async function runTests() {
 
   // Test 5: Query moto-kitchen items
   await runTest('Test 5: Query moto-kitchen items with filter', async () => {
-    const { data, error } = await supabase
+    // Use service role key (like the actual app does)
+    if (!supabaseService) {
+      console.log('   ⚠️  Skipping: SUPABASE_SERVICE_ROLE_KEY not set')
+      return
+    }
+
+    const { data, error } = await supabaseService
       .from('menu_items')
       .select('*')
       .eq('tenant_id', TENANT_MOTO_KITCHEN_ID)

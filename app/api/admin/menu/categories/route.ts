@@ -3,12 +3,17 @@ import { createServerAuthClient } from '@/lib/supabase/server-auth'
 import { getAdminTenantId } from '@/lib/auth/server-admin'
 import { createMenuCategorySchema } from '@/lib/validations/menu'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { logger, getTenantContextFromHeaders } from '@/lib/logging'
+import { captureException } from '@/lib/error-tracking'
 
 /**
  * GET /api/admin/menu/categories
  * Get all menu categories for the tenant (admin only)
  */
 export async function GET(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('GET', '/api/admin/menu/categories', context)
+  
   try {
     // Use JWT-based client so RLS policies apply
     const supabase = await createServerAuthClient()
@@ -21,16 +26,19 @@ export async function GET(request: NextRequest) {
       .order('sort_order', { ascending: true })
 
     if (error) {
-      console.error('Error fetching categories:', error)
+      logger.api.error('GET', '/api/admin/menu/categories', error as Error, { ...context, tenantId })
+      captureException(error as Error, { ...context, tenantId })
       return NextResponse.json(
         { message: 'Failed to fetch categories', error: error.message },
         { status: 500 }
       )
     }
 
+    logger.info('Menu categories fetched successfully', { ...context, tenantId, count: categories?.length || 0 })
     return NextResponse.json(categories || [])
   } catch (error: any) {
-    console.error('Error in GET /api/admin/menu/categories:', error)
+    logger.api.error('GET', '/api/admin/menu/categories', error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
@@ -51,9 +59,13 @@ export async function GET(request: NextRequest) {
  * Create a new menu category (admin only)
  */
 export async function POST(request: NextRequest) {
+  const context = getTenantContextFromHeaders(request.headers)
+  logger.api.request('POST', '/api/admin/menu/categories', context)
+  
   // Verify CSRF token
   const isValidCsrf = await verifyCsrfToken(request)
   if (!isValidCsrf) {
+    logger.warn('CSRF token missing or invalid', { ...context, path: '/api/admin/menu/categories' })
     return NextResponse.json(
       { message: 'CSRF token missing or invalid' },
       { status: 403 }
@@ -96,16 +108,19 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error creating category:', error)
+      logger.api.error('POST', '/api/admin/menu/categories', error as Error, { ...context, tenantId })
+      captureException(error as Error, { ...context, tenantId })
       return NextResponse.json(
         { message: 'Failed to create category', error: error.message },
         { status: 500 }
       )
     }
 
+    logger.info('Menu category created successfully', { ...context, tenantId, categoryId: category?.id })
     return NextResponse.json(category, { status: 201 })
   } catch (error: any) {
-    console.error('Error in POST /api/admin/menu/categories:', error)
+    logger.api.error('POST', '/api/admin/menu/categories', error, context)
+    captureException(error, context)
     
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(

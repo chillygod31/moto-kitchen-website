@@ -40,6 +40,12 @@ export default function PrivacyPage() {
                 <li>Dietary requirements and preferences</li>
                 <li>Any other information you choose to provide in your inquiry</li>
               </ul>
+              <p className="text-[#4B4B4B] leading-relaxed mt-4 mb-2">
+                <strong>Payment Information:</strong> When you place an order, payment processing is handled by Stripe, 
+                a secure payment processor. We do not store your full credit card details. Stripe collects and processes 
+                your payment information in accordance with their privacy policy. We only receive confirmation of payment 
+                and transaction references, which we store for order processing and record-keeping purposes.
+              </p>
             </div>
 
             <div>

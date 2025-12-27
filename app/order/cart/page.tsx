@@ -30,7 +30,22 @@ export default function CartPage() {
   const [businessSettings, setBusinessSettings] = useState<BusinessSettings | null>(null)
 
   useEffect(() => {
+    // Scroll to top on mount
+    window.scrollTo(0, 0)
+    
+    // Disable Next.js automatic scroll restoration for this page
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+    
     loadCart()
+    
+    return () => {
+      // Re-enable scroll restoration when leaving page
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -96,7 +111,7 @@ export default function CartPage() {
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-[#FAF6EF]">
-        <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
+        <header className="bg-[#3A2A24] fixed top-0 left-0 right-0 z-50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <Link href="/order" className="flex items-center gap-3 hover:opacity-80 transition">
               <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
@@ -126,7 +141,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF6EF]">
-      <header className="bg-[#3A2A24] shadow-lg">
+      <header className="bg-[#3A2A24] fixed top-0 left-0 right-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
               <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
@@ -138,8 +153,8 @@ export default function CartPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-10">Your Cart</h1>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart</h1>
 
         {!minOrderCheck.valid && minOrder > 0 && (
           <div className="mb-6">
@@ -170,8 +185,8 @@ export default function CartPage() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{item.name}</h3>
-                  <p className="text-sm sm:text-base text-gray-600">{formatCurrency(item.price)} each</p>
+                  <h3 className="text-base font-semibold text-gray-900 truncate">{item.name}</h3>
+                  <p className="text-sm text-gray-600">{formatCurrency(item.price)} each</p>
                 </div>
               </div>
 
@@ -179,17 +194,17 @@ export default function CartPage() {
                 <div className="flex items-center border-2 border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                    className="px-3 py-1.5 sm:px-4 sm:py-2 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
+                    className="px-3 py-2 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-medium text-gray-700 flex items-center justify-center touch-manipulation text-base"
                     aria-label="Decrease quantity"
                   >
                     −
                   </button>
-                  <span className="px-3 sm:px-4 py-1.5 sm:py-2 min-w-[2.5rem] sm:min-w-[3rem] min-h-[44px] text-center font-medium flex items-center justify-center text-sm sm:text-base">
+                  <span className="px-3 py-2 min-w-[2.5rem] min-h-[44px] text-center font-medium flex items-center justify-center text-sm">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    className="px-3 py-1.5 sm:px-4 sm:py-2 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-semibold text-gray-700 flex items-center justify-center touch-manipulation"
+                    className="px-3 py-2 min-h-[44px] min-w-[44px] hover:bg-gray-100 transition font-medium text-gray-700 flex items-center justify-center touch-manipulation text-base"
                     aria-label="Increase quantity"
                   >
                     +
@@ -197,7 +212,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <span className="text-base sm:text-lg font-semibold text-gray-900 whitespace-nowrap">
+                  <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
                     {formatCurrency(item.price * item.quantity)}
                   </span>
 
@@ -226,10 +241,10 @@ export default function CartPage() {
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-lg">
                 <span className="text-gray-600">Delivery Fee</span>
-                <span className="text-gray-900">From €5.00*</span>
+                <span className="text-gray-900">Calculated at checkout</span>
               </div>
               <p className="text-xs text-gray-500">
-                *Delivery fee calculated at checkout based on your postcode
+                Delivery fee will be calculated based on your postcode during checkout
               </p>
             </div>
 
@@ -251,12 +266,12 @@ export default function CartPage() {
             )}
 
             <div className="border-t pt-4">
-              <div className="flex justify-between text-xl font-semibold mb-2">
-                <span>Estimated Total</span>
-                <span className="text-[#C9653B]">{formatCurrency(subtotal + 5)}</span>
+              <div className="flex justify-between text-lg font-semibold mb-2">
+                <span>Subtotal</span>
+                <span className="text-[#C9653B]">{formatCurrency(subtotal)}</span>
               </div>
               <p className="text-xs text-gray-500">
-                Final total includes delivery fee (calculated at checkout)
+                Delivery fee will be calculated at checkout based on your postcode
               </p>
             </div>
           </div>
@@ -264,7 +279,7 @@ export default function CartPage() {
           <div className="mt-6 space-y-3">
             <Link
               href={orderRoutes.checkout()}
-              className={`block w-full text-center px-6 py-3 min-h-[56px] rounded-lg transition font-semibold flex items-center justify-center touch-manipulation ${
+              className={`block w-full text-center px-6 py-3 min-h-[48px] rounded-lg transition font-semibold text-base flex items-center justify-center touch-manipulation ${
                 !minOrderCheck.valid && minOrder > 0
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed pointer-events-none'
                   : 'bg-[#C9653B] text-white hover:bg-[#B8552B]'
@@ -281,7 +296,7 @@ export default function CartPage() {
             </Link>
             <Link
               href={orderRoutes.menu()}
-              className="block w-full text-center px-6 py-3 min-h-[56px] border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center justify-center touch-manipulation"
+              className="block w-full text-center px-6 py-3 min-h-[48px] border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-base flex items-center justify-center touch-manipulation"
             >
               Continue Shopping
             </Link>
