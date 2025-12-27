@@ -571,8 +571,7 @@ export default function ContactPage() {
                           </div>
                         </label>
                         );
-                      }
-                      ))}
+                      })}
                     </div>
                   </div>
 
