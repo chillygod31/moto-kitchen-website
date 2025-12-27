@@ -50,6 +50,9 @@ const results: TestResult[] = []
  * Get JWT token for a user
  */
 async function getUserToken(email: string, password: string): Promise<string> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Missing Supabase environment variables')
+  }
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   
