@@ -5,9 +5,15 @@ import { getTenantId } from '@/lib/tenant'
 import { logger, getTenantContextFromHeaders } from '@/lib/logging'
 import { captureException } from '@/lib/error-tracking'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-12-15.clover',
-})
+function getStripeClient() {
+  const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
+  if (!STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is not set')
+  }
+  return new Stripe(STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
 
 /**
  * POST /api/payments/create-session
@@ -115,6 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe Checkout session
+    const stripe = getStripeClient()
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',

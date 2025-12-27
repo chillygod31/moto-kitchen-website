@@ -9,9 +9,15 @@ import { headers } from 'next/headers'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-12-15.clover',
-})
+function getStripeClient() {
+  const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
+  if (!STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is not set')
+  }
+  return new Stripe(STRIPE_SECRET_KEY, {
+    apiVersion: '2025-12-15.clover',
+  })
+}
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
@@ -43,6 +49,7 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event
 
     try {
+      const stripe = getStripeClient()
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err: any) {
       logger.error('Webhook signature verification failed', err as Error)
