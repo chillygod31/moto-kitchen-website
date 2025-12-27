@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (logError) {
-      logger.error('Failed to log webhook event', { error: logError.message, eventId: event.id })
+      logger.error('Failed to log webhook event', logError as Error, { eventId: event.id })
     }
 
     // Handle different event types
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         const metadata = session.metadata || {}
         const tenantId = metadata.tenant_id
         if (!tenantId) {
-          logger.error('Missing tenant_id in session metadata', { sessionId: session.id })
+          logger.error('Missing tenant_id in session metadata', undefined, { sessionId: session.id })
           if (webhookEvent) {
             await supabase
               .from('webhook_events')
@@ -140,8 +140,7 @@ export async function POST(request: NextRequest) {
           .in('id', menuItemIds)
 
         if (menuError) {
-          logger.error('Failed to fetch menu items for order', { 
-            error: menuError.message, 
+          logger.error('Failed to fetch menu items for order', menuError as Error, { 
             sessionId: session.id 
           })
           if (webhookEvent) {
@@ -203,8 +202,7 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (orderError) {
-          logger.error('Failed to create order from webhook', { 
-            error: orderError.message, 
+          logger.error('Failed to create order from webhook', orderError as Error, { 
             sessionId: session.id 
           })
           if (webhookEvent) {
@@ -236,8 +234,7 @@ export async function POST(request: NextRequest) {
             .insert(orderItems)
 
           if (itemsError) {
-            logger.error('Failed to create order items', { 
-              error: itemsError.message, 
+            logger.error('Failed to create order items', itemsError as Error, { 
               orderId: order.id 
             })
           }
@@ -334,7 +331,7 @@ export async function POST(request: NextRequest) {
                     })
 
                     if (error) {
-                      logger.error('Failed to send customer confirmation email', { orderId: order.id, error: error.message })
+                      logger.error('Failed to send customer confirmation email', error as Error, { orderId: order.id })
                       await supabase
                         .from('orders')
                         .update({ 
@@ -351,7 +348,7 @@ export async function POST(request: NextRequest) {
                         .eq('id', order.id)
                     }
                   } catch (err: any) {
-                    logger.error('Error sending customer email', { orderId: order.id, error: err.message })
+                    logger.error('Error sending customer email', err as Error, { orderId: order.id })
                     await supabase
                       .from('orders')
                       .update({ 
@@ -399,14 +396,14 @@ export async function POST(request: NextRequest) {
                     html: adminHtml,
                     text: adminText,
                   }).catch(err => {
-                    logger.error('Error sending admin alert email', { orderId: order.id, error: err.message })
+                    logger.error('Error sending admin alert email', err as Error, { orderId: order.id })
                   })
                 }
               }
             }
           } catch (emailError: any) {
             // Don't fail webhook if email fails
-            logger.error('Error sending order emails', { orderId: order.id, error: emailError.message })
+            logger.error('Error sending order emails', emailError as Error, { orderId: order.id })
           }
         }
 
@@ -535,7 +532,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (error: any) {
-    logger.error('Webhook handler error', { error: error.message })
+    logger.error('Webhook handler error', error as Error)
     captureException(error, {})
     return NextResponse.json(
       { message: 'Webhook handler error', error: error.message },

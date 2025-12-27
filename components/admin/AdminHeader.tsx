@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface AdminHeaderProps {
   logoUrl?: string | null
@@ -13,13 +13,48 @@ interface AdminHeaderProps {
 export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHeaderProps) {
   const router = useRouter()
   const [loggingOut, setLoggingOut] = useState(false)
+  const [csrfToken, setCsrfToken] = useState<string | null>(null)
+
+  // Fetch CSRF token on mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch('/api/csrf')
+        const data = await response.json()
+        setCsrfToken(data.token)
+      } catch (error) {
+        console.error('Failed to fetch CSRF token:', error)
+      }
+    }
+    fetchCsrfToken()
+  }, [])
 
   const handleLogout = async () => {
+    if (!csrfToken) {
+      console.error('CSRF token not available')
+      // Still try to redirect to login
+      router.push('/admin/login')
+      return
+    }
+
     setLoggingOut(true)
     try {
-      await fetch('/api/admin/auth', { method: 'DELETE' })
-      router.push('/admin/login')
-      router.refresh()
+      const response = await fetch('/api/admin/auth', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
+      })
+
+      if (response.ok) {
+        router.push('/admin/login')
+        router.refresh()
+      } else {
+        console.error('Logout failed:', response.status)
+        // Still redirect even if logout fails
+        router.push('/admin/login')
+      }
     } catch (error) {
       console.error('Logout failed:', error)
       router.push('/admin/login')
@@ -28,7 +63,6 @@ export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHead
     }
   }
 
-  // Use default logo if no logo URL provided
   const displayLogoUrl = logoUrl || '/logo1.png'
 
   return (
@@ -67,4 +101,3 @@ export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHead
     </header>
   )
 }
-
