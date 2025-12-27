@@ -17,6 +17,7 @@ interface TimeSlot {
   slot_time: string
   start_time?: string  // Optional: new field for delivery time slots
   end_time?: string    // Optional: end time for delivery time slots
+  duration_minutes?: number  // Optional: duration for delivery time slots
   max_orders: number
   current_orders: number
 }
