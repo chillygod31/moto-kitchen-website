@@ -269,6 +269,7 @@ export async function POST(request: NextRequest) {
       <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
@@ -295,6 +296,20 @@ export async function POST(request: NextRequest) {
             font-weight: 600;
             margin: 0 0 8px 0;
             letter-spacing: 0.3px;
+            word-wrap: break-word;
+            line-height: 1.4;
+          }
+          @media only screen and (max-width: 600px) {
+            .header {
+              padding: 20px 16px;
+            }
+            .header h1 {
+              font-size: 16px;
+              line-height: 1.5;
+            }
+            .content {
+              padding: 24px 16px !important;
+            }
           }
           .submitted {
             font-size: 12px;
@@ -350,6 +365,19 @@ export async function POST(request: NextRequest) {
             color: #1F1F1F;
             font-weight: 500;
           }
+          @media only screen and (max-width: 600px) {
+            .field {
+              margin: 0 0 12px 0;
+            }
+            .field-label {
+              display: block;
+              min-width: auto;
+              margin-bottom: 2px;
+            }
+            .field-value {
+              display: block;
+            }
+          }
           .button-container {
             text-align: center; 
             margin: 32px 0 24px 0;
@@ -394,10 +422,20 @@ export async function POST(request: NextRequest) {
             font-weight: 500;
             border-radius: 3px;
             margin-left: 8px;
+            margin-top: 4px;
+            white-space: nowrap;
           }
           .priority-badge.urgent {
             background: #ffc107;
             color: #3A2A24;
+          }
+          @media only screen and (max-width: 600px) {
+            .priority-badge {
+              display: block;
+              margin-left: 0;
+              margin-top: 8px;
+              width: fit-content;
+            }
           }
         </style>
       </head>
@@ -624,7 +662,88 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
       // Data URIs are often blocked by Gmail and other mobile email clients
       const logoUrl = "https://www.motokitchen.nl/motoemaillogo.jpg";
 
-      const autoReplyHtml = `
+      // Check if this is a pickup-only or "other" request - send simple email
+      const isSimpleEmail = serviceType === "pickup-only" || eventType === "other";
+
+      const autoReplyHtml = isSimpleEmail ? `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+              line-height: 1.6; 
+              color: #1F1F1F; 
+              margin: 0; 
+              padding: 0; 
+              background: #FAF6EF;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: white;
+              padding: 0;
+            }
+            .header { 
+              background: #2B1E1A; 
+              color: white; 
+              padding: 32px; 
+              text-align: center; 
+            }
+            .header img {
+              max-width: 200px;
+              height: auto;
+              display: block;
+              margin: 0 auto;
+            }
+            .content { 
+              padding: 32px; 
+              background: white; 
+            }
+            .content p {
+              margin: 0 0 16px 0;
+              font-size: 16px;
+              color: #1F1F1F;
+            }
+            .footer {
+              background: #FAF6EF;
+              padding: 24px 32px;
+              text-align: center;
+              font-size: 13px;
+              color: #666;
+            }
+            @media only screen and (max-width: 600px) {
+              .header, .content, .footer {
+                padding-left: 16px;
+                padding-right: 16px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <img src="${logoUrl}" alt="Moto Kitchen" />
+            </div>
+            
+            <div class="content">
+              <p>Hi ${name},</p>
+              
+              <p>Thank you for reaching out to Moto Kitchen!</p>
+            </div>
+
+            <div class="footer">
+              <p style="margin: 0;">Moto Kitchen | Rotterdam, Netherlands</p>
+              <p style="margin: 8px 0 0 0;">
+                <a href="mailto:contact@motokitchen.nl" style="color: #C9653B; text-decoration: none;">contact@motokitchen.nl</a>
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      ` : `
         <!DOCTYPE html>
         <html>
         <head>
@@ -804,7 +923,17 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
         </html>
       `;
 
-      const autoReplyText = `
+      const autoReplyText = isSimpleEmail ? `
+✓ We received your message - Moto Kitchen
+
+Hi ${name},
+
+Thank you for reaching out to Moto Kitchen!
+
+---
+Moto Kitchen | Rotterdam, Netherlands
+contact@motokitchen.nl
+      ` : `
 ✓ We received your quote request - Moto Kitchen
 
 Hi ${name},
@@ -849,7 +978,7 @@ contact@motokitchen.nl
         from: fromEmail,
         to: [email],
         replyTo: "contact@motokitchen.nl",
-        subject: "✓ We received your quote request - Moto Kitchen",
+        subject: isSimpleEmail ? "Thank you for reaching out - Moto Kitchen" : "✓ We received your quote request - Moto Kitchen",
         html: autoReplyHtml,
         text: autoReplyText,
         tags: [
