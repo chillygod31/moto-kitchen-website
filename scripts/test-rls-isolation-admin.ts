@@ -46,6 +46,9 @@ const results: TestResult[] = []
  * Get authenticated Supabase client for a user
  */
 async function getAuthClient(email: string, password: string) {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Missing Supabase environment variables')
+  }
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   
@@ -64,7 +67,11 @@ async function runTests() {
   console.log('Prerequisites: Make sure setup-test-sandbox.ts has been run\n')
 
   // Get tenant IDs
-  const adminClient = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
   const { data: tenants } = await adminClient
     .from('tenants')
     .select('id, slug')
