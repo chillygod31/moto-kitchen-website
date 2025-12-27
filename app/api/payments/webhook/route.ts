@@ -10,7 +10,7 @@ import { headers } from 'next/headers'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-12-15.clover',
 })
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
     } catch (err: any) {
-      logger.error('Webhook signature verification failed', { error: err.message })
+      logger.error('Webhook signature verification failed', err as Error)
       return NextResponse.json(
         { message: `Webhook Error: ${err.message}` },
         { status: 400 }
