@@ -213,6 +213,20 @@ export default function ContactPage() {
       return;
     }
 
+    // Date validation - ensure event date is not in the past
+    if (formData.eventDate && !formData.dateFlexible) {
+      const selectedDate = new Date(formData.eventDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        setError("Event date cannot be in the past");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     // Conditional budget validation
     if (isBudgetRequired() && !formData.budget) {
       setError("Please select an estimated budget");
@@ -223,6 +237,11 @@ export default function ContactPage() {
     setIsSubmitting(true);
     
     try {
+      const eventTypeValue =
+        formData.eventType === "other" && formData.eventTypeOther
+          ? `other`
+          : formData.eventType;
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -248,6 +267,42 @@ export default function ContactPage() {
 
       if (!response.ok) {
         throw new Error("Failed to send message");
+      }
+
+      // Fire quote_submit only on successful submit (no PII)
+      try {
+        const data = await response.json().catch(() => null as any);
+        const token = data?.event_token as string | undefined;
+
+        if (typeof window !== "undefined") {
+          if (token) {
+            const key = `quote_submit_fired:${token}`;
+            if (!sessionStorage.getItem(key)) {
+              sessionStorage.setItem(key, "1");
+              (window as any).dataLayer = (window as any).dataLayer || [];
+              (window as any).dataLayer.push({
+                event: "quote_submit",
+                event_token: token,
+                event_type: eventTypeValue || undefined,
+                city: formData.location || undefined,
+              });
+            }
+          } else {
+            // Fallback (should be rare): still fire once per session
+            const key = `quote_submit_fired:session`;
+            if (!sessionStorage.getItem(key)) {
+              sessionStorage.setItem(key, "1");
+              (window as any).dataLayer = (window as any).dataLayer || [];
+              (window as any).dataLayer.push({
+                event: "quote_submit",
+                event_type: eventTypeValue || undefined,
+                city: formData.location || undefined,
+              });
+            }
+          }
+        }
+      } catch {
+        // Never block the UX on analytics
       }
 
       router.push("/contact/thank-you");
@@ -424,6 +479,7 @@ export default function ContactPage() {
                         value={formData.eventDate}
                         onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                         disabled={formData.dateFlexible}
+                        min={new Date().toISOString().split('T')[0]}
                         className="w-full px-4 py-3 border border-[#E9E2D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C86A3A] focus:border-transparent bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                       />
                       <label className="flex items-center gap-2 mt-2 cursor-pointer">
