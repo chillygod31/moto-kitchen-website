@@ -118,6 +118,9 @@ async function runTests() {
 
   // RBAC-1: Setup - verify users exist
   await runTest('RBAC-1: Verify test users exist in tenant_members', async () => {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Missing Supabase environment variables')
+    }
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     
     // Get owner_a user ID
@@ -213,6 +216,9 @@ async function runTests() {
   await runTest('RBAC-5: Cross-tenant access blocked', async () => {
     // This test verifies that RLS blocks cross-tenant access
     // Implementation depends on your RLS policies
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Missing Supabase environment variables')
+    }
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     
     // Get tenant IDs
