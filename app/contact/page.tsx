@@ -181,6 +181,13 @@ export default function ContactPage() {
     };
   }, []);
 
+  // Auto-select "Pick-Up Only" service type when event type is "pickup-only"
+  useEffect(() => {
+    if (formData.eventType === "pickup-only" && formData.serviceType !== "pickup-only") {
+      setFormData((prev) => ({ ...prev, serviceType: "pickup-only", budget: "" }));
+    }
+  }, [formData.eventType, formData.serviceType]);
+
   const selectedCountry = countries.find(c => c.code === formData.countryCode) || countries[0];
 
   const handleCountrySelect = (code: string) => {
@@ -537,14 +544,17 @@ export default function ContactPage() {
                         { value: "drop-off", label: "Drop-Off Catering", description: "We deliver fresh food, you handle serving" },
                         { value: "pickup-only", label: "Pick-Up Only", description: "You collect from our location in Rotterdam" },
                         { value: "not-sure-service", label: "Not sure yet", description: "We'll help you decide" },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-start gap-3 cursor-pointer p-3 border border-[#E9E2D7] rounded-md hover:bg-[#FBF8F3] transition-colors">
+                      ].map((option) => {
+                        const isDisabled = formData.eventType === "pickup-only" && option.value !== "pickup-only";
+                        return (
+                        <label key={option.value} className={`flex items-start gap-3 p-3 border border-[#E9E2D7] rounded-md transition-colors ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-[#FBF8F3]'}`}>
                           <input
                             type="radio"
                             name="serviceType"
                             required
                             value={option.value}
                             checked={formData.serviceType === option.value}
+                            disabled={isDisabled}
                             onChange={(e) => {
                               const newServiceType = e.target.value;
                               setFormData({ 
@@ -553,13 +563,15 @@ export default function ContactPage() {
                                 budget: (newServiceType === "pickup-only" || newServiceType === "not-sure-service") ? "" : formData.budget
                               });
                             }}
-                            className="w-4 h-4 text-[#C86A3A] border-[#E9E2D7] focus:ring-[#C86A3A] mt-0.5 flex-shrink-0"
+                            className="w-4 h-4 text-[#C86A3A] border-[#E9E2D7] focus:ring-[#C86A3A] mt-0.5 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                           />
                           <div className="flex-1">
                             <span className="text-sm font-medium text-[#1E1B18] block">{option.label}</span>
                             <span className="text-xs text-[#6B5B55] block mt-1">{option.description}</span>
                           </div>
                         </label>
+                        );
+                      }
                       ))}
                     </div>
                   </div>
