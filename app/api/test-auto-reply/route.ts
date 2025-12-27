@@ -17,7 +17,7 @@ export async function GET() {
 
     // Sample data for testing
     const name = "Test User";
-    const eventType = "wedding"; // Change this to test: "wedding", "private", "corporate", "pickup-only", "other"
+    const eventType: string = "wedding"; // Change this to test: "wedding", "private", "corporate", "pickup-only", "other"
     const eventTypeLabel = "Wedding";
     const customerDateDisplay = "Wednesday, 24 December 2025";
     const guestCount = "25";
