@@ -334,6 +334,9 @@ export async function POST(request: NextRequest) {
             letter-spacing: 0;
           }
           .field {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 0;
             margin: 0 0 10px 0;
             font-size: 14px;
           }
@@ -343,12 +346,12 @@ export async function POST(request: NextRequest) {
           .field-label {
             color: #666;
             font-weight: 400;
-            display: inline-block;
-            min-width: 120px;
           }
           .field-value {
             color: #1F1F1F;
             font-weight: 500;
+            min-width: 0;
+            word-wrap: break-word;
           }
           .button-container {
             text-align: center; 
