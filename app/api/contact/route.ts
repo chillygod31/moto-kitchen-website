@@ -624,7 +624,7 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
     // Send admin notification email via Resend
     const { error: emailError } = await resend.emails.send({
       from: "Moto Kitchen <contact@motokitchen.nl>",
-      to: ["chilechhaa@gmail.com"],
+      to: ["contact@motokitchen.nl"],
       replyTo: "contact@motokitchen.nl",
       subject: subject,
       html: emailHtml,
