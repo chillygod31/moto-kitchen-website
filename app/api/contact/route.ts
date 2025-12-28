@@ -625,7 +625,7 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
     const { error: emailError } = await resend.emails.send({
       from: "Moto Kitchen <contact@motokitchen.nl>",
       to: ["chilechhaa@gmail.com"],
-      replyTo: email,
+      replyTo: "contact@motokitchen.nl",
       subject: subject,
       html: emailHtml,
       text: emailText,
