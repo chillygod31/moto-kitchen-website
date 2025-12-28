@@ -87,9 +87,11 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/logo-circle.png",
-    apple: "/logo-circle.png",
-    shortcut: "/logo-circle.png",
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo-circle.png', type: 'image/png', sizes: '192x192' },
+    ],
+    apple: '/logo-circle.png',
   },
   viewport: {
     width: 'device-width',
