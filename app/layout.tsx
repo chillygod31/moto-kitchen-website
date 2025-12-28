@@ -87,10 +87,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/logo-circle.png', type: 'image/png', sizes: '192x192' },
-    ],
+    icon: '/favicon.ico',
     apple: '/logo-circle.png',
   },
   viewport: {
