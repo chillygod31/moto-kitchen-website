@@ -396,17 +396,18 @@ export async function POST(request: NextRequest) {
           }
           .button { 
             display: inline-block; 
-            padding: 10px 20px; 
-            background: #C9653B; 
-            color: white; 
+            padding: 12px 24px; 
+            background: #FAF6F0; 
+            color: #1F1F1F; 
             text-decoration: none; 
+            border: 1px solid #E6D9C8;
             border-radius: 4px; 
             font-size: 14px;
             font-weight: 500;
             margin: 0 8px 8px 0;
           }
           .button:hover {
-            background: #B8552B;
+            background: #F5F1E8;
           }
           .footer { 
             padding: 24px 32px; 
@@ -563,7 +564,7 @@ export async function POST(request: NextRequest) {
 
             <div class="button-container">
             <a href="mailto:${email}?subject=Re: Your Quote Request for ${eventTypeLabel}" class="button">
-                Reply
+                Reply to customer
             </a>
           </div>
         </div>
