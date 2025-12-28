@@ -353,6 +353,18 @@ export async function POST(request: NextRequest) {
             min-width: 0;
             word-wrap: break-word;
           }
+          @media only screen and (max-width: 600px) {
+            .field {
+              grid-template-columns: 100px 1fr;
+              font-size: 13px;
+            }
+            .field-label {
+              font-size: 12px;
+            }
+            .field-value {
+              font-size: 13px;
+            }
+          }
           .button-container {
             text-align: center; 
             margin: 32px 0 24px 0;
