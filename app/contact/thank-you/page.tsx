@@ -1,11 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export const metadata = {
-  title: "Thank You | Moto Kitchen",
-  description: "Thank you for your inquiry. We'll be in touch soon!",
-};
+function ThankYouContent() {
+  const searchParams = useSearchParams();
+  const responseTime = searchParams.get("time") || "24 hours";
 
-export default function ThankYouPage() {
   return (
     <section className="pt-32 pb-20 bg-[#FAF6EF] min-h-screen flex items-center">
       <div className="max-w-2xl mx-auto px-6 text-center">
@@ -20,7 +22,7 @@ export default function ThankYouPage() {
         </h1>
         
         <p className="text-xl text-[#4B4B4B] mb-4">
-          We&apos;ve received your inquiry and will get back to you within 24 hours.
+          We&apos;ve received your inquiry and will get back to you within {responseTime}.
         </p>
         
         <p className="text-[#4B4B4B] mb-10">
@@ -38,6 +40,20 @@ export default function ThankYouPage() {
 
       </div>
     </section>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={
+      <section className="pt-32 pb-20 bg-[#FAF6EF] min-h-screen flex items-center">
+        <div className="max-w-2xl mx-auto px-6 text-center">
+          <p className="text-[#4B4B4B]">Loading...</p>
+        </div>
+      </section>
+    }>
+      <ThankYouContent />
+    </Suspense>
   );
 }
 

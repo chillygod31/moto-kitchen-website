@@ -599,6 +599,9 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
       // Don't fail the request if email fails - data is already saved
     }
 
+    // Determine quote response time based on days until event (always calculate for thank-you page)
+    const quoteResponseTime = daysUntilEvent !== null && daysUntilEvent <= 14 ? "24 hours" : "48 hours";
+
     // Auto-reply email to customer (disabled by default - enable via ENABLE_AUTO_REPLY env var)
     const enableAutoReply = process.env.ENABLE_AUTO_REPLY === "true";
     if (enableAutoReply) {
@@ -617,9 +620,6 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
         : eventType === "private" || eventType === "corporate"
         ? "event"
         : null; // null for pickup-only and "other"
-      
-      // Determine quote response time based on days until event
-      const quoteResponseTime = daysUntilEvent !== null && daysUntilEvent <= 14 ? "24 hours" : "24 to 48 hours";
 
       // Read logo and convert to base64
       // Use hosted logo URL instead of data URI for better mobile compatibility
@@ -879,6 +879,7 @@ contact@motokitchen.nl
       success: true,
       quoteId: quoteRequest?.id,
       event_token,
+      responseTime: quoteResponseTime, // Include for thank-you page
     })
     response.headers.set('X-RateLimit-Limit', rateLimitConfigs.quoteSubmit.maxRequests.toString())
     response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString())

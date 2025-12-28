@@ -277,9 +277,11 @@ export default function ContactPage() {
       }
 
       // Fire quote_submit only on successful submit (no PII)
+      let responseTime = "24 hours"; // Default fallback
       try {
         const data = await response.json().catch(() => null as any);
         const token = data?.event_token as string | undefined;
+        responseTime = data?.responseTime || "24 hours"; // Extract response time from API
 
         if (typeof window !== "undefined") {
           if (token) {
@@ -312,7 +314,7 @@ export default function ContactPage() {
         // Never block the UX on analytics
       }
 
-      router.push("/contact/thank-you");
+      router.push(`/contact/thank-you?time=${encodeURIComponent(responseTime)}`);
     } catch (err) {
       setError("Something went wrong. Please try again or contact us directly via email.");
     } finally {
