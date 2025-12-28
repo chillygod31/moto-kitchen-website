@@ -154,9 +154,32 @@ export async function POST(request: NextRequest) {
     
     const daysFromNow = daysUntilEvent;
 
+    // Helper function to add ordinal suffix to day (1st, 2nd, 3rd, etc.)
+    const getOrdinalSuffix = (day: number) => {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+
     // Format date as "14 Jan 2026" for title and subject line
     const shortDate = eventDate && eventDate !== "Flexible"
       ? new Date(eventDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      : "Flexible";
+
+    // Format date as "Friday, 6th February 2026" for email body
+    const longDate = eventDate && eventDate !== "Flexible"
+      ? (() => {
+          const date = new Date(eventDate);
+          const dayOfWeek = date.toLocaleDateString('en-GB', { weekday: 'long' });
+          const day = date.getDate();
+          const month = date.toLocaleDateString('en-GB', { month: 'long' });
+          const year = date.getFullYear();
+          return `${dayOfWeek}, ${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+        })()
       : "Flexible";
 
     // Check if date is urgent (within 14 days)
@@ -439,7 +462,7 @@ export async function POST(request: NextRequest) {
               </div>
               <div class="field">
                 <span class="field-label">Date:</span>
-                <span class="field-value">${shortDate}${daysUntilEvent !== null ? ` (${daysUntilEvent} days away)` : ''}</span>
+                <span class="field-value">${longDate}${daysUntilEvent !== null ? ` (${daysUntilEvent} days away)` : ''}</span>
               </div>
               <div class="field">
                 <span class="field-label">Guests:</span>
@@ -564,7 +587,7 @@ ${'='.repeat(60)}
 
 EVENT DETAILS
 Event type: ${eventTypeLabel}
-Date: ${shortDate}${daysUntilEvent !== null ? ` (${daysUntilEvent} days away)` : ''}
+Date: ${longDate}${daysUntilEvent !== null ? ` (${daysUntilEvent} days away)` : ''}
 Guests: ${guestCount}
 City: ${location}
 Service style: ${formatServiceType(serviceType)}
