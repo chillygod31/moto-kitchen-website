@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
       if (!slot.slot_time) return false // Skip slots without a time
       const slotTime = DateTime.fromISO(slot.slot_time)
       const slotDate = slotTime.setZone(tz).toISODate()
+      if (!slotDate) return false // Skip if date conversion failed
       if (blackoutDates.includes(slotDate)) return false
       // lead time
       if (slotTime.toUTC().toISO() < leadCutoff) return false
