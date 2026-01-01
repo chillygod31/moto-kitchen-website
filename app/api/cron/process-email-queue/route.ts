@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           orderUrl: `${siteUrl}/order/order-success?orderId=${order.id}&orderNumber=${order.order_number}`,
           adminUrl: `${siteUrl}/admin/orders/${order.id}`,
           kitchenTicketUrl: `${siteUrl}/admin/orders/${order.id}?print=1`,
-          status: order.payment_status === 'paid' ? 'Paid' : 'Pending',
+          status: (order.payment_status === 'paid' ? 'Paid' : 'Pending') as 'Paid' | 'Pending',
         };
         
         // Generate email content
