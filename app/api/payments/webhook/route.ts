@@ -116,7 +116,9 @@ export async function POST(request: NextRequest) {
             sessionId: session.id,
             eventId: event.id,
             tenantId: tenantId,
-            error: new Error(`Order #${result.order_number} paid after expiry but slot is now full - requires manual resolution`),
+            error: `Order #${result.order_number} paid after expiry but slot is now full - requires manual resolution`,
+            amount: session.amount_total || 0,
+            orderId: result.order_id,
             orderData: {
               orderId: result.order_id,
               orderNumber: result.order_number,
