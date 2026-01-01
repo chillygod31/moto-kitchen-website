@@ -69,6 +69,10 @@ export async function generateSlotsForTenant(options: GenerateOptions) {
   let cursor = startDate
   while (cursor < endDate) {
     const dateStr = cursor.toISODate()
+    if (!dateStr) {
+      cursor = cursor.plus({ days: 1 })
+      continue
+    }
     if (blackoutDates.includes(dateStr)) {
       cursor = cursor.plus({ days: 1 })
       continue

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const minLeadMinutes = template.min_lead_time_minutes ?? 180
 
     const nowTz = DateTime.now().setZone(tz)
-    const leadCutoff = nowTz.plus({ minutes: minLeadMinutes }).toUTC().toISO()
+    const leadCutoff = nowTz.plus({ minutes: minLeadMinutes }).toUTC().toISO() || ''
     const start = excludeSameDay ? nowTz.plus({ days: 1 }).startOf('day') : nowTz.startOf('day')
     const end = start.plus({ days: daysAhead }).endOf('day')
 
@@ -75,7 +75,8 @@ export async function GET(request: NextRequest) {
       if (!slotDate) return false // Skip if date conversion failed
       if (blackoutDates.includes(slotDate)) return false
       // lead time
-      if (slotTime.toUTC().toISO() < leadCutoff) return false
+      const slotTimeISO = slotTime.toUTC().toISO()
+      if (!slotTimeISO || slotTimeISO < leadCutoff) return false
       if (slot.max_orders !== null && slot.max_orders !== undefined) {
         return slot.current_orders < slot.max_orders
       }
