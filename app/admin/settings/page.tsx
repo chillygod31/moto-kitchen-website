@@ -49,6 +49,7 @@ export default function AdminSettingsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [activeTab, setActiveTab] = useState('profile')
+  const [csrfToken, setCsrfToken] = useState('')
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -60,6 +61,12 @@ export default function AdminSettingsPage() {
       if (!response.ok) {
         router.push('/admin/login')
         return
+      }
+      // Fetch CSRF token
+      const csrfResponse = await fetch('/api/csrf')
+      if (csrfResponse.ok) {
+        const { csrfToken } = await csrfResponse.json()
+        setCsrfToken(csrfToken)
       }
       fetchSettings()
     } catch (error) {
@@ -92,9 +99,18 @@ export default function AdminSettingsPage() {
       setError('')
       setSuccess('')
 
+      if (!csrfToken) {
+        setError('CSRF token not loaded. Please refresh the page.')
+        setSaving(false)
+        return
+      }
+
       const response = await fetch('/api/admin/business-settings', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-csrf-token': csrfToken
+        },
         body: JSON.stringify(settings),
       })
 
