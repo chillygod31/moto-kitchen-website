@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       const tenantId = session.metadata?.tenant_id;
       
         if (!tenantId) {
-        logger.error('Missing tenant_id in session metadata', { sessionId: session.id });
+        logger.error('Missing tenant_id in session metadata', undefined, { sessionId: session.id });
         return NextResponse.json(
           { message: 'Missing tenant_id in metadata' },
           { status: 400 }
