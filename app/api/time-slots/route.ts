@@ -3,6 +3,7 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 import { logger, getTenantContextFromHeaders } from '@/lib/logging'
 import { captureException } from '@/lib/error-tracking'
+import { DateTime } from 'luxon'
 
 /**
  * GET /api/time-slots
@@ -21,113 +22,70 @@ export async function GET(request: NextRequest) {
   logger.api.request('GET', '/api/time-slots', context)
   
   try {
-    // Temporary: Use service role because RLS blocks anon SELECT
-    // Tenant isolation enforced via app-level filtering (.eq('tenant_id', ...))
     const supabase = createServerAdminClient()
     const tenantId = await getTenantId()
 
     // Get query parameters
     const searchParams = request.nextUrl.searchParams
     const fulfillmentType = (searchParams.get('fulfillment_type') || 'pickup') as 'pickup' | 'delivery'
-    const deliveryZoneId = searchParams.get('delivery_zone_id')
 
-    // Get business settings for blackout dates, lead time, and capacity
-    const { data: businessSettings } = await supabase
+    // Fetch template + blackout
+    const { data: settings, error: settingsError } = await supabase
       .from('tenant_business_settings')
-      .select('blackout_dates, lead_time_minutes, max_orders_per_slot, max_orders_per_pickup_slot, max_orders_per_delivery_window')
+      .select('slot_template, blackout_dates')
       .eq('tenant_id', tenantId)
       .single()
 
-    const blackoutDates = businessSettings?.blackout_dates || []
-    const leadTimeMinutes = businessSettings?.lead_time_minutes || 120
-    
-    // Use fulfillment-specific capacity if available, otherwise fall back to general capacity
-    const maxOrders = fulfillmentType === 'delivery' 
-      ? (businessSettings?.max_orders_per_delivery_window || businessSettings?.max_orders_per_slot || 5)
-      : (businessSettings?.max_orders_per_pickup_slot || businessSettings?.max_orders_per_slot || 10)
+    if (settingsError) {
+      return NextResponse.json({ message: 'No slot settings found' }, { status: 400 })
+    }
 
-    const now = new Date()
-    const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    
-    // Calculate minimum allowed slot time (now + lead time)
-    const minSlotTime = new Date(now.getTime() + leadTimeMinutes * 60 * 1000)
+    const template = settings?.slot_template || {}
+    const blackoutDates: string[] = settings?.blackout_dates || []
+    const tz = template.timezone || 'Europe/Amsterdam'
+    const daysAhead = template.days_ahead_customer ?? 4
+    const excludeSameDay = template.exclude_same_day ?? true
+    const minLeadMinutes = template.min_lead_time_minutes ?? 180
 
-    // Build query - filter by fulfillment_type
-    let query = supabase
+    const nowTz = DateTime.now().setZone(tz)
+    const leadCutoff = nowTz.plus({ minutes: minLeadMinutes }).toUTC().toISO()
+    const start = excludeSameDay ? nowTz.plus({ days: 1 }).startOf('day') : nowTz.startOf('day')
+    const end = start.plus({ days: daysAhead }).endOf('day')
+
+    const { data: timeSlots, error } = await supabase
       .from('time_slots')
       .select('*')
       .eq('tenant_id', tenantId)
-      .eq('is_available', true)
-
-    // Filter by fulfillment_type (if column exists, otherwise show all)
-    // For backward compatibility, if fulfillment_type is null, show for pickup
-    if (fulfillmentType === 'delivery') {
-      query = query.or('fulfillment_type.eq.delivery,fulfillment_type.is.null')
-    } else {
-      query = query.or('fulfillment_type.eq.pickup,fulfillment_type.is.null')
-    }
-
-    // Filter by delivery zone if provided
-    if (fulfillmentType === 'delivery' && deliveryZoneId) {
-      query = query.or(`delivery_zone_id.eq.${deliveryZoneId},delivery_zone_id.is.null`)
-    }
-
-    // Filter by time range - use start_time if available, otherwise slot_time for backward compatibility
-    // We'll filter in JavaScript after fetching to handle the OR condition properly
-    query = query.order('slot_time', { ascending: true })
-
-    const { data: timeSlots, error } = await query
+      .eq('fulfillment_type', fulfillmentType)
+      .eq('is_active', true)
+      .gte('slot_time', start.toUTC().toISO())
+      .lt('slot_time', end.toUTC().toISO())
+      .order('slot_time', { ascending: true })
 
     if (error) {
       logger.api.error('GET', '/api/time-slots', error as Error, { ...context, tenantId })
       captureException(error as Error, { ...context, tenantId })
-      return NextResponse.json(
-        { message: 'Failed to fetch time slots', error: error.message },
-        { status: 500 }
-      )
+      return NextResponse.json({ message: 'Failed to fetch time slots', error: error.message }, { status: 500 })
     }
 
-    // Filter slots based on business rules and time range
     const availableSlots = (timeSlots || []).filter((slot) => {
-      // Use start_time if available, otherwise fall back to slot_time for backward compatibility
-      const slotTime = slot.start_time ? new Date(slot.start_time) : new Date(slot.slot_time)
-      const slotEndTime = slot.end_time ? new Date(slot.end_time) : null
-      
-      // 0. Check time range (start_time must be within next 7 days)
-      if (slotTime < now || slotTime > sevenDaysLater) {
-        return false
+      const slotTime = DateTime.fromISO(slot.slot_time)
+      const slotDate = slotTime.setZone(tz).toISODate()
+      if (blackoutDates.includes(slotDate)) return false
+      // lead time
+      if (slotTime.toUTC().toISO() < leadCutoff) return false
+      if (slot.max_orders !== null && slot.max_orders !== undefined) {
+        return slot.current_orders < slot.max_orders
       }
-      
-      // 1. Check lead time cutoff
-      if (slotTime < minSlotTime) {
-        return false
-      }
-
-      // 2. Check blackout dates
-      const slotDate = slotTime.toISOString().split('T')[0] // YYYY-MM-DD
-      if (blackoutDates.includes(slotDate)) {
-        return false
-      }
-
-      // 3. Check slot capacity
-      if (slot.current_orders >= maxOrders) {
-        return false
-      }
-
       return true
     })
 
-    logger.info('Time slots fetched successfully', { 
-      ...context, 
-      tenantId, 
+    logger.info('Time slots fetched successfully', {
+      ...context,
+      tenantId,
       fulfillmentType,
-      totalSlots: timeSlots?.length || 0, 
+      totalSlots: timeSlots?.length || 0,
       availableSlots: availableSlots.length,
-      filteredBy: {
-        leadTime: leadTimeMinutes,
-        blackoutDates: blackoutDates.length,
-        capacity: maxOrders
-      }
     })
     return NextResponse.json(availableSlots)
   } catch (error: any) {

@@ -1,114 +1,92 @@
-import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
-import { createServerAdminClient } from '@/lib/supabase/server-admin'
-import { logger, getTenantContextFromHeaders } from '@/lib/logging'
-import { captureException } from '@/lib/error-tracking'
-
-function getStripeClient() {
-  const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
-  if (!STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY environment variable is not set')
-  }
-  return new Stripe(STRIPE_SECRET_KEY, {
-    apiVersion: '2025-12-15.clover',
-  })
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerAdminClient } from '@/lib/supabase/server-admin';
+import { logger } from '@/lib/logging';
 
 /**
- * GET /api/payments/verify-session?session_id=xxx
- * Verify Stripe checkout session and return order details
+ * GET /api/payments/verify-session
+ * Verify the status of a Stripe checkout session and return order details
+ * Used by success page polling to wait for webhook processing
+ * 
+ * Returns:
+ * - not_found: Order doesn't exist yet (webhook not processed)
+ * - pending: Order exists but payment not confirmed
+ * - paid: Order confirmed and ready to display
  */
 export async function GET(request: NextRequest) {
-  const context = getTenantContextFromHeaders(request.headers)
-  logger.api.request('GET', '/api/payments/verify-session', context)
-  
   try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('Stripe secret key not configured')
-    }
-
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('session_id')
-
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get('session_id');
+    
     if (!sessionId) {
       return NextResponse.json(
-        { message: 'Missing session_id parameter' },
+        { error: 'Missing session_id parameter' },
         { status: 400 }
-      )
+      );
     }
-
-    // Retrieve session from Stripe
-    const stripe = getStripeClient()
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['payment_intent'],
-    })
-
-    if (session.payment_status !== 'paid') {
-      return NextResponse.json(
-        { message: 'Payment not completed', payment_status: session.payment_status },
-        { status: 400 }
-      )
-    }
-
-    // Find order by session ID
-    const supabase = createServerAdminClient()
-    const { data: payment, error: paymentError } = await supabase
-      .from('payments')
-      .select('order_id')
-      .eq('stripe_session_id', sessionId)
-      .single()
-
-    if (paymentError || !payment) {
-      // Order might not be created yet (webhook might be delayed)
-      // Return session info so frontend can poll or wait
-      return NextResponse.json({
-        session_id: sessionId,
-        payment_status: session.payment_status,
-        order_created: false,
-        message: 'Order is being processed. Please wait...',
-      })
-    }
-
-    // Get order with items
-    const { data: order, error: orderError } = await supabase
+    
+    const supabase = createServerAdminClient();
+    
+    // Find order by session_id
+    const { data: order, error } = await supabase
       .from('orders')
       .select(`
-        *,
-        order_items (*)
+        id,
+        order_number,
+        payment_status,
+        email_status,
+        total,
+        fulfillment_type,
+        scheduled_for,
+        customer_name,
+        customer_email,
+        expires_at,
+        created_at,
+        order_items (
+          id,
+          name_snapshot,
+          unit_price,
+          quantity,
+          line_total,
+          notes
+        )
       `)
-      .eq('id', payment.order_id)
-      .single()
-
-    if (orderError || !order) {
-      logger.error('Order not found after payment', orderError as Error || undefined, { 
-        orderId: payment.order_id, 
-        sessionId 
-      })
-      return NextResponse.json(
-        { message: 'Order not found' },
-        { status: 404 }
-      )
+      .eq('stripe_session_id', sessionId)
+      .single();
+    
+    if (error || !order) {
+      return NextResponse.json({
+        order_created: false,
+        status: 'not_found',
+        message: 'Order is being processed. Please wait...'
+      });
     }
-
-    logger.info('Session verified and order retrieved', { 
-      ...context, 
-      sessionId, 
-      orderId: order.id 
-    })
-
+    
+    // Check if order is still pending
+    if (order.payment_status === 'pending') {
+      const isExpired = order.expires_at && new Date(order.expires_at) < new Date();
+      
+      return NextResponse.json({
+        order_created: true,
+        status: 'pending',
+        is_expired: isExpired,
+        message: isExpired 
+          ? 'Payment session expired. Please contact support if you completed payment.'
+          : 'Processing your payment...'
+      });
+    }
+    
+    // Order is paid
     return NextResponse.json({
-      session_id: sessionId,
-      payment_status: session.payment_status,
       order_created: true,
-      order,
-    })
+      status: order.payment_status,
+      order: order
+    });
+    
   } catch (error: any) {
-    logger.api.error('GET', '/api/payments/verify-session', error, context)
-    captureException(error, context)
+    logger.error('Error verifying session', error as Error);
     return NextResponse.json(
-      { message: 'Failed to verify session', error: error.message },
+      { error: 'Failed to verify session', message: error.message },
       { status: 500 }
-    )
+    );
   }
 }
-

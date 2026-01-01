@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Moto Kitchen – Invoice System v1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <!-- jsPDF and html2canvas for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Set logo immediately to prevent onerror handlers from firing -->
+  <script>
+    // This runs immediately when script loads, before body renders
+    (function() {
+      const LOGO_BASE64 = 'data:image/jpeg;base64,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';
+      
+      // Set logo immediately when DOM is ready
+      function setLogoNow() {
+        const allImages = document.querySelectorAll('img[src*="logo"], .logo-block img, .invoice-logo, #headerLogo');
+        allImages.forEach(img => {
+          img.removeAttribute('onerror');
+          img.onerror = function() {};
+          img.src = LOGO_BASE64;
+          img.style.display = '';
+          img.style.visibility = 'visible';
+          const placeholder = img.nextElementSibling;
+          if (placeholder && placeholder.classList.contains('logo-block-placeholder')) {
+            placeholder.style.display = 'none';
+          }
+        });
+        document.querySelectorAll('.logo-block-placeholder').forEach(p => p.style.display = 'none');
+      }
+      
+      // Try immediately if DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setLogoNow);
+      } else {
+        setLogoNow();
+      }
+      
+      // Also set on load
+      window.addEventListener('load', setLogoNow);
+      
+      // Use MutationObserver to catch dynamically added images
+      const observer = new MutationObserver(function(mutations) {
+        setLogoNow();
+      });
+      
+      // Start observing when DOM is ready
+      if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+      } else {
+        document.addEventListener('DOMContentLoaded', function() {
+          observer.observe(document.body, { childList: true, subtree: true });
+        });
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Document Type Selector -->
+  <div class="document-type-selector-wrapper">
+    <div class="document-type-selector-logo">
+      <img src="logo.png" alt="Moto Kitchen Logo" id="headerLogo">
+    </div>
+    <div class="document-type-selector">
+      <div class="document-type-option active" data-type="invoice" onclick="switchDocumentType('invoice')">Invoice</div>
+      <div class="document-type-option" data-type="quote" onclick="switchDocumentType('quote')">Quote</div>
+      <div class="document-type-option" data-type="embassy-invoice" onclick="switchDocumentType('embassy-invoice')">Embassy Invoice</div>
+    </div>
+  </div>
+
+  <!-- Invoice History -->
+  <div class="history-section">
+    <div class="history-toggle" id="historyToggle">
+      <h3>📋 Invoice History</h3>
+      <span>▼</span>
+    </div>
+    <div class="history-content" id="historyContent">
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- Invoice Form -->
+  <div class="invoice-form document-section active" id="invoiceFormSection">
+    <h2>Generate Invoice</h2>
+    <form id="invoiceForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="invoiceDate">DATE:</label>
+          <input type="date" id="invoiceDate" required>
+        </div>
+        <div class="form-group">
+          <label for="caterDate">CATER DATE:</label>
+          <input type="date" id="caterDate" required>
+        </div>
+        <div class="form-group">
+          <label for="invoiceNumber">INVOICE NUMBER:</label>
+          <input type="text" id="invoiceNumber" placeholder="#" required>
+        </div>
+        <div class="form-group">
+          <label for="client">CLIENT:</label>
+          <input type="text" id="client" placeholder="" required>
+        </div>
+        <div class="form-group">
+          <label for="guestCount">GUEST COUNT:</label>
+          <input type="number" id="guestCount" placeholder="" min="1" required>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="serviceDescription">SERVICE DESCRIPTION:</label>
+          <input type="text" id="serviceDescription" placeholder="" required>
+        </div>
+        
+        <!-- Menu Selection with Search -->
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>MENU ITEMS:</label>
+          <input type="text" class="menu-search" placeholder="🔍 Search menu items..." oninput="filterMenuItems(this.value, 'invoice')">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px;">
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Poultry, Fish and Meats</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="meatPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Vegetables and Stews</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="vegPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Sides</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="sidesPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Bites and Drinks</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="bitesPricingTable"></tbody></table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="includeMocktailPackage" style="width: 18px; height: 18px;">
+            <span>Include Mocktail Package</span>
+          </label>
+          <div style="margin-top: 8px; margin-left: 26px; display: flex; align-items: center; gap: 8px;">
+            <label for="mocktailHours" style="font-weight: normal;">Hours:</label>
+            <input type="number" id="mocktailHours" placeholder="0" min="0" step="0.5" value="0" style="width: 80px;">
+            <span style="font-size: 11px; color: #666;">(€11 per person per hour)</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="discount">DISCOUNT (EUR):</label>
+          <input type="number" id="discount" placeholder="" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="serviceFee">SERVICE FEE (EUR):</label>
+          <input type="number" id="serviceFee" placeholder="" min="0" step="0.01">
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>SERVICE FEE TYPE:</label>
+          <div style="display: flex; gap: 20px; margin-top: 8px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="serviceFeeDelivery" value="Delivery" style="width: 16px; height: 16px;">
+              <span>Delivery</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="serviceFeeBuffet" value="Buffet Set Up" style="width: 16px; height: 16px;">
+              <span>Buffet Set Up</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="serviceFeeDecorations" value="Decorations" style="width: 16px; height: 16px;">
+              <span>Decorations</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="serviceFeeStaff" value="Staff" style="width: 16px; height: 16px;">
+              <span>Staff</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="includeAdminFee" checked style="width: 18px; height: 18px;">
+            <span>Include Admin Fee (3%)</span>
+          </label>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="itemDescription">ITEM DESCRIPTION (Page 3):</label>
+          <input type="text" id="itemDescription" placeholder="">
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <div style="background: #e8f4f8; padding: 12px; border-radius: 4px;">
+            <strong>Price per person: <span id="pricePerPersonDisplay">EUR 0,00</span></strong>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" onclick="generateInvoice()">Generate Invoice</button>
+        <button type="button" class="btn btn-secondary" onclick="printInvoice()">📄 Save PDF</button>
+        <button type="button" class="btn btn-danger" onclick="resetForm()">Reset</button>
+      </div>
+      <p style="font-size: 10px; color: #666; margin-top: 10px;">Tip: Press Ctrl+Enter to generate, Ctrl+P to save PDF</p>
+    </form>
+  </div>
+
+  <!-- Quote Form -->
+  <div class="invoice-form document-section" id="quoteFormSection">
+    <h2>Generate Quote</h2>
+    <form id="quoteForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="quoteDate">DATE:</label>
+          <input type="date" id="quoteDate" required>
+        </div>
+        <div class="form-group">
+          <label for="quoteCaterDate">CATER DATE:</label>
+          <input type="date" id="quoteCaterDate" required>
+        </div>
+        <div class="form-group">
+          <label for="quoteNumber">QUOTE NUMBER:</label>
+          <input type="text" id="quoteNumber" placeholder="#" required>
+        </div>
+        <div class="form-group">
+          <label for="quoteClient">CLIENT:</label>
+          <input type="text" id="quoteClient" placeholder="" required>
+        </div>
+        <div class="form-group">
+          <label for="quoteGuestCount">GUEST COUNT:</label>
+          <input type="number" id="quoteGuestCount" placeholder="" min="1" required>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="quoteServiceDescription">SERVICE DESCRIPTION:</label>
+          <input type="text" id="quoteServiceDescription" placeholder="" required>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>MENU ITEMS:</label>
+          <input type="text" class="menu-search" placeholder="🔍 Search menu items..." oninput="filterMenuItems(this.value, 'quote')">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px;">
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Poultry, Fish and Meats</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="quoteMeatPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Vegetables and Stews</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="quoteVegPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Sides</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="quoteSidesPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Bites and Drinks</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="quoteBitesPricingTable"></tbody></table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="quoteIncludeMocktailPackage" style="width: 18px; height: 18px;">
+            <span>Include Mocktail Package</span>
+          </label>
+          <div style="margin-top: 8px; margin-left: 26px; display: flex; align-items: center; gap: 8px;">
+            <label for="quoteMocktailHours" style="font-weight: normal;">Hours:</label>
+            <input type="number" id="quoteMocktailHours" placeholder="0" min="0" step="0.5" value="0" style="width: 80px;">
+            <span style="font-size: 11px; color: #666;">(€11 per person per hour)</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="quoteDiscount">DISCOUNT (EUR):</label>
+          <input type="number" id="quoteDiscount" placeholder="" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="quoteServiceFee">SERVICE FEE (EUR):</label>
+          <input type="number" id="quoteServiceFee" placeholder="" min="0" step="0.01">
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>SERVICE FEE TYPE:</label>
+          <div style="display: flex; gap: 20px; margin-top: 8px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="quoteServiceFeeDelivery" value="Delivery" style="width: 16px; height: 16px;">
+              <span>Delivery</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="quoteServiceFeeBuffet" value="Buffet Set Up" style="width: 16px; height: 16px;">
+              <span>Buffet Set Up</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="quoteServiceFeeDecorations" value="Decorations" style="width: 16px; height: 16px;">
+              <span>Decorations</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="quoteServiceFeeStaff" value="Staff" style="width: 16px; height: 16px;">
+              <span>Staff</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="quoteIncludeAdminFee" checked style="width: 18px; height: 18px;">
+            <span>Include Admin Fee (3%)</span>
+          </label>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="quoteItemDescription">ITEM DESCRIPTION (Page 3):</label>
+          <input type="text" id="quoteItemDescription" placeholder="">
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <div style="background: #e8f4f8; padding: 12px; border-radius: 4px;">
+            <strong>Price per person: <span id="quotePricePerPersonDisplay">EUR 0,00</span></strong>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" onclick="generateQuote()">Generate Quote</button>
+        <button type="button" class="btn btn-secondary" onclick="printQuote()">📄 Save PDF</button>
+        <button type="button" class="btn btn-danger" onclick="resetQuoteForm()">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Embassy Invoice Form -->
+  <div class="invoice-form document-section" id="embassyInvoiceFormSection">
+    <h2>Generate Embassy Invoice</h2>
+    <form id="embassyInvoiceForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="embassyInvoiceDate">DATE:</label>
+          <input type="date" id="embassyInvoiceDate" required>
+        </div>
+        <div class="form-group">
+          <label for="embassyInvoiceCaterDate">CATER DATE:</label>
+          <input type="date" id="embassyInvoiceCaterDate" required>
+        </div>
+        <div class="form-group">
+          <label for="embassyInvoiceNumber">INVOICE NUMBER:</label>
+          <input type="text" id="embassyInvoiceNumber" placeholder="#" required>
+        </div>
+        <div class="form-group">
+          <label for="embassyInvoiceClient">CLIENT:</label>
+          <input type="text" id="embassyInvoiceClient" value="Embassy of the United Republic of Tanzania, Netherlands" required>
+        </div>
+        <div class="form-group">
+          <label for="embassyInvoiceGuestCount">GUEST COUNT:</label>
+          <input type="number" id="embassyInvoiceGuestCount" placeholder="" min="1" required>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="embassyInvoiceServiceDescription">SERVICE DESCRIPTION:</label>
+          <input type="text" id="embassyInvoiceServiceDescription" placeholder="" required>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>MENU ITEMS:</label>
+          <input type="text" class="menu-search" placeholder="🔍 Search menu items..." oninput="filterMenuItems(this.value, 'embassy-invoice')">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px;">
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Poultry, Fish and Meats</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="embassyInvoiceMeatPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Vegetables and Stews</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="embassyInvoiceVegPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Sides</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="embassyInvoiceSidesPricingTable"></tbody></table>
+            </div>
+            <div>
+              <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Bites and Drinks</h3>
+              <table class="pricing-table"><thead><tr><th style="width: 30px;"></th><th>Item</th><th>Price</th></tr></thead><tbody id="embassyInvoiceBitesPricingTable"></tbody></table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="embassyInvoiceIncludeMocktailPackage" style="width: 18px; height: 18px;">
+            <span>Include Mocktail Package</span>
+          </label>
+          <div style="margin-top: 8px; margin-left: 26px; display: flex; align-items: center; gap: 8px;">
+            <label for="embassyInvoiceMocktailHours" style="font-weight: normal;">Hours:</label>
+            <input type="number" id="embassyInvoiceMocktailHours" placeholder="0" min="0" step="0.5" value="0" style="width: 80px;">
+            <span style="font-size: 11px; color: #666;">(€11 per person per hour)</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="embassyInvoiceDiscount">DISCOUNT (EUR):</label>
+          <input type="number" id="embassyInvoiceDiscount" placeholder="" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="embassyInvoiceServiceFee">SERVICE FEE (EUR):</label>
+          <input type="number" id="embassyInvoiceServiceFee" placeholder="" min="0" step="0.01">
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>SERVICE FEE TYPE:</label>
+          <div style="display: flex; gap: 20px; margin-top: 8px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="embassyInvoiceServiceFeeDelivery" value="Delivery" style="width: 16px; height: 16px;">
+              <span>Delivery</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="embassyInvoiceServiceFeeBuffet" value="Buffet Set Up" style="width: 16px; height: 16px;">
+              <span>Buffet Set Up</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="embassyInvoiceServiceFeeDecorations" value="Decorations" style="width: 16px; height: 16px;">
+              <span>Decorations</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="embassyInvoiceServiceFeeStaff" value="Staff" style="width: 16px; height: 16px;">
+              <span>Staff</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="embassyInvoiceIncludeAdminFee" checked style="width: 18px; height: 18px;">
+            <span>Include Admin Fee (3%)</span>
+          </label>
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label for="embassyInvoiceItemDescription">ITEM DESCRIPTION:</label>
+          <input type="text" id="embassyInvoiceItemDescription" placeholder="">
+        </div>
+        
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <div style="background: #e8f4f8; padding: 12px; border-radius: 4px;">
+            <strong>Price per person: <span id="embassyInvoicePricePerPersonDisplay">EUR 0,00</span></strong>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" onclick="generateEmbassyInvoice()">Generate Embassy Invoice</button>
+        <button type="button" class="btn btn-secondary" onclick="printEmbassyInvoice()">📄 Save PDF</button>
+        <button type="button" class="btn btn-danger" onclick="resetEmbassyInvoiceForm()">Reset</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Invoice Pages (PDF Output) -->
+  <div class="pages-wrapper" id="invoicePages" style="display: none;">
+    <!-- PAGE 1 -->
+    <div class="page">
+      <div class="invoice-header-row">
+        <div class="invoice-title-block">
+          <div class="invoice-title">INVOICE</div>
+          <div><span class="small-label">DATE:</span> <span class="small-value" id="displayDate">26-11-2025</span></div>
+          <div><span class="small-label">CLIENT:</span> <span class="small-value" id="displayClient">Client Name</span></div>
+        </div>
+        <div class="logo-block">
+          <img src="logo.png" alt="Moto Kitchen Logo" class="invoice-logo">
+          <div class="logo-block-placeholder" style="display:none;">Logo goes here</div>
+        </div>
+      </div>
+      <div class="body-title"><strong>CATER DATE:</strong> <span id="displayCaterDate">11-12-2025</span></div>
+      <div class="body-line"><strong>ACCOUNT NAME:</strong> JAMBO EXPORT, R.A. Micombero</div>
+      <div class="body-line"><strong>BANK ACCOUNT NUMBER:</strong> NL08 ABNA 0517608324</div>
+      <div style="margin-top: 16px;">
+        <div class="body-line"><strong>INVOICE NUMBER:</strong> <span id="displayInvoiceNumber">#1112</span></div>
+        <div class="body-line" style="margin-top: 12px;"><strong>TOTAL:</strong> <span id="displayTotal">EUR 0,00</span></div>
+        <div class="body-line" style="margin-top: 12px;"><strong style="text-decoration: underline;">Deposit due to confirm order: <span id="displayDepositDue">EUR 0,00</span></strong></div>
+      </div>
+      <div class="section-title">Service Description:</div>
+      <div class="body-line" id="displayServiceDescription">Wedding cocktail menu</div>
+      <div class="section-title">Payment Terms:</div>
+      <div class="paragraph">A 50% deposit is required to confirm the booking.</div>
+      <div class="paragraph">A 100% deposit is required to confirm bookings made within one week of the event date.</div>
+      <div class="section-title">Reference:</div>
+      <div class="reference-text">Please include the invoice number and client name with your transfer.</div>
+      <div class="section-title" style="margin-top: 16px;">Cancellation Policy standard bookings:</div>
+      <div class="paragraph">Cancellations made 7 days or more before the event date will receive a full refund of the deposit.</div>
+      <div class="paragraph">Cancellations made within 7 days of the event date will forfeit the deposit.</div>
+      <div class="paragraph">For cancellations within 48 hours of the event, the full invoice amount remains payable.</div>
+      <div class="paragraph" style="font-weight:700; margin-top:8px;">ALL CANCELLATIONS MUST BE MADE IN WRITING</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="page-number">Page 1 of 3</div>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="page">
+      <div class="invoice-header-row" style="margin-bottom: 16px;">
+        <div>
+          <div class="small-label">INVOICE | <span id="displayServiceDescription2">Wedding cocktail menu</span></div>
+          <div class="center-label-block" style="margin-top: 8px;"><strong>CATER DATE:</strong> <span id="displayCaterDate2">11-12-2025</span></div>
+          <div class="center-label-block"><strong>DESCRIPTION:</strong> Catering food</div>
+          <div class="center-label-block"><strong>NAME:</strong> JAMBO EXPORT, R.A. Micombero</div>
+          <div class="center-label-block"><strong>BANK ACCOUNT NUMBER:</strong> NL08 ABNA 0517608324</div>
+          <div class="center-label-block" style="margin-top: 8px;"><strong>INVOICE ID:</strong> <span id="displayInvoiceNumber2">#1112</span></div>
+          <div class="center-label-block"><strong>TOTAL:</strong> <span id="displayTotal2">EUR 0,00</span></div>
+          <div class="center-label-block" style="margin-top:8px;"><strong>GUESTS COUNT:</strong> <span id="displayGuestCount">30</span></div>
+        </div>
+      </div>
+      <div class="center-label-block" style="margin-top: 12px;"><strong>DATE:</strong> <span id="displayDate2">11-12-2025</span></div>
+      <div class="center-label-block"><strong>CLIENT:</strong> <span id="displayClient2">Client Name</span></div>
+      <div class="page-heading-center" style="margin-top: 24px;">CUSTOM MENU SELECTION</div>
+      <ul class="menu-list" id="displayMenuItems">
+        <li>- Samosa beef</li>
+        <li>- Kachori</li>
+        <li>- Chicken wings</li>
+      </ul>
+      <div id="mocktailSection" style="display: none;">
+        <div class="mocktail-title">Moto Kitchen unlimited signature mocktail package including:</div>
+        <div class="mocktail-name">Barahi Blush</div>
+        <div class="mocktail-desc">Raspberry, citrus, and soda for a light and refreshing blend</div>
+        <div class="mocktail-name">Dirty Safari</div>
+        <div class="mocktail-desc">Pineapple, ginger ale, and a touch of lime for a tropical escape</div>
+        <div class="mocktail-name">Pink Horizon</div>
+        <div class="mocktail-desc">Tonic with watermelon and a hint of citrus for a fresh and vibrant flavour</div>
+      </div>
+      <div class="price-row">Price per person <span id="displayPricePerPerson">EUR 45,95</span></div>
+      <div class="small-italic">All meals are HALAL</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="page-number">Page 2 of 3</div>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="page">
+      <div class="section-title" style="margin-top:0; font-size:14px;">ITEMIZED COST BREAKDOWN</div>
+      <table class="cost-breakdown">
+        <thead><tr><th>Item</th><th>Rate</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr>
+            <td id="displayItemDescription">Custom wedding dinner menu</td>
+            <td id="displayRate">45,95</td>
+            <td id="displayGuestCountTable">30</td>
+            <td id="displayItemTotal">EUR 1378,50</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="totals-table">
+        <tr><td>Subtotal food &amp; drinks</td><td id="displaySubtotal">EUR 1378,50</td></tr>
+        <tr><td>Service fee - <span id="displayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="displayServiceFee">EUR 410,00</td></tr>
+        <tr id="adminFeeRow"><td id="displayAdminFeeLabel">Admin Fee (3%)</td><td id="displayAdminFee">EUR 53,65</td></tr>
+        <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="displayGrandTotal">EUR 1842,16</td></tr>
+      </table>
+      <div class="below-text">
+        <div style="text-align: center;">By signing <strong>below</strong> you confirm that you agree to the details, pricing and terms stated in this invoice. Your signature serves as a binding confirmation of the booking and authorizes Moto Kitchen to proceed with all preparations for your event.</div>
+      </div>
+      <div class="signature-row">
+        <div class="signature-col">
+          <div class="body-line"><strong>Name:</strong> Susan Smith</div>
+          <div class="body-line"><strong>Title:</strong> Manager Moto Kitchen NL</div>
+          <div class="body-line"><strong>Date:</strong> <span id="displaySignatureDate">04-12-2025</span></div>
+          <div class="signature-line"></div>
+        </div>
+        <div class="signature-col">
+          <div class="body-line"><strong>Name:</strong></div>
+          <div class="body-line"><strong>Title:</strong></div>
+          <div class="body-line"><strong>Date:</strong></div>
+          <div class="signature-line"></div>
+        </div>
+      </div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="page-number">Page 3 of 3</div>
+    </div>
+  </div>
+
+  <!-- Quote Pages -->
+  <div class="pages-wrapper" id="quotePages" style="display: none;">
+    <!-- QUOTE PAGE 1 -->
+    <div class="page">
+      <div class="invoice-header-row">
+        <div class="invoice-title-block">
+          <div class="invoice-title">QUOTATION</div>
+          <div><span class="small-label">DATE:</span> <span class="small-value" id="quoteDisplayDate">26-11-2025</span></div>
+          <div><span class="small-label">CLIENT:</span> <span class="small-value" id="quoteDisplayClient">Client Name</span></div>
+        </div>
+        <div class="logo-block">
+          <img src="logo.png" alt="Moto Kitchen Logo" class="invoice-logo">
+          <div class="logo-block-placeholder" style="display:none;">Logo goes here</div>
+        </div>
+      </div>
+      <div class="body-title"><strong>CATER DATE:</strong> <span id="quoteDisplayCaterDate">11-12-2025</span></div>
+      <div class="body-line"><strong>ACCOUNT NAME:</strong> JAMBO EXPORT, R.A. Micombero</div>
+      <div class="body-line"><strong>BANK ACCOUNT NUMBER:</strong> NL08 ABNA 0517608324</div>
+      <div style="margin-top: 16px;">
+        <div class="body-line"><strong>QUOTE NUMBER:</strong> <span id="quoteDisplayNumber">#1112</span></div>
+        <div class="body-line" style="margin-top: 12px;"><strong>TOTAL:</strong> <span id="quoteDisplayTotal">EUR 0,00</span></div>
+        <div class="body-line" style="margin-top: 12px;"><strong style="text-decoration: underline;">Deposit due to confirm order: <span id="quoteDisplayDepositDue">EUR 0,00</span></strong></div>
+      </div>
+      <div class="section-title">Service Description:</div>
+      <div class="body-line" id="quoteDisplayServiceDescription">Wedding cocktail menu</div>
+      <div class="section-title">Quote Validity:</div>
+      <div class="paragraph">This quote is valid for 30 days from the date of issue.</div>
+      <div class="section-title">Payment Terms:</div>
+      <div class="paragraph">A 50% deposit is required to confirm the booking.</div>
+      <div class="paragraph">A 100% deposit is required to confirm bookings made within one week of the event date.</div>
+      <div class="section-title">Reference:</div>
+      <div class="reference-text">Please include the quote number and client name with your transfer.</div>
+      <div class="section-title" style="margin-top: 16px;">Cancellation Policy standard bookings:</div>
+      <div class="paragraph">Cancellations made 7 days or more before the event date will receive a full refund of the deposit.</div>
+      <div class="paragraph">Cancellations made within 7 days of the event date will forfeit the deposit.</div>
+      <div class="paragraph">For cancellations within 48 hours of the event, the full invoice amount remains payable.</div>
+      <div class="paragraph" style="font-weight:700; margin-top:8px;">ALL CANCELLATIONS MUST BE MADE IN WRITING</div>
+      <div class="paragraph" style="margin-top: 24px; text-align: center; text-decoration: underline; font-size: 12px;">This document is a non binding quotation provided for informational purposes only. No financial obligations, commitments or agreements are created until both parties have approved and signed the final invoice.</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="page-number">Page 1 of 3</div>
+    </div>
+
+    <!-- QUOTE PAGE 2 -->
+    <div class="page">
+      <div class="invoice-header-row" style="margin-bottom: 16px;">
+        <div>
+          <div class="small-label">QUOTATION | <span id="quoteDisplayServiceDescription2">Wedding cocktail menu</span></div>
+          <div class="center-label-block" style="margin-top: 8px;"><strong>CATER DATE:</strong> <span id="quoteDisplayCaterDate2">11-12-2025</span></div>
+          <div class="center-label-block"><strong>DESCRIPTION:</strong> Catering food</div>
+          <div class="center-label-block"><strong>NAME:</strong> JAMBO EXPORT, R.A. Micombero</div>
+          <div class="center-label-block"><strong>BANK ACCOUNT NUMBER:</strong> NL08 ABNA 0517608324</div>
+          <div class="center-label-block" style="margin-top: 8px;"><strong>QUOTE ID:</strong> <span id="quoteDisplayNumber2">#1112</span></div>
+          <div class="center-label-block"><strong>TOTAL:</strong> <span id="quoteDisplayTotal2">EUR 0,00</span></div>
+          <div class="center-label-block" style="margin-top:8px;"><strong>GUESTS COUNT:</strong> <span id="quoteDisplayGuestCount">30</span></div>
+        </div>
+      </div>
+      <div class="center-label-block" style="margin-top: 12px;"><strong>DATE:</strong> <span id="quoteDisplayDate2">11-12-2025</span></div>
+      <div class="center-label-block"><strong>CLIENT:</strong> <span id="quoteDisplayClient2">Client Name</span></div>
+      <div class="page-heading-center" style="margin-top: 24px;">CUSTOM MENU SELECTION</div>
+      <ul class="menu-list" id="quoteDisplayMenuItems">
+        <li>- Samosa beef</li>
+        <li>- Kachori</li>
+        <li>- Chicken wings</li>
+      </ul>
+      <div id="quoteMocktailSection" style="display: none;">
+        <div class="mocktail-title">Moto Kitchen unlimited signature mocktail package including:</div>
+        <div class="mocktail-name">Barahi Blush</div>
+        <div class="mocktail-desc">Raspberry, citrus, and soda for a light and refreshing blend</div>
+        <div class="mocktail-name">Dirty Safari</div>
+        <div class="mocktail-desc">Pineapple, ginger ale, and a touch of lime for a tropical escape</div>
+        <div class="mocktail-name">Pink Horizon</div>
+        <div class="mocktail-desc">Tonic with watermelon and a hint of citrus for a fresh and vibrant flavour</div>
+      </div>
+      <div class="price-row">Price per person <span id="quoteDisplayPricePerPerson">EUR 45,95</span></div>
+      <div class="small-italic">All meals are HALAL</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="page-number">Page 2 of 3</div>
+    </div>
+
+    <!-- QUOTE PAGE 3 -->
+    <div class="page">
+      <div class="section-title" style="margin-top:0; font-size:14px;">ITEMIZED COST BREAKDOWN</div>
+      <table class="cost-breakdown">
+        <thead><tr><th>Item</th><th>Rate</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr>
+            <td id="quoteDisplayItemDescription">Custom wedding dinner menu</td>
+            <td id="quoteDisplayRate">45,95</td>
+            <td id="quoteDisplayGuestCountTable">30</td>
+            <td id="quoteDisplayItemTotal">EUR 1378,50</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="totals-table">
+        <tr><td>Subtotal food &amp; drinks</td><td id="quoteDisplaySubtotal">EUR 1378,50</td></tr>
+        <tr><td>Service fee - <span id="quoteDisplayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="quoteDisplayServiceFee">EUR 410,00</td></tr>
+        <tr id="quoteAdminFeeRow"><td id="quoteDisplayAdminFeeLabel">Admin Fee (3%)</td><td id="quoteDisplayAdminFee">EUR 53,65</td></tr>
+        <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="quoteDisplayGrandTotal">EUR 1842,16</td></tr>
+      </table>
+      <div class="paragraph" style="margin-top: 40px; text-align: center; text-decoration: underline; font-size: 12px;">This document is a non binding quotation provided for informational purposes only. No financial obligations, commitments or agreements are created until both parties have approved and signed the final invoice.</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="page-number">Page 3 of 3</div>
+    </div>
+  </div>
+
+  <!-- Embassy Invoice Pages -->
+  <div class="pages-wrapper" id="embassyInvoicePages" style="display: none;">
+    <div class="page">
+      <div class="invoice-header-row">
+        <div class="invoice-title-block">
+          <div class="invoice-title">INVOICE</div>
+          <div style="margin-top: 12px;">
+            <div class="body-line" style="margin-bottom: 4px;"><strong>Invoice No:</strong> <span id="embassyInvoiceDisplayNumber">#1112</span></div>
+            <div class="body-line"><strong>Invoice Date:</strong> <span id="embassyInvoiceDisplayDate">26-11-2025</span></div>
+          </div>
+        </div>
+        <div class="logo-block">
+          <img src="logo.png" alt="Moto Kitchen Logo" class="invoice-logo">
+          <div class="logo-block-placeholder" style="display:none;">Logo goes here</div>
+        </div>
+      </div>
+      <div style="margin-top: 20px;">
+        <div class="body-line" style="font-weight: 700; font-size: 13px;">CLIENT - <span id="embassyInvoiceDisplayClient">Embassy of the United Republic of Tanzania, Netherlands</span></div>
+      </div>
+      <div class="section-title" style="margin-top: 24px;">EVENT DETAILS</div>
+      <div class="body-line"><strong>Service:</strong> <span id="embassyInvoiceDisplayServiceDescription">Wedding cocktail menu</span></div>
+      <div class="body-line" style="margin-top: 8px;"><strong>Event Date:</strong> <span id="embassyInvoiceDisplayCaterDate">11-12-2025</span></div>
+      <div class="body-line" style="margin-top: 8px;"><strong>Number of Guests:</strong> <span id="embassyInvoiceDisplayGuestCount">30</span></div>
+      <div class="section-title" style="margin-top: 24px;">PAYMENT DETAILS</div>
+      <div class="body-line"><strong>Account Name:</strong> JAMBO EXPORT, R.A. Micombero</div>
+      <div class="body-line" style="margin-top: 8px;"><strong>IBAN:</strong> <span id="embassyInvoiceDisplayIBAN">NL08 ABNA 0517 6083 24</span></div>
+      <div class="body-line" style="margin-top: 8px;"><strong>Reference:</strong> Invoice <span id="embassyInvoiceDisplayReferenceNumber">#1112</span></div>
+      <div class="body-line" style="margin-top: 8px;"><strong>Total: <span id="embassyInvoiceDisplayTotalPaymentDetails">EUR 0,00</span></strong></div>
+      <div class="section-title" style="margin-top: 24px;">CUSTOM MENU SELECTION</div>
+      <div class="body-line" id="embassyInvoiceDisplayMenuItemsComma" style="margin-top: 4px;"></div>
+      <div class="body-line" style="margin-top: 8px; font-weight: 700;">Price per person EUR <span id="embassyInvoiceDisplayPricePerPersonPage1">€10,25</span></div>
+      <div class="section-title" style="margin-top: 24px; font-size:14px;">ITEMIZED COST BREAKDOWN</div>
+      <table class="cost-breakdown" style="margin-top: 12px;">
+        <thead><tr><th>Item</th><th>Rate</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr>
+            <td id="embassyInvoiceDisplayItemDescription">Custom wedding dinner menu</td>
+            <td id="embassyInvoiceDisplayRate">45,95</td>
+            <td id="embassyInvoiceDisplayGuestCountTable">30</td>
+            <td id="embassyInvoiceDisplayItemTotal">EUR 1378,50</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="totals-table" style="margin-top: 12px;">
+        <tr><td>Subtotal food &amp; drinks</td><td id="embassyInvoiceDisplaySubtotal">EUR 1378,50</td></tr>
+        <tr><td>Service fee - <span id="embassyInvoiceDisplayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="embassyInvoiceDisplayServiceFee">EUR 410,00</td></tr>
+        <tr id="embassyInvoiceAdminFeeRow"><td id="embassyInvoiceDisplayAdminFeeLabel">Admin Fee (3%)</td><td id="embassyInvoiceDisplayAdminFee">EUR 53,65</td></tr>
+        <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="embassyInvoiceDisplayGrandTotal">EUR 1842,16</td></tr>
+      </table>
+      <div class="section-title" style="margin-top: 24px; font-style: italic;">Dietary &amp; Service Information</div>
+      <div class="body-line" style="margin-top: 8px; font-style: italic;">Moto Kitchen is a fully <strong style="text-decoration: underline;">halal</strong> kitchen and does not handle pork or alcohol.</div>
+      <div class="body-line" style="margin-top: 8px; font-style: italic;">Thank you for considering Moto Kitchen.</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

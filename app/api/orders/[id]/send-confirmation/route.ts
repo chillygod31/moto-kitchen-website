@@ -63,6 +63,8 @@ export async function POST(
       )
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
     // Prepare email data
     const emailData = {
       orderNumber: order.order_number,
@@ -79,8 +81,9 @@ export async function POST(
       items: (order.order_items || []).map((item: any) => ({
         name: item.name_snapshot,
         quantity: item.quantity,
-        price: item.unit_price,
+        unitPrice: item.unit_price,
         lineTotal: item.line_total,
+        notes: item.notes || null,
       })),
       subtotal: order.subtotal,
       deliveryFee: order.delivery_fee,
@@ -89,6 +92,8 @@ export async function POST(
       businessName: tenant?.name,
       businessEmail: tenant?.business_email,
       businessPhone: tenant?.business_phone,
+      orderUrl: `${siteUrl}/order/order-success?orderId=${order.id}&orderNumber=${order.order_number}`,
+      status: order.payment_status === 'paid' ? 'Paid' : 'Pending',
     }
 
     // Generate email

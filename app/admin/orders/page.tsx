@@ -37,6 +37,9 @@ interface Order {
   created_at: string;
   updated_at: string;
   order_items: OrderItem[];
+  email_status?: string | null;
+  email_sent_at?: string | null;
+  email_error?: string | null;
 }
 
 const STATUS_OPTIONS = [
@@ -51,10 +54,15 @@ const STATUS_OPTIONS = [
 
 const PAYMENT_STATUS_OPTIONS = [
   { value: "all", label: "All Payment Statuses" },
+  { value: "pending", label: "Pending" },
   { value: "unpaid", label: "Unpaid" },
   { value: "paid", label: "Paid" },
+  { value: "paid_pending_resolution", label: "Paid — Needs Action" },
   { value: "refunded", label: "Refunded" },
+  { value: "expired", label: "Expired" },
 ];
+
+type PresetFilter = 'all' | 'active' | 'next_2_hours' | 'ready' | 'issues';
 
 export default function AdminOrdersPage() {
   const router = useRouter();
@@ -67,6 +75,8 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [presetFilter, setPresetFilter] = useState<PresetFilter>('active');
+  const [issuesCount, setIssuesCount] = useState(0);
 
   useEffect(() => {
     // Check authentication via API (server-side session)
@@ -108,6 +118,10 @@ export default function AdminOrdersPage() {
           );
         }
 
+        // Calculate issues count
+        const issuesOrders = filteredOrders.filter((order: Order) => hasIssues(order));
+        setIssuesCount(issuesOrders.length);
+
         setOrders(filteredOrders);
       }
     } catch (error) {
@@ -115,6 +129,67 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyPresetAndSort = (ordersToFilter: Order[]) => {
+    let filtered = [...ordersToFilter];
+
+    // Apply preset filter
+    switch (presetFilter) {
+      case 'active':
+        filtered = filtered.filter(o => !['completed', 'cancelled'].includes(o.status));
+        break;
+      case 'next_2_hours':
+        const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const now = new Date();
+        filtered = filtered.filter(o => {
+          if (!o.scheduled_for) return false;
+          const scheduled = new Date(o.scheduled_for);
+          return scheduled >= now && scheduled <= twoHoursFromNow;
+        });
+        break;
+      case 'ready':
+        filtered = filtered.filter(o => o.status === 'ready');
+        break;
+      case 'issues':
+        filtered = filtered.filter(o => hasIssues(o));
+        break;
+      case 'all':
+      default:
+        // No filter
+        break;
+    }
+
+    // Sort: Issues first, then by urgency, then by scheduled_for
+    filtered.sort((a, b) => {
+      // 1. Issues first
+      const aHasIssues = hasIssues(a);
+      const bHasIssues = hasIssues(b);
+      if (aHasIssues && !bHasIssues) return -1;
+      if (!aHasIssues && bHasIssues) return 1;
+
+      // 2. Urgency (overdue > due now > due soon > upcoming > later)
+      if (a.scheduled_for && b.scheduled_for) {
+        const aUrgency = getUrgencyInfo(a.scheduled_for, a.status);
+        const bUrgency = getUrgencyInfo(b.scheduled_for, b.status);
+        
+        const urgencyOrder = ['Overdue', 'Due Now', 'Due Soon', 'Upcoming', 'Later'];
+        const aIndex = aUrgency.label ? urgencyOrder.indexOf(aUrgency.label) : 999;
+        const bIndex = bUrgency.label ? urgencyOrder.indexOf(bUrgency.label) : 999;
+        
+        if (aIndex !== bIndex) return aIndex - bIndex;
+      }
+
+      // 3. Scheduled time (earlier first)
+      if (a.scheduled_for && b.scheduled_for) {
+        return new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime();
+      }
+
+      // 4. Created time (newer first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    return filtered;
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
@@ -211,11 +286,78 @@ export default function AdminOrdersPage() {
 
   const getPaymentStatusColor = (status: string) => {
     const colors: Record<string, string> = {
+      pending: "bg-blue-100 text-blue-800",
       unpaid: "bg-orange-100 text-orange-800",
       paid: "bg-green-100 text-green-800",
-      refunded: "bg-red-100 text-red-800",
+      paid_pending_resolution: "bg-red-100 text-red-800",
+      refunded: "bg-gray-100 text-gray-800",
+      expired: "bg-gray-100 text-gray-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getPaymentStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      pending: "Pending",
+      unpaid: "Unpaid",
+      paid: "Paid",
+      paid_pending_resolution: "Needs Action",
+      refunded: "Refunded",
+      expired: "Expired",
+    };
+    return labels[status] || status;
+  };
+
+  const getUrgencyInfo = (scheduledFor: string | null, status: string) => {
+    if (!scheduledFor || ['cancelled', 'completed', 'refunded'].includes(status)) {
+      return { label: null, color: '' };
+    }
+
+    const now = new Date();
+    const scheduled = new Date(scheduledFor);
+    const diffMs = scheduled.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+
+    if (diffMinutes < 0) {
+      return { label: 'Overdue', color: 'bg-red-600 text-white' };
+    } else if (diffMinutes <= 15) {
+      return { label: 'Due Now', color: 'bg-red-500 text-white' };
+    } else if (diffMinutes <= 60) {
+      return { label: 'Due Soon', color: 'bg-orange-500 text-white' };
+    } else if (diffMinutes <= 240) { // 4 hours
+      return { label: 'Upcoming', color: 'bg-blue-100 text-blue-800' };
+    } else {
+      return { label: 'Later', color: 'bg-gray-100 text-gray-600' };
+    }
+  };
+
+  const hasIssues = (order: Order) => {
+    // Check for payment issues
+    if (order.payment_status === 'paid_pending_resolution') return true;
+    if (order.payment_status === 'pending') {
+      const createdAt = new Date(order.created_at);
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      if (createdAt < tenMinutesAgo) return true;
+    }
+    // Check for email issues
+    if (order.email_status === 'failed') return true;
+    return false;
+  };
+
+  const getEmailStatusInfo = (order: Order) => {
+    if (!order.email_status) return { label: 'Unknown', color: 'bg-gray-100 text-gray-600', canRetry: false };
+    
+    switch (order.email_status) {
+      case 'sent':
+        return { label: 'Sent', color: 'bg-green-100 text-green-700', canRetry: false };
+      case 'pending':
+      case 'queued':
+        return { label: 'Queued', color: 'bg-blue-100 text-blue-700', canRetry: true };
+      case 'failed':
+        return { label: 'Failed', color: 'bg-red-100 text-red-700', canRetry: true };
+      default:
+        return { label: order.email_status, color: 'bg-gray-100 text-gray-600', canRetry: false };
+    }
   };
 
   if (loading && orders.length === 0) {
@@ -229,7 +371,7 @@ export default function AdminOrdersPage() {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
             Orders
@@ -238,6 +380,88 @@ export default function AdminOrdersPage() {
             Manage and track all customer orders
           </p>
         </div>
+      </div>
+
+      {/* Issues Alert Banner */}
+      {issuesCount > 0 && presetFilter !== 'issues' && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <p className="font-semibold text-red-800">Attention needed</p>
+              <p className="text-sm text-red-700">
+                {issuesCount} {issuesCount === 1 ? 'order requires' : 'orders require'} action (payments pending too long / paid but slot unavailable / email failed)
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setPresetFilter('issues')}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+          >
+            View Issues
+          </button>
+        </div>
+      )}
+
+      {/* Preset Filters */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        <button
+          onClick={() => setPresetFilter('active')}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            presetFilter === 'active'
+              ? 'bg-[#C9653B] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          Active Orders
+        </button>
+        <button
+          onClick={() => setPresetFilter('next_2_hours')}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            presetFilter === 'next_2_hours'
+              ? 'bg-[#C9653B] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          Next 2 Hours
+        </button>
+        <button
+          onClick={() => setPresetFilter('ready')}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            presetFilter === 'ready'
+              ? 'bg-[#C9653B] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          Ready
+        </button>
+        <button
+          onClick={() => setPresetFilter('issues')}
+          className={`px-4 py-2 rounded-lg font-medium transition relative ${
+            presetFilter === 'issues'
+              ? 'bg-red-600 text-white'
+              : 'bg-white border border-red-300 text-red-700 hover:bg-red-50'
+          }`}
+        >
+          Issues
+          {issuesCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs bg-red-600 text-white rounded-full">
+              {issuesCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setPresetFilter('all')}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            presetFilter === 'all'
+              ? 'bg-[#C9653B] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          All Orders
+        </button>
       </div>
 
       {/* Search */}
@@ -359,16 +583,16 @@ export default function AdminOrdersPage() {
                         Customer
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
-                        Type
+                        Due
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
                         Total
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
-                        Status
+                        Payment
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">
-                        Date
+                        Status
                       </th>
                     </tr>
                   </thead>
@@ -408,19 +632,25 @@ export default function AdminOrdersPage() {
                         });
                       }
 
+                      // Apply preset filter and sorting
+                      filteredOrders = applyPresetAndSort(filteredOrders);
+
                       return filteredOrders.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-6 py-12 text-center text-[#4B4B4B]">
-                            {searchQuery ? "No orders match your search" : "No orders found"}
+                            {searchQuery ? "No orders match your search" : presetFilter === 'issues' ? "No issues found — all orders are good! 🎉" : "No orders found"}
                           </td>
                         </tr>
                       ) : (
-                        filteredOrders.map((order) => (
+                        filteredOrders.map((order) => {
+                          const urgency = getUrgencyInfo(order.scheduled_for, order.status);
+                          const orderHasIssues = hasIssues(order);
+                          return (
                         <tr
                           key={order.id}
                           className={`hover:bg-[#FAF6EF] cursor-pointer ${
                             selectedOrder?.id === order.id ? "bg-[#FAF6EF]" : ""
-                          }`}
+                          } ${orderHasIssues ? "border-l-4 border-l-red-500" : ""}`}
                           onClick={async () => {
                             // Fetch full order details with items
                             try {
@@ -440,21 +670,46 @@ export default function AdminOrdersPage() {
                           }}
                         >
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-[#1F1F1F]">
-                            {order.order_number}
+                            <div className="flex items-center gap-2">
+                              {orderHasIssues && (
+                                <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                              #{order.order_number}
+                            </div>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
                             <div>
                               <div className="font-medium">{order.customer_name}</div>
-                              {order.customer_email && (
-                                <div className="text-xs text-[#C9653B]">{order.customer_email}</div>
-                              )}
+                              <div className="text-xs text-[#999] capitalize">{order.fulfillment_type}</div>
                             </div>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
-                            <span className="capitalize">{order.fulfillment_type}</span>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            {urgency.label && (
+                              <div className="flex flex-col gap-1">
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full inline-block ${urgency.color}`}>
+                                  {urgency.label}
+                                </span>
+                                {order.scheduled_for && (
+                                  <span className="text-xs text-[#4B4B4B]">
+                                    {new Date(order.scheduled_for).toLocaleTimeString('en-NL', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-[#1F1F1F]">
                             {formatCurrency(order.total)}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
+                                order.payment_status
+                              )}`}
+                            >
+                              {getPaymentStatusLabel(order.payment_status)}
+                            </span>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <span
@@ -465,11 +720,9 @@ export default function AdminOrdersPage() {
                               {order.status}
                             </span>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
-                            {formatDate(order.created_at)}
-                          </td>
                         </tr>
-                        ))
+                        );
+                        })
                       );
                     })()}
                   </tbody>
@@ -490,31 +743,41 @@ export default function AdminOrdersPage() {
                     Created: {formatDate(selectedOrder.created_at)}
                   </p>
                   
+                  {/* Payment & Email Status */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Payment:</span>
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(selectedOrder.payment_status)}`}>
+                        {getPaymentStatusLabel(selectedOrder.payment_status)}
+                      </span>
+                    </div>
+                    {(() => {
+                      const emailInfo = getEmailStatusInfo(selectedOrder);
+                      return (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Email:</span>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${emailInfo.color}`}>
+                              {emailInfo.label}
+                            </span>
+                            {selectedOrder.email_sent_at && emailInfo.label === 'Sent' && (
+                              <span className="text-xs text-gray-500">
+                                {new Date(selectedOrder.email_sent_at).toLocaleTimeString('en-NL', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    {selectedOrder.email_error && (
+                      <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">
+                        Error: {selectedOrder.email_error}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Quick Actions */}
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {selectedOrder.payment_status === 'unpaid' && (
-                      <button
-                        onClick={async () => {
-                          try {
-                            const response = await fetch(`/api/orders/${selectedOrder.id}`, {
-                              method: "PATCH",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ payment_status: 'paid' }),
-                            });
-                            if (response.ok) {
-                              fetchOrders();
-                              const updated = await response.json();
-                              setSelectedOrder(updated);
-                            }
-                          } catch (error) {
-                            console.error("Error updating payment status:", error);
-                          }
-                        }}
-                        className="px-4 py-2 text-sm font-medium bg-green-100 text-green-700 rounded hover:bg-green-200 transition min-h-[36px]"
-                      >
-                        Mark Paid
-                      </button>
-                    )}
                     {selectedOrder.status !== 'ready' && selectedOrder.status !== 'completed' && (
                       <button
                         onClick={() => updateStatus(selectedOrder.id, 'ready')}
@@ -542,31 +805,42 @@ export default function AdminOrdersPage() {
                     >
                       Print Ticket
                     </Link>
-                    {selectedOrder.customer_email && (
-                      <button
-                        onClick={async () => {
-                          if (!confirm('Resend confirmation email to customer?')) return
-                          try {
-                            const response = await fetch(`/api/orders/${selectedOrder.id}/send-confirmation`, {
-                              method: 'POST',
-                            })
-                            if (response.ok) {
-                              alert('Confirmation email sent successfully!')
-                              fetchOrders()
-                            } else {
-                              const error = await response.json()
-                              alert(error.message || 'Failed to send email')
+                    {selectedOrder.customer_email && (() => {
+                      const emailInfo = getEmailStatusInfo(selectedOrder);
+                      const buttonLabel = emailInfo.label === 'Failed' ? 'Retry Email' : emailInfo.label === 'Queued' ? 'Retry Now' : 'Resend Email';
+                      const buttonColor = emailInfo.label === 'Failed' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200';
+                      
+                      return (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`${buttonLabel} to customer?`)) return
+                            try {
+                              const response = await fetch(`/api/orders/${selectedOrder.id}/send-confirmation`, {
+                                method: 'POST',
+                              })
+                              if (response.ok) {
+                                alert('Confirmation email sent successfully!')
+                                fetchOrders()
+                                // Refresh selected order
+                                const detailResponse = await fetch(`/api/orders/${selectedOrder.id}`)
+                                if (detailResponse.ok) {
+                                  setSelectedOrder(await detailResponse.json())
+                                }
+                              } else {
+                                const error = await response.json()
+                                alert(error.message || 'Failed to send email')
+                              }
+                            } catch (error) {
+                              console.error('Error sending confirmation email:', error)
+                              alert('Failed to send email')
                             }
-                          } catch (error) {
-                            console.error('Error sending confirmation email:', error)
-                            alert('Failed to send email')
-                          }
-                        }}
-                        className="px-3 py-1.5 text-xs font-medium bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
-                      >
-                        Resend Email
-                      </button>
-                    )}
+                          }}
+                          className={`px-3 py-1.5 text-xs font-medium rounded transition ${buttonColor}`}
+                        >
+                          {buttonLabel}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -754,20 +1028,27 @@ export default function AdminOrdersPage() {
 
                   <div>
                     <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                      Update Payment Status
+                      Payment Status
+                      <span className="ml-2 text-xs text-gray-500 font-normal">(Read-only)</span>
                     </label>
-                    <select
-                      value={selectedOrder.payment_status}
-                      onChange={(e) => updatePaymentStatus(selectedOrder.id, e.target.value)}
-                      disabled={updatingId === selectedOrder.id}
-                      className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] disabled:opacity-50"
-                    >
-                      {PAYMENT_STATUS_OPTIONS.filter((opt) => opt.value !== "all").map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(selectedOrder.payment_status)}`}>
+                          {getPaymentStatusLabel(selectedOrder.payment_status)}
+                        </span>
+                        {selectedOrder.payment_status === 'paid_pending_resolution' && (
+                          <Link
+                            href="/admin/recovery"
+                            className="text-xs text-red-600 hover:underline font-medium"
+                          >
+                            Resolve →
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Payment status is managed by Stripe webhooks. Use <Link href="/admin/recovery" className="text-[#C9653B] hover:underline">Recovery</Link> for manual intervention.
+                    </p>
                   </div>
 
                   <div className="flex gap-2">
@@ -777,13 +1058,6 @@ export default function AdminOrdersPage() {
                       )}`}
                     >
                       {selectedOrder.status}
-                    </span>
-                    <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
-                        selectedOrder.payment_status
-                      )}`}
-                    >
-                      {selectedOrder.payment_status}
                     </span>
                   </div>
                 </div>

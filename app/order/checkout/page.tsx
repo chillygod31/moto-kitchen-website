@@ -30,6 +30,12 @@ interface DeliveryZone {
   min_order: number
 }
 
+const countries = [
+  { code: "+31", flag: "🇳🇱", name: "Netherlands" },
+  { code: "+32", flag: "🇧🇪", name: "Belgium" },
+  { code: "+49", flag: "🇩🇪", name: "Germany" },
+];
+
 export default function CheckoutPage() {
   const router = useRouter()
   const [cart, setCart] = useState<CartItem[]>([])
@@ -43,6 +49,7 @@ export default function CheckoutPage() {
   const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('pickup')
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
+  const [countryCode, setCountryCode] = useState('+31') // Default to Netherlands
   const [customerPhone, setCustomerPhone] = useState('')
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [postcode, setPostcode] = useState('')
@@ -53,12 +60,31 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [acceptedAllergenPolicy, setAcceptedAllergenPolicy] = useState(false)
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false)
+  const countryDropdownRef = useRef<HTMLDivElement>(null)
 
   const [deliveryFee, setDeliveryFee] = useState(0)
   const [businessSettings, setBusinessSettings] = useState<{ min_order_value: number } | null>(null)
 
   // Error states
   const [error, setError] = useState<string | null>(null)
+  
+  // Get selected country
+  const selectedCountry = countries.find(c => c.code === countryCode) || countries[0]
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
+        setIsCountryDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [networkError, setNetworkError] = useState<string | null>(null)
   const [isOffline, setIsOffline] = useState(false)
@@ -74,6 +100,7 @@ export default function CheckoutPage() {
         const formData = JSON.parse(backup)
         setCustomerName(formData.customerName || '')
         setCustomerEmail(formData.customerEmail || '')
+        setCountryCode(formData.countryCode || '+31')
         setCustomerPhone(formData.customerPhone || '')
         setFulfillmentType(formData.fulfillmentType || 'pickup')
         setDeliveryAddress(formData.deliveryAddress || '')
@@ -564,6 +591,7 @@ export default function CheckoutPage() {
       localStorage.setItem('checkout-form-backup', JSON.stringify({
         customerName,
         customerEmail,
+        countryCode,
         customerPhone,
         fulfillmentType,
         deliveryAddress,
@@ -590,12 +618,13 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           customerName,
           customerEmail,
-          customerPhone,
+          customerPhone: `${countryCode} ${customerPhone}`,
           fulfillmentType,
           deliveryAddress: fulfillmentType === 'delivery' ? deliveryAddress : null,
           postcode: fulfillmentType === 'delivery' ? postcode : null,
           city: fulfillmentType === 'delivery' ? city : null,
           scheduledFor: timeSlots.find((s) => s.id === selectedTimeSlot)?.slot_time,
+          selectedTimeSlot,
           cartItems: cart,
           subtotal,
           deliveryFee,
@@ -823,26 +852,68 @@ export default function CheckoutPage() {
                 <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700 mb-1">
                   Phone *
                 </label>
-                <input
-                  id="customerPhone"
-                  type="tel"
-                  required
-                  autoComplete="tel"
-                  inputMode="tel"
-                  value={customerPhone}
-                  onChange={(e) => {
-                    setCustomerPhone(e.target.value)
-                    if (fieldErrors.customerPhone) {
-                      setFieldErrors({ ...fieldErrors, customerPhone: '' })
-                    }
-                  }}
-                  className={`w-full px-4 py-2.5 text-base border rounded-lg focus:ring-2 focus:ring-[#C9653B] focus:border-transparent ${
-                    fieldErrors.customerPhone ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="+31 6 1234 5678 or 06 1234 5678"
-                  aria-invalid={!!fieldErrors.customerPhone}
-                  aria-describedby={fieldErrors.customerPhone ? 'customerPhone-error' : undefined}
-                />
+                <div className={`flex border rounded-lg focus-within:ring-2 focus-within:ring-[#C9653B] focus-within:border-transparent bg-white relative ${
+                  fieldErrors.customerPhone ? 'border-red-300' : 'border-gray-300'
+                }`}>
+                  <div ref={countryDropdownRef} className="relative z-10 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                      className="px-3 py-2.5 border-0 border-r border-gray-300 focus:outline-none bg-white text-sm cursor-pointer flex items-center gap-1.5 hover:bg-gray-50 whitespace-nowrap rounded-l-lg"
+                    >
+                      <span className="text-lg">{selectedCountry.flag}</span>
+                      <span className="text-sm">{selectedCountry.code}</span>
+                      <svg
+                        className={`w-4 h-4 text-gray-600 transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {isCountryDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-80 overflow-y-auto w-64">
+                        <div className="py-1">
+                          {countries.map((country) => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              onClick={() => {
+                                setCountryCode(country.code)
+                                setIsCountryDropdownOpen(false)
+                              }}
+                              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3"
+                            >
+                              <span className="text-lg">{country.flag}</span>
+                              <span className="text-sm font-medium">{country.code}</span>
+                              <span className="text-sm text-gray-600">{country.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    id="customerPhone"
+                    type="tel"
+                    required
+                    autoComplete="tel"
+                    inputMode="tel"
+                    value={customerPhone}
+                    onChange={(e) => {
+                      setCustomerPhone(e.target.value)
+                      if (fieldErrors.customerPhone) {
+                        setFieldErrors({ ...fieldErrors, customerPhone: '' })
+                      }
+                    }}
+                    className="flex-1 px-4 py-2.5 text-base border-0 focus:outline-none bg-white rounded-r-lg"
+                    placeholder="000000000"
+                    aria-invalid={!!fieldErrors.customerPhone}
+                    aria-describedby={fieldErrors.customerPhone ? 'customerPhone-error' : undefined}
+                  />
+                </div>
                 {fieldErrors.customerPhone && (
                   <p id="customerPhone-error" className="mt-1 text-sm text-red-600" role="alert">{fieldErrors.customerPhone}</p>
                 )}

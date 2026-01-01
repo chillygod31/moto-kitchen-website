@@ -21,6 +21,7 @@ function OrderSuccessContent() {
   const [businessSettings, setBusinessSettings] = useState<any>(null)
   const [copiedAddress, setCopiedAddress] = useState(false)
   const [verifyingSession, setVerifyingSession] = useState(false)
+  const [orderCreationFailed, setOrderCreationFailed] = useState(false)
 
   useEffect(() => {
     // Scroll to top on mount
@@ -98,10 +99,19 @@ function OrderSuccessContent() {
       }
       
       // If order not created after max attempts, show error
+      // Fetch business settings for contact info on error page
+      const settingsRes = await fetch('/api/business-settings')
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json()
+        setBusinessSettings(settings)
+      }
+      
+      setOrderCreationFailed(true)
       setLoading(false)
       setVerifyingSession(false)
     } catch (error) {
       console.error('Error verifying Stripe session:', error)
+      setOrderCreationFailed(true)
       setLoading(false)
       setVerifyingSession(false)
     }
@@ -174,6 +184,121 @@ function OrderSuccessContent() {
             </p>
           )}
         </div>
+      </div>
+    )
+  }
+
+  // Show error if order creation failed after payment
+  if (orderCreationFailed) {
+    return (
+      <div className="min-h-screen bg-[#FAF6EF]">
+        <header className="bg-[#3A2A24] sticky top-0 z-50 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <Link href={orderRoutes.menu()} className="flex items-center gap-3 hover:opacity-80 transition">
+              <Image src="/logo1.png" alt="Moto Kitchen" width={64} height={64} className="h-12 md:h-16 w-auto object-contain" priority />
+              <div className="flex flex-col -ml-2">
+                <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>Moto Kitchen</span>
+                <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>East African Catering Service</span>
+              </div>
+            </Link>
+          </div>
+        </header>
+
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-10 h-10 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-3">
+                Payment Processed — Order Pending
+              </h1>
+              <p className="text-gray-600 mb-6">
+                Your payment was successful, but we're having trouble processing your order right now.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h2 className="font-semibold text-blue-900 mb-2">What happens next?</h2>
+              <ul className="space-y-2 text-sm text-blue-800">
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Your payment was successful — no further action needed from you</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>Our team has been notified and will manually process your order within 15 minutes</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span>You'll receive an email confirmation once your order is confirmed</span>
+                </li>
+              </ul>
+            </div>
+
+            {sessionId && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <p className="text-xs text-gray-600 mb-1">Payment Reference:</p>
+                <p className="text-sm font-mono text-gray-800 break-all">{sessionId}</p>
+              </div>
+            )}
+
+            <div className="bg-[#FAF6EF] rounded-lg p-6">
+              <h2 className="font-semibold text-gray-900 mb-3">Questions about your order?</h2>
+              <div className="space-y-2 text-sm">
+                {businessSettings && (
+                  <>
+                    <div className="flex items-center text-gray-700">
+                      <svg className="w-5 h-5 mr-2 text-[#C9653B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      📱 WhatsApp: +31 6 1234 5678
+                    </div>
+                    <div className="flex items-center text-gray-700">
+                      <svg className="w-5 h-5 mr-2 text-[#C9653B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      ✉️ Email: info@motokitchen.nl
+                    </div>
+                  </>
+                )}
+              </div>
+              <Link
+                href="/contact"
+                className="mt-4 inline-block bg-[#C9653B] text-white px-6 py-2 rounded-lg hover:bg-[#A54D2A] transition"
+              >
+                Contact Us
+              </Link>
+            </div>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <Link
+                href={orderRoutes.menu()}
+                className="flex-1 bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:border-gray-400 transition text-center font-medium"
+              >
+                Back to Menu
+              </Link>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }

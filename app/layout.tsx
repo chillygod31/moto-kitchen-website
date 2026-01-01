@@ -87,7 +87,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: '/logo-circle.png',
     apple: '/logo-circle.png',
   },
   viewport: {
