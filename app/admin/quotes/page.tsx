@@ -199,13 +199,13 @@ export default function AdminQuotesPage() {
   };
 
   return (
-    <div suppressHydrationWarning>
+    <>
       {loading && quotes.length === 0 ? (
         <div className="min-h-screen flex items-center justify-center">
           <p className="text-[#4B4B4B]">Loading quotes...</p>
         </div>
       ) : (
-        <>
+        <div>
       {/* Page Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -450,9 +450,9 @@ export default function AdminQuotesPage() {
             </div>
           </div>
         )}
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 

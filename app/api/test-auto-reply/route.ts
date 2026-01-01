@@ -200,7 +200,7 @@ const autoReplyHtml = `
               <p class="section-title">WHAT HAPPENS NEXT:</p>
               <ol>
                 <li><strong>Within ${quoteResponseTime}:</strong> You'll receive a custom quote with menu options</li>
-                <li><strong>We're here to help!</strong> Questions? Reply to this email</li>
+                <li><strong>We're here to help!</strong> Questions? Reply to this email or WhatsApp/call us on <a href="tel:+31653301243" style="color: #C9653B; text-decoration: none;">+31 6 5330 1243</a></li>
               </ol>
             </div>
 
@@ -210,6 +210,7 @@ const autoReplyHtml = `
                 <li><a href="https://motokitchen.nl/menu" class="link">Our full menu</a></li>
                 <li><a href="https://motokitchen.nl/gallery" class="link">See our recent events</a></li>
                 <li>Follow us on Instagram: <a href="https://instagram.com/motokitchen.nl" class="link">@motokitchen.nl</a></li>
+                <li>Follow us on TikTok: <a href="https://www.tiktok.com/@motokitchen.nl" class="link">@motokitchen.nl</a></li>
               </ul>
             </div>
 
@@ -245,12 +246,13 @@ EVENT SUMMARY:
 WHAT HAPPENS NEXT:
 
 1. Within ${quoteResponseTime}: You'll receive a custom quote with menu options
-2. We're here to help! Questions? Reply to this email
+2. We're here to help! Questions? Reply to this email or WhatsApp/call us on +31 6 5330 1243
 
 In the meantime, check out:
 → Our full menu: https://motokitchen.nl/menu
 → See our recent events: https://motokitchen.nl/gallery
 → Follow us on Instagram: @motokitchen.nl
+→ Follow us on TikTok: https://www.tiktok.com/@motokitchen.nl
 
 Karibu (Welcome)!
 
