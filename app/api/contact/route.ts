@@ -819,7 +819,7 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
                 <p class="section-title">WHAT HAPPENS NEXT:</p>
                 <ol>
                   <li><strong>Within ${quoteResponseTime}:</strong> You'll receive a custom quote with menu options</li>
-                  <li><strong>We're here to help!</strong> Questions? Reply to this email</li>
+                  <li><strong>We're here to help!</strong> Questions? Reply to this email or WhatsApp/call us on <a href="tel:+31653301243" style="color: #C9653B; text-decoration: none;">+31 6 5330 1243</a></li>
                 </ol>
               </div>
 
@@ -865,7 +865,7 @@ EVENT SUMMARY:
 WHAT HAPPENS NEXT:
 
 1. Within ${quoteResponseTime}: You'll receive a custom quote with menu options
-2. We're here to help! Questions? Reply to this email
+2. We're here to help! Questions? Reply to this email or WhatsApp/call us on +31 6 5330 1243
 
 In the meantime, check out:
 → Our full menu: http://motokitchen.nl/menu
