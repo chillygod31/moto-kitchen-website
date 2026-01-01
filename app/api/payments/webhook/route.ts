@@ -103,8 +103,29 @@ export async function POST(request: NextRequest) {
           autoRecovered: result.auto_recovered
         });
         
-        // Send alert if order was expired but recovered
-        if (result.was_expired && result.auto_recovered) {
+        // Send CRITICAL alert if order paid but slot is full (needs manual action)
+        if (result.status === 'paid_pending_resolution') {
+          logger.error('CRITICAL: Order paid after expiry but slot is full', undefined, {
+            orderId: result.order_id,
+            orderNumber: result.order_number,
+            sessionId: session.id
+          });
+          
+          // Send immediate critical alert email
+          await sendWebhookFailureAlert({
+            sessionId: session.id,
+            eventId: event.id,
+            tenantId: tenantId,
+            error: new Error(`Order #${result.order_number} paid after expiry but slot is now full - requires manual resolution`),
+            orderData: {
+              orderId: result.order_id,
+              orderNumber: result.order_number,
+              wasExpired: result.was_expired
+            }
+          });
+        }
+        // Send alert if order was expired but auto-recovered
+        else if (result.was_expired && result.auto_recovered) {
           logger.warn('Order paid after expiry but auto-recovered', {
             orderId: result.order_id,
             orderNumber: result.order_number

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createServerClient } from '@/lib/supabase/server';
+import { createServerAuthClient } from '@/lib/supabase/server-auth';
 import { createServerAdminClient } from '@/lib/supabase/server-admin';
 import { logger } from '@/lib/logging';
 
@@ -23,7 +23,7 @@ function getStripeClient() {
 export async function POST(req: NextRequest) {
   try {
     // CRITICAL: Verify authentication
-    const supabase = createServerClient();
+    const supabase = await createServerAuthClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {

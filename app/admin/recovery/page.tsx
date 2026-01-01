@@ -11,6 +11,13 @@ interface Alert {
   error_message: string;
   metadata: any;
   created_at: string;
+  orders?: {
+    order_number: string;
+    customer_name: string;
+    customer_email: string;
+    total: number;
+    payment_status: string;
+  } | null;
 }
 
 export default function RecoveryPage() {
@@ -24,7 +31,9 @@ export default function RecoveryPage() {
 
   const fetchAlerts = async () => {
     try {
-      const res = await fetch('/api/admin/alerts?acknowledged=false');
+      const res = await fetch('/api/admin/alerts?acknowledged=false', {
+        credentials: 'include'
+      });
       const data = await res.json();
       setAlerts(data.alerts || []);
     } catch (error) {
@@ -40,6 +49,7 @@ export default function RecoveryPage() {
       const res = await fetch('/api/admin/recover-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ session_id: sessionId, action: 'create_order' })
       });
       
@@ -66,6 +76,7 @@ export default function RecoveryPage() {
       const res = await fetch('/api/admin/recover-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ session_id: sessionId, action: 'refund' })
       });
       
@@ -122,6 +133,25 @@ export default function RecoveryPage() {
               </div>
               
               <div className="space-y-2 mb-4 text-sm">
+                {alert.orders?.order_number && (
+                  <div className="mb-3">
+                    <strong>Order:</strong>
+                    <a 
+                      href={`/admin/orders?search=${alert.orders.order_number}`}
+                      className="ml-2 text-blue-600 hover:text-blue-800 underline font-medium"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      #{alert.orders.order_number}
+                    </a>
+                    {alert.orders.customer_name && (
+                      <span className="ml-2 text-gray-600">• {alert.orders.customer_name}</span>
+                    )}
+                    {alert.orders.total && (
+                      <span className="ml-2 text-gray-600">• €{alert.orders.total.toFixed(2)}</span>
+                    )}
+                  </div>
+                )}
                 <div>
                   <strong>Session ID:</strong>
                   <code className="ml-2 bg-gray-100 px-2 py-1 rounded">

@@ -21,7 +21,7 @@ export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHead
       try {
         const response = await fetch('/api/csrf')
         const data = await response.json()
-        setCsrfToken(data.token)
+        setCsrfToken(data.csrfToken) // Fixed: was data.token, should be data.csrfToken
       } catch (error) {
         console.error('Failed to fetch CSRF token:', error)
       }

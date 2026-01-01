@@ -17,7 +17,16 @@ export async function GET(request: NextRequest) {
   try {
     let query = supabase
       .from('webhook_alerts')
-      .select('*')
+      .select(`
+        *,
+        orders:order_id (
+          order_number,
+          customer_name,
+          customer_email,
+          total,
+          payment_status
+        )
+      `)
       .order('created_at', { ascending: false });
     
     if (acknowledgedFilter !== null) {
