@@ -89,7 +89,7 @@ export default function GalleryGrid({
 
       {/* Gallery Grid */}
       <div className="section-padding bg-white">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {filteredItems.length === 0 ? (
             <p className="text-center text-[#6B5B55]">No items found in this category.</p>
           ) : (
