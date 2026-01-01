@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
     }
 
     const availableSlots = (timeSlots || []).filter((slot) => {
+      if (!slot.slot_time) return false // Skip slots without a time
       const slotTime = DateTime.fromISO(slot.slot_time)
       const slotDate = slotTime.setZone(tz).toISODate()
       if (blackoutDates.includes(slotDate)) return false
