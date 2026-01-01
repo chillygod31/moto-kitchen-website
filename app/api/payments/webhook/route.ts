@@ -118,12 +118,7 @@ export async function POST(request: NextRequest) {
             tenantId: tenantId,
             error: `Order #${result.order_number} paid after expiry but slot is now full - requires manual resolution`,
             amount: session.amount_total || 0,
-            orderId: result.order_id,
-            orderData: {
-              orderId: result.order_id,
-              orderNumber: result.order_number,
-              wasExpired: result.was_expired
-            }
+            orderId: result.order_id
           });
         }
         // Send alert if order was expired but auto-recovered
