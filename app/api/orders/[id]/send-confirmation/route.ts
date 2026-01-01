@@ -93,7 +93,7 @@ export async function POST(
       businessEmail: tenant?.business_email,
       businessPhone: tenant?.business_phone,
       orderUrl: `${siteUrl}/order/order-success?orderId=${order.id}&orderNumber=${order.order_number}`,
-      status: order.payment_status === 'paid' ? 'Paid' : 'Pending',
+      status: (order.payment_status === 'paid' ? 'Paid' : 'Pending') as 'Paid' | 'Pending',
     }
 
     // Generate email
