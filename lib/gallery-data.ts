@@ -21,8 +21,7 @@ export const galleryItems = [
   { id: 22, src: "/corporate-15.jpg", alt: "Corporate event", category: "corporate" },
   { id: 23, src: "/corporate-16.jpg", alt: "Corporate event", category: "corporate" },
   
-  // Food (10)
-  { id: 24, src: "/food-1.jpg", alt: "Food close-up", category: "food" },
+  // Food (9)
   { id: 25, src: "/food-2.jpg", alt: "Food close-up", category: "food" },
   { id: 26, src: "/food-3.jpg", alt: "Food close-up", category: "food" },
   { id: 27, src: "/food-4.jpg", alt: "Food close-up", category: "food" },
