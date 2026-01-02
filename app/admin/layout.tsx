@@ -3,9 +3,8 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { isAdminAuthenticated, getAdminTenantId } from '@/lib/auth/server-admin'
 import { getMergedBranding, generateBrandingCSS } from '@/lib/admin-branding'
-import AdminHeader from '@/components/admin/AdminHeader'
-import AdminSidebar from '@/components/admin/AdminSidebar'
 import { createServerAdminClient } from '@/lib/supabase/server-admin'
+import AdminLayoutClient from '@/components/admin/AdminLayoutClient'
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard',
@@ -62,15 +61,12 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-[var(--brand-background,#FAF6EF)]">
       <style dangerouslySetInnerHTML={{ __html: brandingCSS }} />
-      <AdminHeader logoUrl={branding.logo_url} tenantName={tenant?.name || 'Admin'} />
-      <div className="flex">
-        <AdminSidebar />
-        <main className="flex-1 ml-64 pt-[90px]">
-          <div className="max-w-7xl mx-auto px-6 py-6">
-            {children}
-          </div>
-        </main>
-      </div>
+      <AdminLayoutClient 
+        logoUrl={branding.logo_url} 
+        tenantName={tenant?.name || 'Admin'}
+      >
+        {children}
+      </AdminLayoutClient>
     </div>
   )
 }

@@ -8,9 +8,10 @@ import { useState, useEffect } from 'react'
 interface AdminHeaderProps {
   logoUrl?: string | null
   tenantName?: string
+  onMenuClick?: () => void
 }
 
-export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHeaderProps) {
+export default function AdminHeader({ logoUrl, tenantName = 'Admin', onMenuClick }: AdminHeaderProps) {
   const router = useRouter()
   const [loggingOut, setLoggingOut] = useState(false)
   const [csrfToken, setCsrfToken] = useState<string | null>(null)
@@ -67,31 +68,44 @@ export default function AdminHeader({ logoUrl, tenantName = 'Admin' }: AdminHead
 
   return (
     <header className="bg-[#3A2A24] fixed top-0 left-0 right-0 z-50 h-[90px]">
-      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-        <Link href="/admin/quotes" className="flex items-center h-full py-2 gap-0">
-          <Image
-            src={displayLogoUrl}
-            alt={tenantName}
-            width={80}
-            height={80}
-            className="h-16 md:h-20 max-h-full object-contain"
-            priority
-          />
-          <div className="flex flex-col -ml-2">
-            <span className="text-white text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
-              {tenantName}
-            </span>
-            <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>
-              Admin Dashboard
-            </span>
-          </div>
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Mobile menu button */}
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 text-white hover:bg-white/10 rounded-md transition"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        <div className="flex items-center gap-6">
+          <Link href="/admin/quotes" className="flex items-center h-full py-2 gap-0">
+            <Image
+              src={displayLogoUrl}
+              alt={tenantName}
+              width={80}
+              height={80}
+              className="h-12 sm:h-16 md:h-20 max-h-full object-contain"
+              priority
+            />
+            <div className="flex flex-col -ml-2">
+              <span className="text-white text-base sm:text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
+                {tenantName}
+              </span>
+              <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>
+                Admin Dashboard
+              </span>
+            </div>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-6">
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white border border-white/20 rounded-md hover:bg-white/10 transition disabled:opacity-50"
+            className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white/80 hover:text-white border border-white/20 rounded-md hover:bg-white/10 transition disabled:opacity-50"
             style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
           >
             {loggingOut ? 'Logging out...' : 'Logout'}

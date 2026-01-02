@@ -14,6 +14,11 @@ interface NavGroup {
   items: NavItem[]
 }
 
+interface AdminSidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
 const navGroups: NavGroup[] = [
   {
     title: 'Leads',
@@ -44,47 +49,64 @@ const navGroups: NavGroup[] = [
   }
 ]
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen pt-[90px] fixed left-0 top-0">
-      <nav className="p-4 space-y-6">
-        {navGroups.map((group, groupIndex) => (
-          <div key={groupIndex}>
-            <h3 
-              className="px-2 text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider mb-2"
-              style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600 }}
-            >
-              {group.title}
-            </h3>
-            <div className="space-y-1 pl-2">
-              {group.items.map((item) => {
-                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`
-                      flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition
-                      ${
-                        isActive
-                          ? 'bg-[var(--brand-primary,#C9653B)]/10 text-[var(--brand-primary,#C9653B)]'
-                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                    style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                )
-              })}
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside className={`
+        w-64 bg-white border-r border-gray-200 min-h-screen pt-[90px] fixed left-0 top-0 z-50
+        transition-transform duration-300 ease-in-out
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <nav className="p-4 space-y-6 overflow-y-auto h-[calc(100vh-90px)]">
+          {navGroups.map((group, groupIndex) => (
+            <div key={groupIndex}>
+              <h3 
+                className="px-2 text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider mb-2"
+                style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600 }}
+              >
+                {group.title}
+              </h3>
+              <div className="space-y-1 pl-2">
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className={`
+                        flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition
+                        ${
+                          isActive
+                            ? 'bg-[var(--brand-primary,#C9653B)]/10 text-[var(--brand-primary,#C9653B)]'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                        }
+                      `}
+                      style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 500 }}
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </nav>
-    </aside>
+          ))}
+        </nav>
+      </aside>
+    </>
   )
 }
 
