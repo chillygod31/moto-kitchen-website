@@ -128,10 +128,15 @@ export async function POST(request: NextRequest) {
           throw new Error('No valid recipient email');
         }
         
+        // Get tenant email addresses for Reply-To
+        const { getTenantEmailAddresses, getCustomerFromAddress } = await import('@/lib/email-helpers');
+        const { customerContact } = await getTenantEmailAddresses(order.tenant_id);
+        
         // Send via Resend
         const { error: sendError } = await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'orders@motokitchen.nl',
+          from: getCustomerFromAddress(),
           to: actualRecipient,
+          replyTo: customerContact, // Customers can reply to business email
           subject: subject,
           html: html,
           text: text,

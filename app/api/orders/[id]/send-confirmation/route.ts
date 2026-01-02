@@ -99,8 +99,11 @@ export async function POST(
     // Generate email
     const { html, text } = getCustomerConfirmationEmail(emailData)
 
+    // Get tenant email addresses for Reply-To
+    const { getTenantEmailAddresses, getCustomerFromAddress } = await import('@/lib/email-helpers')
+    const { customerContact } = await getTenantEmailAddresses(tenantId)
+
     // Send email (redirect to test email if configured)
-    const fromEmail = process.env.RESEND_FROM_EMAIL || 'Moto Kitchen <onboarding@resend.dev>'
     const recipientEmail = getEmailRecipient(order.customer_email)
     
     if (!recipientEmail) {
@@ -116,9 +119,9 @@ export async function POST(
       : ''
     
     const { data: emailResult, error: emailError } = await resend.emails.send({
-      from: fromEmail,
+      from: getCustomerFromAddress(),
       to: recipientEmail,
-      replyTo: tenant?.business_email || 'contact@motokitchen.nl',
+      replyTo: customerContact,
       subject: `Order Confirmation - ${order.order_number}${subjectSuffix}`,
       html,
       text,

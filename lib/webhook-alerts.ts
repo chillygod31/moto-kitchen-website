@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { createServerAdminClient } from '@/lib/supabase/server-admin';
 import { logger } from '@/lib/logging';
+import { getTenantEmailAddresses, getAdminFromAddress } from '@/lib/email-helpers';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,8 +14,10 @@ export async function sendWebhookFailureAlert(params: {
   orderId?: string;
 }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const adminEmail = process.env.ADMIN_ALERT_EMAIL || 'chilechhaa@gmail.com';
   const supabase = createServerAdminClient();
+  
+  // Get proper admin alert email from tenant settings
+  const { adminAlert } = await getTenantEmailAddresses(params.tenantId);
   
   // Log to alerts table first (even if email fails)
   try {
@@ -38,8 +41,9 @@ export async function sendWebhookFailureAlert(params: {
   // Attempt to send email
   try {
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'alerts@motokitchen.nl',
-      to: adminEmail,
+      from: getAdminFromAddress(),
+      to: adminAlert,
+      replyTo: adminAlert, // Replies go back to admin
       subject: `🚨 URGENT: Payment Completed But Order Failed - ${params.sessionId}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px;">
@@ -104,7 +108,7 @@ export async function sendWebhookFailureAlert(params: {
   } catch (emailError) {
     logger.error('CRITICAL: Failed to send webhook alert email', emailError as Error, {
       sessionId: params.sessionId,
-      adminEmail
+      adminEmail: adminAlert
     });
     
     // Update alert to note email failure
