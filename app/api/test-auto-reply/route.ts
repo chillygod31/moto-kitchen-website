@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import fs from "fs";
-import path from "path";
 
 export async function GET() {
   try {
@@ -40,11 +38,9 @@ export async function GET() {
     // Determine quote response time based on days until event
     const quoteResponseTime = daysUntilEvent !== null && daysUntilEvent <= 14 ? "24 hours" : "24 to 48 hours";
 
-    // Read logo and convert to base64
-    const logoPath = path.join(process.cwd(), "public", "motoemaillogo.jpg");
-    const logoBuffer = fs.readFileSync(logoPath);
-    const logoBase64 = logoBuffer.toString("base64");
-    const logoDataUri = `data:image/jpeg;base64,${logoBase64}`;
+    // Use hosted logo URL for better mobile compatibility
+    // Data URIs are often blocked by Gmail and other mobile email clients
+    const logoUrl = "https://www.motokitchen.nl/motoemaillogo.jpg";
 
 const autoReplyHtml = `
         <!DOCTYPE html>
@@ -163,7 +159,7 @@ const autoReplyHtml = `
         <body>
           <div class="container">
             <div class="header">
-              <img src="${logoDataUri}" alt="Moto Kitchen" />
+              <img src="${logoUrl}" alt="Moto Kitchen" />
             </div>
             
             <div class="content">
