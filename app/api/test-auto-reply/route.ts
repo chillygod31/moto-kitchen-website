@@ -210,7 +210,7 @@ const autoReplyHtml = `
               </ul>
             </div>
 
-            <p><strong>Karibu (Welcome)!</strong><br>Susan & The Moto Kitchen Team</p>
+            <p><strong>Warm regards,</strong><br>The Moto Kitchen Team</p>
           </div>
           
           <div class="footer">
@@ -250,9 +250,9 @@ In the meantime, check out:
 → Follow us on Instagram: @motokitchen.nl
 → Follow us on TikTok: https://www.tiktok.com/@motokitchen.nl
 
-Karibu (Welcome)!
+Warm regards,
 
-Susan & The Moto Kitchen Team
+The Moto Kitchen Team
 
 ---
 Moto Kitchen | East African Catering

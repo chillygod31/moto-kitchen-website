@@ -833,7 +833,7 @@ Quote Request ID: ${quoteRequest?.id || 'N/A'}
                 </ul>
               </div>
 
-              <p><strong>Warm regards,</strong><br>Susan & The Moto Kitchen Team</p>
+              <p><strong>Warm regards,</strong><br>The Moto Kitchen Team</p>
             </div>
             
             <div class="footer">
@@ -875,7 +875,7 @@ In the meantime, check out:
 
 Warm regards,
 
-Susan & The Moto Kitchen Team
+The Moto Kitchen Team
 
 ---
 Moto Kitchen | East African Catering
