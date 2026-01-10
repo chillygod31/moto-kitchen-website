@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
 /**
  * Middleware for tenant resolution and routing
@@ -43,82 +42,27 @@ export async function middleware(request: NextRequest) {
   try {
     // Pattern-based resolution (fast, works in edge runtime)
     const cleanHostname = hostname.split(':')[0].toLowerCase()
-    
+
+    // Hardcoded tenant ID for moto-kitchen (Edge Runtime compatible)
+    // TODO: Move to database lookup when using Node.js runtime
+    const MOTO_KITCHEN_TENANT_ID = '25d9c39c-e499-4b46-ad4a-e5dfbbbaf808'
+
     // Check subdomain patterns
     if (cleanHostname.startsWith('order.') || cleanHostname.startsWith('orders.')) {
       tenantSlug = 'moto-kitchen'
+      tenantId = MOTO_KITCHEN_TENANT_ID
     }
     // Check path patterns
     else if (pathname.startsWith('/order')) {
       tenantSlug = 'moto-kitchen'
+      tenantId = MOTO_KITCHEN_TENANT_ID
     }
-    // Check root domain
-    else if (cleanHostname === 'motokitchen.nl' || cleanHostname === 'localhost' || cleanHostname === '127.0.0.1') {
-      // For root domain, only set tenant if accessing order routes
+    // Check root domain and Vercel preview domains
+    else if (cleanHostname === 'motokitchen.nl' || cleanHostname === 'localhost' || cleanHostname === '127.0.0.1' || cleanHostname.includes('vercel.app')) {
+      // For root domain and preview URLs, set tenant if accessing order routes
       if (pathname.startsWith('/order')) {
         tenantSlug = 'moto-kitchen'
-      }
-    }
-    // For custom domains, try DB lookup (requires service role key)
-    else {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-      
-      if (supabaseUrl && supabaseServiceKey) {
-        try {
-          const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-            auth: { persistSession: false }
-          })
-          
-          const { data: domain, error } = await supabase
-            .from('tenant_domains')
-            .select('tenant_id, tenants!inner(slug, id, status)')
-            .eq('domain', cleanHostname)
-            .eq('is_verified', true)
-            .single()
-
-          if (!error && domain && domain.tenants) {
-            const tenant = domain.tenants as any
-            // Only allow active tenants
-            if (tenant.status === 'active') {
-              tenantSlug = tenant.slug
-              tenantId = tenant.id
-            }
-          }
-        } catch (error) {
-          console.error(`[${requestId}] Error looking up tenant domain:`, error)
-        }
-      }
-    }
-
-    // If tenant slug resolved but not ID, look it up
-    if (tenantSlug && !tenantId) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-      
-      if (supabaseUrl && supabaseServiceKey) {
-        try {
-          const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-            auth: { persistSession: false }
-          })
-          
-          const { data: tenant, error } = await supabase
-            .from('tenants')
-            .select('id, status')
-            .eq('slug', tenantSlug)
-            .eq('status', 'active')
-            .single()
-
-          if (!error && tenant) {
-            tenantId = tenant.id
-          } else {
-            // Tenant not found or inactive
-            tenantSlug = null
-          }
-        } catch (error) {
-          console.error(`[${requestId}] Error looking up tenant:`, error)
-          tenantSlug = null
-        }
+        tenantId = MOTO_KITCHEN_TENANT_ID
       }
     }
 
