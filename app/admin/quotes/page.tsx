@@ -207,28 +207,26 @@ export default function AdminQuotesPage() {
       ) : (
         <div>
       {/* Page Header */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="mb-6 space-y-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
             Quote Requests
           </h1>
-          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
+          <p className="text-sm lg:text-base" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
             Manage and track all quote requests
           </p>
         </div>
-        <div className="flex gap-4">
-          <button
-            onClick={exportToCSV}
-            className="btn-secondary px-6"
-          >
-            Export CSV
-          </button>
-        </div>
+        <button
+          onClick={exportToCSV}
+          className="btn-secondary w-full lg:w-auto px-6"
+        >
+          Export CSV
+        </button>
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
-          <div className="grid md:grid-cols-3 gap-3">
+          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-3">
             <div>
               <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
                 Status
@@ -258,12 +256,12 @@ export default function AdminQuotesPage() {
                   placeholder="Name, email, or location"
                   className="flex-1 px-3 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] text-sm"
                 />
-                <button onClick={handleSearch} className="btn-primary px-5 py-2 text-sm">
+                <button onClick={handleSearch} className="btn-primary px-3 lg:px-5 py-2 text-sm whitespace-nowrap">
                   Search
                 </button>
               </div>
             </div>
-            <div className="flex items-end">
+            <div className="lg:flex lg:items-end">
               <button
                 onClick={() => {
                   setStatusFilter("all");
@@ -278,18 +276,74 @@ export default function AdminQuotesPage() {
           </div>
         </div>
 
-      {/* Quotes Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          {/* Mobile scroll hint */}
-          <div className="lg:hidden px-4 py-2 bg-[#FBF8F3] border-b border-gray-200 text-xs text-[#6B5B55] flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
-            Scroll right to see more
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4 mb-4">
+        {quotes.length === 0 ? (
+          <div className="bg-white rounded-lg p-8 text-center text-[#4B4B4B] border border-gray-200">
+            No quote requests found
           </div>
+        ) : (
+          quotes.map((quote) => (
+            <div key={quote.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <p className="font-semibold text-[#1F1F1F] mb-1" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+                    {quote.name}
+                  </p>
+                  <a href={`mailto:${quote.email}`} className="text-sm text-[#C9653B] hover:underline block mb-1">
+                    {quote.email}
+                  </a>
+                  <p className="text-xs text-[#6B5B55]">{formatDate(quote.created_at)}</p>
+                </div>
+                <select
+                  value={quote.status}
+                  onChange={(e) => updateStatus(quote.id, e.target.value)}
+                  disabled={updatingId === quote.id}
+                  className={`text-xs px-3 py-1 rounded-full font-semibold border-0 ${getStatusColor(quote.status)}`}
+                >
+                  {STATUS_OPTIONS.slice(1).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                <div>
+                  <span className="text-[#6B5B55] block text-xs mb-0.5">Event Type</span>
+                  <span className="text-[#1F1F1F]">{quote.event_type}</span>
+                </div>
+                <div>
+                  <span className="text-[#6B5B55] block text-xs mb-0.5">Guests</span>
+                  <span className="text-[#1F1F1F]">{quote.guest_count}</span>
+                </div>
+                <div>
+                  <span className="text-[#6B5B55] block text-xs mb-0.5">Location</span>
+                  <span className="text-[#1F1F1F]">{quote.location}</span>
+                </div>
+                <div>
+                  <span className="text-[#6B5B55] block text-xs mb-0.5">Service Type</span>
+                  <span className="text-[#1F1F1F]">{quote.service_type ? formatServiceType(quote.service_type) : "-"}</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setSelectedQuote(quote)}
+                className="w-full btn-outline text-sm py-2"
+              >
+                View Details →
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
-              <table className="min-w-full divide-y divide-[#E6D9C8]" style={{ minWidth: '800px' }}>
+              <table className="min-w-full divide-y divide-[#E6D9C8]">
               <thead className="bg-[#F1E7DA]">
                 <tr>
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">

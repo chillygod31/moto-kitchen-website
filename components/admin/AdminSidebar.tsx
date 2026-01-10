@@ -39,6 +39,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/menu', label: 'Menu' },
       { href: '/admin/time-slots', label: 'Time Slots' },
+      { href: '/admin/emails', label: 'Email Monitoring' },
     ]
   },
   {

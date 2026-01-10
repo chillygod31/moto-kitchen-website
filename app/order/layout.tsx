@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import OrderPasswordProtection from './components/OrderPasswordProtection'
 
 export const metadata: Metadata = {
   robots: {
@@ -16,9 +15,9 @@ export default function OrderLayout({
   children: React.ReactNode
 }) {
   return (
-    <OrderPasswordProtection>
+    <>
       {children}
-    </OrderPasswordProtection>
+    </>
   )
 }
 

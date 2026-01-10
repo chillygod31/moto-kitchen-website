@@ -1,3 +1,5 @@
 // jest.setup.js
-// Add custom matchers or global test setup here if needed
+// Load environment variables for testing
+require('dotenv').config({ path: '.env.local' })
 
+// Add custom matchers or global test setup here if needed

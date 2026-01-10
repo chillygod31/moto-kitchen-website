@@ -4,6 +4,7 @@ import { createServerAdminClient } from '@/lib/supabase/server-admin'
 import { getTenantId } from '@/lib/tenant'
 import { logger, getTenantContextFromHeaders } from '@/lib/logging'
 import { captureException } from '@/lib/error-tracking'
+import { rateLimitMiddleware, rateLimitConfigs } from '@/lib/rate-limit'
 
 function getStripeClient() {
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
@@ -28,7 +29,14 @@ function getStripeClient() {
 export async function POST(request: NextRequest) {
   const context = getTenantContextFromHeaders(request.headers)
   logger.api.request('POST', '/api/payments/create-session', context)
-  
+
+  // Rate limiting: 5 requests per minute
+  const rateLimit = rateLimitMiddleware(request, rateLimitConfigs.checkout)
+  if (!rateLimit.allowed) {
+    logger.warn('Rate limit exceeded for checkout session creation', context)
+    return rateLimit.response as NextResponse
+  }
+
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new Error('Stripe secret key not configured')
