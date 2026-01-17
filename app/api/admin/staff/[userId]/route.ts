@@ -4,14 +4,18 @@ import { createServerAuthClient } from '@/lib/supabase/server-auth'
 import { getTenantId } from '@/lib/tenant'
 import { verifyCsrfToken } from '@/lib/csrf'
 
+type RouteParams = { params: Promise<{ userId: string }> }
+
 /**
  * PATCH /api/admin/staff/[userId]
  * Update a staff member's role
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: RouteParams
 ) {
+  const { userId } = await params
+
   try {
     // Verify CSRF token
     const isValidCsrf = await verifyCsrfToken(request)
@@ -53,7 +57,6 @@ export async function PATCH(
 
     const body = await request.json()
     const { role } = body
-    const { userId } = params
 
     if (!['admin', 'editor', 'viewer'].includes(role)) {
       return NextResponse.json(
@@ -109,8 +112,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: RouteParams
 ) {
+  const { userId } = await params
+
   try {
     // Verify CSRF token
     const isValidCsrf = await verifyCsrfToken(request)
@@ -149,8 +154,6 @@ export async function DELETE(
         { status: 403 }
       )
     }
-
-    const { userId } = params
 
     // Prevent users from removing themselves if they're the only admin
     if (userId === user.id) {
