@@ -15,9 +15,7 @@ export default function AdminCategoriesPage() {
   // Form state
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
-  const [editDescription, setEditDescription] = useState('')
   const [newName, setNewName] = useState('')
-  const [newDescription, setNewDescription] = useState('')
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -67,14 +65,12 @@ export default function AdminCategoriesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newName.trim(),
-          description: newDescription.trim() || null,
           sort_order: categories.length,
         }),
       })
 
       if (response.ok) {
         setNewName('')
-        setNewDescription('')
         fetchCategories()
       } else {
         const err = await response.json()
@@ -102,14 +98,12 @@ export default function AdminCategoriesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: editName.trim(),
-          description: editDescription.trim() || null,
         }),
       })
 
       if (response.ok) {
         setEditingId(null)
         setEditName('')
-        setEditDescription('')
         fetchCategories()
       } else {
         const err = await response.json()
@@ -152,13 +146,11 @@ export default function AdminCategoriesPage() {
   const startEditing = (cat: MenuCategory) => {
     setEditingId(cat.id)
     setEditName(cat.name)
-    setEditDescription(cat.description || '')
   }
 
   const cancelEditing = () => {
     setEditingId(null)
     setEditName('')
-    setEditDescription('')
   }
 
   if (loading) {
@@ -202,19 +194,12 @@ export default function AdminCategoriesPage() {
         <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--brand-secondary, #3A2A24)' }}>
           Add New Category
         </h2>
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex gap-4">
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Category name"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#C9653B)]"
-          />
-          <input
-            type="text"
-            value={newDescription}
-            onChange={(e) => setNewDescription(e.target.value)}
-            placeholder="Description (optional)"
             className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#C9653B)]"
           />
           <button
@@ -239,7 +224,6 @@ export default function AdminCategoriesPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Description</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Actions</th>
               </tr>
             </thead>
@@ -257,19 +241,6 @@ export default function AdminCategoriesPage() {
                       />
                     ) : (
                       <span className="font-medium text-gray-900">{cat.name}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 hidden md:table-cell">
-                    {editingId === cat.id ? (
-                      <input
-                        type="text"
-                        value={editDescription}
-                        onChange={(e) => setEditDescription(e.target.value)}
-                        className="w-full px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary,#C9653B)]"
-                        placeholder="Description (optional)"
-                      />
-                    ) : (
-                      <span className="text-gray-600 text-sm">{cat.description || '-'}</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
