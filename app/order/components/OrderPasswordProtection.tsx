@@ -10,12 +10,14 @@ const AUTH_KEY = 'order-auth-verified'
 
 export default function OrderPasswordProtection({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
+    setMounted(true)
     // Check if already authenticated
     const verified = sessionStorage.getItem(AUTH_KEY)
     if (verified === 'true') {
@@ -39,8 +41,8 @@ export default function OrderPasswordProtection({ children }: { children: React.
     }
   }
 
-  // Show loading state while checking
-  if (isChecking) {
+  // Show nothing during SSR and initial client-side render to prevent hydration errors
+  if (!mounted || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF6EF]">
         <div className="text-center">
