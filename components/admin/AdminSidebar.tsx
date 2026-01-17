@@ -45,7 +45,8 @@ const navGroups: NavGroup[] = [
   {
     title: 'Settings',
     items: [
-      { href: '/admin/settings', label: 'Settings' },
+      { href: '/admin/settings', label: 'Business Settings' },
+      { href: '/admin/staff', label: 'Staff Management' },
     ]
   }
 ]

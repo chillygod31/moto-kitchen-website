@@ -168,8 +168,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Settings</h1>
-        <p className="text-gray-600">Configure your business profile, hours, and ordering rules</p>
+        <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>Business Settings</h1>
+        <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>Configure your business profile, hours, and ordering rules</p>
       </div>
 
       {error && (

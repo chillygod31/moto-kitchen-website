@@ -117,8 +117,8 @@ export default function EmailMonitoringPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Email Monitoring</h1>
-        <p className="text-gray-600">Monitor email delivery status and queue processing</p>
+        <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>Email Monitoring</h1>
+        <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>Monitor email delivery status and queue processing</p>
       </div>
 
       {/* Stats Cards */}

@@ -99,7 +99,7 @@ export default function RecoveryPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Payment Recovery</h1>
+      <h1 className="text-2xl lg:text-3xl font-bold mb-6" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>Payment Recovery</h1>
       
       {alerts.length === 0 ? (
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">

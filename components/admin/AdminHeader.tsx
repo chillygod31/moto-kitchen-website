@@ -92,7 +92,7 @@ export default function AdminHeader({ logoUrl, tenantName = 'Admin', onMenuClick
             />
             <div className="flex flex-col -ml-2">
               <span className="text-white text-base sm:text-lg md:text-xl leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
-                {tenantName}
+                Moto Kitchen
               </span>
               <span className="text-white/80 text-[8px] md:text-[10px] uppercase tracking-[0.15em] leading-tight" style={{ fontFamily: 'var(--font-cinzel)' }}>
                 Admin Dashboard

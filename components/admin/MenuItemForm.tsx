@@ -9,6 +9,7 @@ interface MenuItemFormProps {
   onSubmit: (data: MenuItemFormData) => Promise<void>
   onCancel: () => void
   isLoading?: boolean
+  isDuplicate?: boolean
 }
 
 export interface MenuItemFormData {
@@ -31,16 +32,17 @@ export default function MenuItemForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  isDuplicate = false,
 }: MenuItemFormProps) {
   const [formData, setFormData] = useState<MenuItemFormData>({
-    name: item?.name || '',
+    name: isDuplicate && item ? `${item.name} (Copy)` : (item?.name || ''),
     description: item?.description || '',
     price: item?.price || 0,
     category_id: item?.category_id || null,
     image_url: item?.image_url || '',
     dietary_tags: item?.dietary_tags || [],
     is_available: item?.is_available !== false,
-    is_published: item?.is_published !== false,
+    is_published: isDuplicate ? false : (item?.is_published !== false), // Start as draft when duplicating
     sort_order: item?.sort_order || 0,
   })
 
@@ -49,18 +51,18 @@ export default function MenuItemForm({
   useEffect(() => {
     if (item) {
       setFormData({
-        name: item.name || '',
+        name: isDuplicate ? `${item.name} (Copy)` : (item.name || ''),
         description: item.description || '',
         price: item.price || 0,
         category_id: item.category_id || null,
         image_url: item.image_url || '',
         dietary_tags: item.dietary_tags || [],
         is_available: item.is_available !== false,
-        is_published: item.is_published !== false,
+        is_published: isDuplicate ? false : (item.is_published !== false),
         sort_order: item.sort_order || 0,
       })
     }
-  }, [item])
+  }, [item, isDuplicate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

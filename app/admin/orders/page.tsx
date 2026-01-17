@@ -63,6 +63,7 @@ const PAYMENT_STATUS_OPTIONS = [
 ];
 
 type PresetFilter = 'all' | 'active' | 'next_2_hours' | 'ready' | 'issues';
+type SortOption = 'newest' | 'oldest' | 'urgency' | 'amount_high' | 'amount_low';
 
 export default function AdminOrdersPage() {
   const router = useRouter();
@@ -77,6 +78,7 @@ export default function AdminOrdersPage() {
   const [dateTo, setDateTo] = useState("");
   const [presetFilter, setPresetFilter] = useState<PresetFilter>('active');
   const [issuesCount, setIssuesCount] = useState(0);
+  const [sortBy, setSortBy] = useState<SortOption>('newest'); // Default to newest first
 
   useEffect(() => {
     // Check authentication via API (server-side session)
@@ -160,33 +162,42 @@ export default function AdminOrdersPage() {
         break;
     }
 
-    // Sort: Issues first, then by urgency, then by scheduled_for
+    // Apply sorting based on sortBy state
     filtered.sort((a, b) => {
-      // 1. Issues first
+      // Always show issues first regardless of sort
       const aHasIssues = hasIssues(a);
       const bHasIssues = hasIssues(b);
       if (aHasIssues && !bHasIssues) return -1;
       if (!aHasIssues && bHasIssues) return 1;
 
-      // 2. Urgency (overdue > due now > due soon > upcoming > later)
-      if (a.scheduled_for && b.scheduled_for) {
-        const aUrgency = getUrgencyInfo(a.scheduled_for, a.status);
-        const bUrgency = getUrgencyInfo(b.scheduled_for, b.status);
-        
-        const urgencyOrder = ['Overdue', 'Due Now', 'Due Soon', 'Upcoming', 'Later'];
-        const aIndex = aUrgency.label ? urgencyOrder.indexOf(aUrgency.label) : 999;
-        const bIndex = bUrgency.label ? urgencyOrder.indexOf(bUrgency.label) : 999;
-        
-        if (aIndex !== bIndex) return aIndex - bIndex;
-      }
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'amount_high':
+          return b.total - a.total;
+        case 'amount_low':
+          return a.total - b.total;
+        case 'urgency':
+        default:
+          // Urgency sort (overdue > due now > due soon > upcoming > later)
+          if (a.scheduled_for && b.scheduled_for) {
+            const aUrgency = getUrgencyInfo(a.scheduled_for, a.status);
+            const bUrgency = getUrgencyInfo(b.scheduled_for, b.status);
 
-      // 3. Scheduled time (earlier first)
-      if (a.scheduled_for && b.scheduled_for) {
-        return new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime();
-      }
+            const urgencyOrder = ['Overdue', 'Due Now', 'Due Soon', 'Upcoming', 'Later'];
+            const aIndex = aUrgency.label ? urgencyOrder.indexOf(aUrgency.label) : 999;
+            const bIndex = bUrgency.label ? urgencyOrder.indexOf(bUrgency.label) : 999;
 
-      // 4. Created time (newer first)
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            if (aIndex !== bIndex) return aIndex - bIndex;
+
+            // If same urgency, sort by scheduled time
+            return new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime();
+          }
+          // Fallback to created time
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
     });
 
     return filtered;
@@ -371,65 +382,48 @@ export default function AdminOrdersPage() {
   return (
     <div>
       {/* Page Header */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
-            Orders
-          </h1>
-          <p style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
-            Manage and track all customer orders
-          </p>
-        </div>
-      </div>
-
-      {/* Issues Alert Banner */}
-      {issuesCount > 0 && presetFilter !== 'issues' && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <div>
-              <p className="font-semibold text-red-800">Attention needed</p>
-              <p className="text-sm text-red-700">
-                {issuesCount} {issuesCount === 1 ? 'order requires' : 'orders require'} action (payments pending too long / paid but slot unavailable / email failed)
-              </p>
-            </div>
-          </div>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
+          Orders
+        </h1>
+        {issuesCount > 0 && presetFilter !== 'issues' && (
           <button
             onClick={() => setPresetFilter('issues')}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+            className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-medium"
           >
-            View Issues
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            {issuesCount} {issuesCount === 1 ? 'issue' : 'issues'}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Preset Filters */}
-      <div className="mb-6 flex flex-wrap gap-2">
+      {/* Quick Filters */}
+      <div className="mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => setPresetFilter('active')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition ${
             presetFilter === 'active'
               ? 'bg-[#C9653B] text-white'
               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
-          Active Orders
+          Active
         </button>
         <button
           onClick={() => setPresetFilter('next_2_hours')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition ${
             presetFilter === 'next_2_hours'
               ? 'bg-[#C9653B] text-white'
               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
-          Next 2 Hours
+          Next 2h
         </button>
         <button
           onClick={() => setPresetFilter('ready')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition ${
             presetFilter === 'ready'
               ? 'bg-[#C9653B] text-white'
               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -439,40 +433,36 @@ export default function AdminOrdersPage() {
         </button>
         <button
           onClick={() => setPresetFilter('issues')}
-          className={`px-4 py-2 rounded-lg font-medium transition relative ${
+          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition ${
             presetFilter === 'issues'
               ? 'bg-red-600 text-white'
               : 'bg-white border border-red-300 text-red-700 hover:bg-red-50'
           }`}
         >
-          Issues
-          {issuesCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 text-xs bg-red-600 text-white rounded-full">
-              {issuesCount}
-            </span>
-          )}
+          Issues {issuesCount > 0 && `(${issuesCount})`}
         </button>
         <button
           onClick={() => setPresetFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition ${
+          className={`px-3 py-1.5 text-sm rounded-lg font-medium transition ${
             presetFilter === 'all'
               ? 'bg-[#C9653B] text-white'
               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}
         >
-          All Orders
+          All
         </button>
       </div>
 
-      {/* Search */}
-      <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
-        <div className="relative">
+      {/* Search & Filters */}
+      <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200 shadow-sm">
+        {/* Search Row */}
+        <div className="relative mb-4">
           <input
             type="text"
-            placeholder="Search by customer name, email, or order number..."
+            placeholder="Search by name, email, or order #..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
           />
           <svg
             className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -485,86 +475,91 @@ export default function AdminOrdersPage() {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg"
             >
               ×
             </button>
           )}
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg p-6 mb-6 border border-gray-200 shadow-sm">
-        <div className="grid md:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                Order Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                Payment Status
-              </label>
-              <select
-                value={paymentStatusFilter}
-                onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
-              >
-                {PAYMENT_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                Date From
-              </label>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                Date To
-              </label>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setStatusFilter("all");
-                  setPaymentStatusFilter("all");
-                  setSearchQuery("");
-                  setDateFrom("");
-                  setDateTo("");
-                  fetchOrders();
-                }}
-                className="text-sm text-[#C9653B] hover:underline"
-              >
-                Clear Filters
-              </button>
-            </div>
+        {/* Filter Row */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+            >
+              {STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Payment</label>
+            <select
+              value={paymentStatusFilter}
+              onChange={(e) => setPaymentStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+            >
+              {PAYMENT_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">From</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">To</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Sort By</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="urgency">Urgency</option>
+              <option value="amount_high">Amount ↓</option>
+              <option value="amount_low">Amount ↑</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                setStatusFilter("all");
+                setPaymentStatusFilter("all");
+                setSearchQuery("");
+                setDateFrom("");
+                setDateTo("");
+                setSortBy("newest");
+                fetchOrders();
+              }}
+              className="w-full px-3 py-2 text-sm text-[#C9653B] border border-[#C9653B] rounded-lg hover:bg-[#C9653B] hover:text-white transition"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 
@@ -693,7 +688,7 @@ export default function AdminOrdersPage() {
                                 </span>
                                 {order.scheduled_for && (
                                   <span className="text-xs text-[#4B4B4B]">
-                                    {new Date(order.scheduled_for).toLocaleTimeString('en-NL', { hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(order.scheduled_for).toLocaleTimeString('en-NL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' })}
                                   </span>
                                 )}
                               </div>
@@ -762,7 +757,7 @@ export default function AdminOrdersPage() {
                             </span>
                             {selectedOrder.email_sent_at && emailInfo.label === 'Sent' && (
                               <span className="text-xs text-gray-500">
-                                {new Date(selectedOrder.email_sent_at).toLocaleTimeString('en-NL', { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(selectedOrder.email_sent_at).toLocaleTimeString('en-NL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' })}
                               </span>
                             )}
                           </div>

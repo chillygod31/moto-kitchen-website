@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 interface QuoteRequest {
   id: string;
@@ -43,7 +42,6 @@ export default function AdminQuotesPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check authentication via API (server-side session)
     const checkAuth = async () => {
       try {
         const response = await fetch("/api/admin/session");
@@ -132,7 +130,7 @@ export default function AdminQuotesPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Date", "Name", "Email", "Phone", "Event Type", "Date", "Guests", "Location", "Service Type", "Budget Range", "Status"];
+    const headers = ["Date", "Name", "Email", "Phone", "Event Type", "Event Date", "Guests", "Location", "Service Type", "Budget Range", "Status"];
     const rows = quotes.map((q) => [
       new Date(q.created_at).toLocaleDateString(),
       q.name,
@@ -171,19 +169,18 @@ export default function AdminQuotesPage() {
   const formatServiceType = (serviceType: string | null) => {
     if (!serviceType) return "Not specified";
     const serviceMap: Record<string, string> = {
-      "full-catering": "Full Catering Service",
-      "drop-off": "Drop-Off Catering",
-      "pickup-only": "Pick-Up Only",
-      "not-sure-service": "Not sure yet",
+      "full-catering": "Full Catering",
+      "drop-off": "Drop-Off",
+      "pickup-only": "Pick-Up",
+      "not-sure-service": "Not sure",
     };
     return serviceMap[serviceType] || serviceType;
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-NL", {
-      year: "numeric",
-      month: "short",
       day: "numeric",
+      month: "short",
     });
   };
 
@@ -206,35 +203,23 @@ export default function AdminQuotesPage() {
         </div>
       ) : (
         <div>
-      {/* Page Header */}
-      <div className="mb-6 space-y-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
-            Quote Requests
-          </h1>
-          <p className="text-sm lg:text-base" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
-            Manage and track all quote requests
-          </p>
-        </div>
-        <button
-          onClick={exportToCSV}
-          className="btn-secondary w-full lg:w-auto px-6"
-        >
-          Export CSV
-        </button>
-      </div>
+          {/* Page Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 600, color: 'var(--brand-secondary, #3A2A24)' }}>
+              Quote Requests
+            </h1>
+            <p className="text-sm lg:text-base" style={{ fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400, color: 'var(--brand-muted, #4B4B4B)' }}>
+              Manage and track all quote requests
+            </p>
+          </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
-          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-3">
-            <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                Status
-              </label>
+          {/* Filters */}
+          <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] text-sm"
+                className="px-3 py-2 border border-[#E6D9C8] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -242,280 +227,306 @@ export default function AdminQuotesPage() {
                   </option>
                 ))}
               </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                Search
-              </label>
-              <div className="flex gap-2">
+              <div className="flex-1 min-w-[180px] max-w-sm">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="Name, email, or location"
-                  className="flex-1 px-3 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B] text-sm"
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="Search name, email, location..."
+                  className="w-full px-3 py-2 border border-[#E6D9C8] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
                 />
-                <button onClick={handleSearch} className="btn-primary px-3 lg:px-5 py-2 text-sm whitespace-nowrap">
-                  Search
-                </button>
               </div>
-            </div>
-            <div className="lg:flex lg:items-end">
+              <button
+                onClick={handleSearch}
+                className="px-4 py-2 text-sm font-medium text-white rounded-md"
+                style={{ backgroundColor: 'var(--brand-primary, #C9653B)' }}
+              >
+                Search
+              </button>
               <button
                 onClick={() => {
                   setStatusFilter("all");
                   setSearchTerm("");
                   fetchQuotes();
                 }}
-                className="btn-secondary w-full py-2 text-sm"
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
               >
-                Clear Filters
+                Clear
               </button>
-            </div>
-          </div>
-        </div>
-
-      {/* Mobile Card View */}
-      <div className="lg:hidden space-y-4 mb-4">
-        {quotes.length === 0 ? (
-          <div className="bg-white rounded-lg p-8 text-center text-[#4B4B4B] border border-gray-200">
-            No quote requests found
-          </div>
-        ) : (
-          quotes.map((quote) => (
-            <div key={quote.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <p className="font-semibold text-[#1F1F1F] mb-1" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
-                    {quote.name}
-                  </p>
-                  <a href={`mailto:${quote.email}`} className="text-sm text-[#C9653B] hover:underline block mb-1">
-                    {quote.email}
-                  </a>
-                  <p className="text-xs text-[#6B5B55]">{formatDate(quote.created_at)}</p>
-                </div>
-                <select
-                  value={quote.status}
-                  onChange={(e) => updateStatus(quote.id, e.target.value)}
-                  disabled={updatingId === quote.id}
-                  className={`text-xs px-3 py-1 rounded-full font-semibold border-0 ${getStatusColor(quote.status)}`}
-                >
-                  {STATUS_OPTIONS.slice(1).map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3 text-sm mb-3">
-                <div>
-                  <span className="text-[#6B5B55] block text-xs mb-0.5">Event Type</span>
-                  <span className="text-[#1F1F1F]">{quote.event_type}</span>
-                </div>
-                <div>
-                  <span className="text-[#6B5B55] block text-xs mb-0.5">Guests</span>
-                  <span className="text-[#1F1F1F]">{quote.guest_count}</span>
-                </div>
-                <div>
-                  <span className="text-[#6B5B55] block text-xs mb-0.5">Location</span>
-                  <span className="text-[#1F1F1F]">{quote.location}</span>
-                </div>
-                <div>
-                  <span className="text-[#6B5B55] block text-xs mb-0.5">Service Type</span>
-                  <span className="text-[#1F1F1F]">{quote.service_type ? formatServiceType(quote.service_type) : "-"}</span>
-                </div>
-              </div>
-              
               <button
-                onClick={() => setSelectedQuote(quote)}
-                className="w-full btn-outline text-sm py-2"
+                onClick={exportToCSV}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 ml-auto"
               >
-                View Details →
+                Export CSV
               </button>
             </div>
-          ))
-        )}
-      </div>
+          </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <div className="inline-block min-w-full align-middle">
-              <table className="min-w-full divide-y divide-[#E6D9C8]">
-              <thead className="bg-[#F1E7DA]">
-                <tr>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Date
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Name
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Email
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Event Type
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Guests
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Location
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Service Type
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Status
-                  </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider whitespace-nowrap">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E6D9C8]">
-                {quotes.length === 0 ? (
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-4 mb-4">
+            {quotes.length === 0 ? (
+              <div className="bg-white rounded-lg p-8 text-center text-[#4B4B4B] border border-gray-200">
+                No quote requests found
+              </div>
+            ) : (
+              quotes.map((quote) => (
+                <div key={quote.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-[#1F1F1F]" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
+                          {quote.name}
+                        </span>
+                        {quote.status === 'new' && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">New</span>
+                        )}
+                      </div>
+                      <a href={`mailto:${quote.email}`} className="text-sm text-[#C9653B] hover:underline block truncate">
+                        {quote.email}
+                      </a>
+                      <p className="text-xs text-[#6B5B55] mt-1">{formatDate(quote.created_at)}</p>
+                    </div>
+                    <select
+                      value={quote.status}
+                      onChange={(e) => updateStatus(quote.id, e.target.value)}
+                      disabled={updatingId === quote.id}
+                      className={`text-xs px-3 py-1 rounded-full font-semibold border-0 ${getStatusColor(quote.status)}`}
+                    >
+                      {STATUS_OPTIONS.slice(1).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Info grid */}
+                  <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                    <div>
+                      <span className="text-[#6B5B55] block text-xs mb-0.5">Event Type</span>
+                      <span className="text-[#1F1F1F] line-clamp-2">{quote.event_type}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#6B5B55] block text-xs mb-0.5">Guests</span>
+                      <span className="text-[#1F1F1F]">{quote.guest_count}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#6B5B55] block text-xs mb-0.5">Event Date</span>
+                      <span className="text-[#1F1F1F]">{quote.event_date ? formatDate(quote.event_date) : "Flexible"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#6B5B55] block text-xs mb-0.5">Location</span>
+                      <span className="text-[#1F1F1F]">{quote.location || "-"}</span>
+                    </div>
+                  </div>
+
+                  {/* View Details button */}
+                  <button
+                    onClick={() => setSelectedQuote(quote)}
+                    className="w-full py-2 text-sm font-medium text-[#C9653B] border border-[#C9653B] rounded-md hover:bg-[#C9653B]/5"
+                  >
+                    View Details →
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white rounded-lg border border-[#E6D9C8] overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-[#F1E7DA]">
                   <tr>
-                    <td colSpan={9} className="px-3 lg:px-6 py-12 text-center text-[#4B4B4B]">
-                      No quote requests found
-                    </td>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Event</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Event Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Guests</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-[#1F1F1F] uppercase tracking-wider">Status</th>
                   </tr>
-                ) : (
-                  quotes.map((quote) => (
-                    <tr key={quote.id} className="hover:bg-[#FAF6EF]">
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
-                        {formatDate(quote.created_at)}
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1F1F1F]">
-                        {quote.name}
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
-                        <a href={`mailto:${quote.email}`} className="text-[#C9653B] hover:underline">
-                          {quote.email}
-                        </a>
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
-                        {quote.event_type}
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
-                        {quote.guest_count}
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
-                        {quote.location}
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-[#4B4B4B]">
-                        {quote.service_type ? formatServiceType(quote.service_type) : "-"}
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
-                        <select
-                          value={quote.status}
-                          onChange={(e) => updateStatus(quote.id, e.target.value)}
-                          disabled={updatingId === quote.id}
-                          className={`text-xs px-3 py-1 rounded-full font-semibold border-0 ${getStatusColor(quote.status)}`}
-                        >
-                          {STATUS_OPTIONS.slice(1).map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => setSelectedQuote(quote)}
-                          className="text-[#C9653B] hover:underline"
-                        >
-                          View
-                        </button>
+                </thead>
+                <tbody className="divide-y divide-[#E6D9C8]">
+                  {quotes.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-[#4B4B4B]">
+                        No quote requests found
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    quotes.map((quote) => (
+                      <tr
+                        key={quote.id}
+                        className={`hover:bg-[#FAF6EF] cursor-pointer ${quote.status === 'new' ? 'bg-blue-50/30' : ''}`}
+                        onClick={() => setSelectedQuote(quote)}
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          {formatDate(quote.created_at)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-[#1F1F1F]">
+                          <div className="flex items-center gap-2">
+                            {quote.status === 'new' && (
+                              <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" title="Not responded"></span>
+                            )}
+                            {quote.name}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          <a href={`mailto:${quote.email}`} className="text-[#C9653B] hover:underline" onClick={(e) => e.stopPropagation()}>
+                            {quote.email}
+                          </a>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#4B4B4B]">
+                          <span className="block truncate max-w-[120px]" title={quote.event_type}>
+                            {quote.event_type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          {quote.event_date ? formatDate(quote.event_date) : "Flexible"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
+                          {quote.guest_count}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <select
+                            value={quote.status}
+                            onChange={(e) => updateStatus(quote.id, e.target.value)}
+                            disabled={updatingId === quote.id}
+                            className={`text-xs px-2 py-1 rounded-full font-semibold border-0 cursor-pointer ${getStatusColor(quote.status)}`}
+                          >
+                            {STATUS_OPTIONS.slice(1).map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
 
-      {/* Quote Details Modal */}
-      {selectedQuote && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50" onClick={() => setSelectedQuote(null)}>
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="p-6 border-b border-[#E6D9C8] flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-[#3A2A24] mb-4" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Quote Details</h2>
-                <button
-                  onClick={() => setSelectedQuote(null)}
-                  className="text-[#4B4B4B] hover:text-[#1F1F1F]"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="p-6 space-y-6">
-                <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Contact Information</h3>
-                  <p><strong>Name:</strong> {selectedQuote.name}</p>
-                  <p><strong>Email:</strong> <a href={`mailto:${selectedQuote.email}`} className="text-[#C9653B]">{selectedQuote.email}</a></p>
-                  <p><strong>Phone:</strong> <a href={`tel:${selectedQuote.phone}`} className="text-[#C9653B]">{selectedQuote.phone}</a></p>
+          {/* Quote Details Modal */}
+          {selectedQuote && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedQuote(null)}>
+              <div className="bg-white rounded-lg max-w-lg w-full max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="sticky top-0 bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+                  <h2 className="text-lg font-semibold text-[#3A2A24]">Quote Details</h2>
+                  <button
+                    onClick={() => setSelectedQuote(null)}
+                    className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                  >
+                    ×
+                  </button>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Event Details</h3>
-                  <p><strong>Type:</strong> {selectedQuote.event_type}</p>
-                  <p><strong>Date:</strong> {selectedQuote.event_date || "Flexible"}</p>
-                  <p><strong>Guests:</strong> {selectedQuote.guest_count}</p>
-                  <p><strong>Location:</strong> {selectedQuote.location}</p>
-                  {selectedQuote.service_type && (
-                    <p><strong>Service Type:</strong> {formatServiceType(selectedQuote.service_type)}</p>
+                <div className="p-4 space-y-4">
+                  {/* Contact */}
+                  <div>
+                    <h3 className="font-semibold text-sm text-[#1F1F1F] mb-2">Contact</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-[#6B5B55] text-xs">Name</span>
+                        <p className="text-[#1F1F1F]">{selectedQuote.name}</p>
+                      </div>
+                      <div>
+                        <span className="text-[#6B5B55] text-xs">Phone</span>
+                        <p><a href={`tel:${selectedQuote.phone}`} className="text-[#C9653B]">{selectedQuote.phone}</a></p>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-[#6B5B55] text-xs">Email</span>
+                        <p><a href={`mailto:${selectedQuote.email}`} className="text-[#C9653B]">{selectedQuote.email}</a></p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Event */}
+                  <div>
+                    <h3 className="font-semibold text-sm text-[#1F1F1F] mb-2">Event Details</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="col-span-2">
+                        <span className="text-[#6B5B55] text-xs">Event Type</span>
+                        <p className="text-[#1F1F1F]">{selectedQuote.event_type}</p>
+                      </div>
+                      <div>
+                        <span className="text-[#6B5B55] text-xs">Date</span>
+                        <p className="text-[#1F1F1F]">{selectedQuote.event_date || "Flexible"}</p>
+                      </div>
+                      <div>
+                        <span className="text-[#6B5B55] text-xs">Guests</span>
+                        <p className="text-[#1F1F1F]">{selectedQuote.guest_count}</p>
+                      </div>
+                      <div>
+                        <span className="text-[#6B5B55] text-xs">Location</span>
+                        <p className="text-[#1F1F1F]">{selectedQuote.location}</p>
+                      </div>
+                      <div>
+                        <span className="text-[#6B5B55] text-xs">Service Type</span>
+                        <p className="text-[#1F1F1F]">{formatServiceType(selectedQuote.service_type)}</p>
+                      </div>
+                      {selectedQuote.budget_range && (
+                        <div>
+                          <span className="text-[#6B5B55] text-xs">Budget</span>
+                          <p className="text-[#1F1F1F]">{formatBudgetRange(selectedQuote.budget_range)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dietary */}
+                  {selectedQuote.dietary_requirements && selectedQuote.dietary_requirements.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-sm text-[#1F1F1F] mb-1">Dietary Requirements</h3>
+                      <p className="text-sm text-[#4B4B4B]">{selectedQuote.dietary_requirements.join(", ")}</p>
+                    </div>
                   )}
-                  {selectedQuote.budget_range && (
-                    <p><strong>Budget Range:</strong> {formatBudgetRange(selectedQuote.budget_range)}</p>
+
+                  {/* Message */}
+                  {selectedQuote.message && (
+                    <div>
+                      <h3 className="font-semibold text-sm text-[#1F1F1F] mb-1">Message</h3>
+                      <p className="text-sm text-[#4B4B4B] whitespace-pre-wrap">{selectedQuote.message}</p>
+                    </div>
                   )}
-                </div>
-                {selectedQuote.dietary_requirements && selectedQuote.dietary_requirements.length > 0 && (
+
+                  {/* How found */}
+                  {selectedQuote.how_found && (
+                    <div>
+                      <h3 className="font-semibold text-sm text-[#1F1F1F] mb-1">How They Found Us</h3>
+                      <p className="text-sm text-[#4B4B4B]">{selectedQuote.how_found}</p>
+                    </div>
+                  )}
+
+                  {/* Notes */}
                   <div>
-                    <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Dietary Requirements</h3>
-                    <p>{selectedQuote.dietary_requirements.join(", ")}</p>
+                    <h3 className="font-semibold text-sm text-[#1F1F1F] mb-1">Internal Notes</h3>
+                    <textarea
+                      value={selectedQuote.notes || ""}
+                      onChange={(e) => setSelectedQuote({ ...selectedQuote, notes: e.target.value })}
+                      onBlur={(e) => updateNotes(selectedQuote.id, e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#C9653B]"
+                      rows={3}
+                      placeholder="Add notes..."
+                    />
                   </div>
-                )}
-                {selectedQuote.message && (
-                  <div>
-                    <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Message</h3>
-                    <p className="text-[#4B4B4B]">{selectedQuote.message}</p>
+
+                  {/* Footer */}
+                  <div className="pt-3 border-t border-gray-200 text-xs text-[#6B5B55]">
+                    Submitted: {new Date(selectedQuote.created_at).toLocaleDateString("en-NL", {
+                      day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                    })}
                   </div>
-                )}
-                {selectedQuote.how_found && (
-                  <div>
-                    <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>How They Found Us</h3>
-                    <p className="text-[#4B4B4B]">{selectedQuote.how_found}</p>
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-semibold text-[#1F1F1F] mb-2" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>Internal Notes</h3>
-                  <textarea
-                    value={selectedQuote.notes || ""}
-                    onChange={(e) => {
-                      const updated = { ...selectedQuote, notes: e.target.value };
-                      setSelectedQuote(updated);
-                    }}
-                    onBlur={(e) => updateNotes(selectedQuote.id, e.target.value)}
-                    className="w-full px-4 py-2 border border-[#E6D9C8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#C9653B]"
-                    rows={4}
-                    placeholder="Add internal notes..."
-                  />
-                </div>
-                <div className="pt-4 border-t border-[#E6D9C8]">
-                  <p className="text-sm text-[#4B4B4B]">
-                    <strong>Submitted:</strong> {formatDate(selectedQuote.created_at)}
-                  </p>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
       )}
     </>
   );
 }
-

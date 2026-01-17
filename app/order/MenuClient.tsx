@@ -9,7 +9,6 @@ import { formatCurrency } from '@/lib/utils'
 import { trackViewMenu, trackAddToCart } from '@/lib/analytics'
 import { orderRoutes } from '@/lib/routes'
 import ErrorMessage from './components/ErrorMessage'
-import ServiceInfoBanner from './components/ServiceInfoBanner'
 
 interface MenuData {
   categories: (MenuCategory & { items: MenuItem[] })[]
@@ -45,6 +44,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [selectedDietaryFilters, setSelectedDietaryFilters] = useState<Set<string>>(new Set())
   const [orderStats, setOrderStats] = useState<{ ordersToday: number; popularItems: { itemId: string; name?: string; count: number }[] } | null>(null)
+  const [itemDetailsModal, setItemDetailsModal] = useState<MenuItem | null>(null)
 
   useEffect(() => {
     // Scroll to top on mount
@@ -325,8 +325,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
         </div>
       </div>
 
-      {/* Service Info Banner */}
-      <ServiceInfoBanner settings={businessSettings || null} />
+      {/* Service Info Banner - Removed for better mobile UX */}
 
       {/* Urgency Indicators & Social Proof */}
       {(orderStats?.ordersToday !== undefined && orderStats.ordersToday > 5) && (
@@ -386,74 +385,221 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
         </div>
       )}
 
+      {/* Item Details Modal */}
+      {itemDetailsModal && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-end md:items-center justify-center p-0 md:p-4"
+          onClick={() => setItemDetailsModal(null)}
+        >
+          <div
+            className="bg-white rounded-t-2xl md:rounded-2xl max-w-2xl w-full max-h-[90vh] md:max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Item Details</h3>
+              <button
+                onClick={() => setItemDetailsModal(null)}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+                aria-label="Close modal"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4">
+              {/* Image */}
+              {itemDetailsModal.image_url ? (
+                <div className="relative w-full h-64 md:h-80 overflow-hidden bg-gray-200 rounded-lg mb-4">
+                  <Image
+                    src={itemDetailsModal.image_url}
+                    alt={itemDetailsModal.name || 'Menu item'}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 640px"
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-64 md:h-80 bg-gradient-to-br from-[#F1E7DA] to-[#E6D9C8] flex items-center justify-center rounded-lg mb-4">
+                  <span className="text-8xl">🍽️</span>
+                </div>
+              )}
+
+              {/* Name */}
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">{itemDetailsModal.name}</h2>
+
+              {/* Price */}
+              <p className="text-2xl font-semibold text-[#C9653B] mb-4">
+                {formatCurrency(itemDetailsModal.price)}
+              </p>
+
+              {/* Description */}
+              {itemDetailsModal.description && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Description</h4>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    {itemDetailsModal.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Dietary Tags */}
+              {itemDetailsModal.dietary_tags && itemDetailsModal.dietary_tags.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Dietary Information</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {itemDetailsModal.dietary_tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1.5 bg-green-100 text-green-700 text-sm font-medium rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add to Cart Button */}
+              <div className="flex gap-3 sticky bottom-0 bg-white pt-4 border-t border-gray-200">
+                {selectedItems.has(itemDetailsModal.id) ? (
+                  <>
+                    <div className="flex items-center border border-[#E7E1D9] rounded-lg flex-1">
+                      <button
+                        onClick={() => handleQuantityChange(itemDetailsModal.id, -1)}
+                        className="px-4 py-3 hover:bg-gray-100 transition font-medium text-gray-700 flex-1"
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span className="px-4 py-3 min-w-[3rem] text-center font-medium">
+                        {itemQuantities[itemDetailsModal.id] || 1}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange(itemDetailsModal.id, 1)}
+                        className="px-4 py-3 hover:bg-gray-100 transition font-medium text-gray-700 flex-1"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleAddToCart(itemDetailsModal)
+                        setItemDetailsModal(null)
+                      }}
+                      className="px-6 py-3 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold flex-1"
+                    >
+                      Add to Cart
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleSelectItem(itemDetailsModal.id)}
+                    className="w-full px-6 py-3 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-semibold"
+                  >
+                    Add to Cart
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Menu Items */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
         {filteredItems.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8">
             {filteredItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 md:transform md:hover:-translate-y-1 flex md:flex-col"
               >
+                {/* Mobile: Horizontal Layout with 80x80 Image on Left */}
                 {item.image_url ? (
-                  <div className="relative h-56 overflow-hidden bg-gray-200">
+                  <div
+                    className="relative w-20 h-20 md:w-full md:h-56 overflow-hidden bg-gray-200 flex-shrink-0 cursor-pointer md:cursor-default"
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setItemDetailsModal(item)
+                      }
+                    }}
+                  >
                     <Image
                       src={item.image_url}
                       alt={item.name || 'Menu item'}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      sizes="(max-width: 768px) 80px, (max-width: 1200px) 50vw, 33vw"
                       loading="lazy"
                     />
                   </div>
                 ) : (
-                  <div className="h-56 bg-gradient-to-br from-[#F1E7DA] to-[#E6D9C8] flex items-center justify-center">
-                    <span className="text-6xl">🍽️</span>
+                  <div
+                    className="w-20 h-20 md:w-full md:h-56 bg-gradient-to-br from-[#F1E7DA] to-[#E6D9C8] flex items-center justify-center flex-shrink-0 cursor-pointer md:cursor-default"
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setItemDetailsModal(item)
+                      }
+                    }}
+                  >
+                    <span className="text-3xl md:text-6xl">🍽️</span>
                   </div>
                 )}
-                <div className="p-6">
-                  <h3 className="text-base font-semibold text-gray-900 mb-2">
-                    {item.name}
-                  </h3>
-                  {item.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
-                      {item.description}
-                    </p>
-                  )}
-                  {item.dietary_tags && item.dietary_tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {item.dietary_tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="pt-4 border-t border-[#E7E1D9]">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-base font-semibold text-[#C9653B]">
-                        {formatCurrency(item.price)}
-                      </span>
-                    </div>
+                <div className="flex-1 p-4 md:p-6 flex flex-col">
+                  <div
+                    className="flex-1 cursor-pointer md:cursor-default"
+                    onClick={() => {
+                      if (window.innerWidth < 768) {
+                        setItemDetailsModal(item)
+                      }
+                    }}
+                  >
+                    <h3 className="text-sm md:text-base font-semibold text-gray-900 mb-1 md:mb-2">
+                      {item.name}
+                    </h3>
+                    {item.description && (
+                      <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3 line-clamp-1 md:line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.dietary_tags && item.dietary_tags.length > 0 && (
+                      <div className="hidden md:flex flex-wrap gap-2 mb-4">
+                        {item.dietary_tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-3 mt-2 md:pt-4 md:border-t md:border-[#E7E1D9]">
+                    <span className="text-sm md:text-base font-semibold text-[#C9653B] whitespace-nowrap">
+                      {formatCurrency(item.price)}
+                    </span>
                     {selectedItems.has(item.id) ? (
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-1 justify-end">
                         <div className="flex items-center border border-[#E7E1D9] rounded-lg">
                           <button
                             onClick={() => handleQuantityChange(item.id, -1)}
-                            className="px-3 py-2 hover:bg-gray-100 transition font-medium text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center text-base"
+                            className="px-2 md:px-3 py-1.5 md:py-2 hover:bg-gray-100 transition font-medium text-gray-700 min-h-[36px] min-w-[36px] md:min-h-[44px] md:min-w-[44px] flex items-center justify-center text-base"
                             aria-label="Decrease quantity"
                           >
                             −
                           </button>
-                          <span className="px-3 py-2 min-w-[2.5rem] text-center font-medium min-h-[44px] flex items-center justify-center text-sm">
+                          <span className="px-2 md:px-3 py-1.5 md:py-2 min-w-[2rem] md:min-w-[2.5rem] text-center font-medium min-h-[36px] md:min-h-[44px] flex items-center justify-center text-xs md:text-sm">
                             {itemQuantities[item.id] || 1}
                           </span>
                           <button
                             onClick={() => handleQuantityChange(item.id, 1)}
-                            className="px-3 py-2 hover:bg-gray-100 transition font-medium text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center text-base"
+                            className="px-2 md:px-3 py-1.5 md:py-2 hover:bg-gray-100 transition font-medium text-gray-700 min-h-[36px] min-w-[36px] md:min-h-[44px] md:min-w-[44px] flex items-center justify-center text-base"
                             aria-label="Increase quantity"
                           >
                             +
@@ -461,7 +607,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                         </div>
                         <button
                           onClick={() => handleAddToCart(item)}
-                          className="flex-1 px-4 py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
+                          className="px-3 md:px-4 py-1.5 md:py-2.5 bg-[#C9653B] text-white rounded-lg hover:bg-[#B8552B] transition font-medium text-xs md:text-sm min-h-[36px] md:min-h-[44px] flex items-center justify-center touch-manipulation"
                           aria-label={`Add ${item.name} to cart`}
                         >
                           Add
@@ -470,7 +616,7 @@ export default function MenuClient({ initialMenuData, error: initialError, busin
                     ) : (
                       <button
                         onClick={() => handleSelectItem(item.id)}
-                        className="w-full px-4 py-2.5 border border-[#C9653B] text-[#C9653B] rounded-lg hover:bg-[#C9653B] hover:text-white transition font-medium text-sm min-h-[44px] flex items-center justify-center touch-manipulation"
+                        className="px-3 md:px-4 py-1.5 md:py-2.5 border border-[#C9653B] text-[#C9653B] rounded-lg hover:bg-[#C9653B] hover:text-white transition font-medium text-xs md:text-sm min-h-[36px] md:min-h-[44px] flex items-center justify-center touch-manipulation whitespace-nowrap"
                         aria-label={`Add ${item.name} to cart`}
                       >
                         Add to cart

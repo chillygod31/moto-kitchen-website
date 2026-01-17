@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const template = settings?.slot_template || {}
     const blackoutDates: string[] = settings?.blackout_dates || []
     const tz = template.timezone || 'Europe/Amsterdam'
-    const daysAhead = template.days_ahead_customer ?? 4
+    const daysAhead = template.days_ahead_customer ?? 14 // Default 2 weeks to ensure Saturday is included
     const excludeSameDay = template.exclude_same_day ?? true
     const minLeadMinutes = template.min_lead_time_minutes ?? 180
 
@@ -68,11 +68,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'Failed to fetch time slots', error: error.message }, { status: 500 })
     }
 
+    // Get allowed days from template (default to Saturday only for pickup)
+    // Day convention: 0=Sunday, 1=Monday, ..., 6=Saturday (JavaScript standard)
+    const allowedDays = template.allowed_days || (fulfillmentType === 'pickup' ? [6] : [0, 1, 2, 3, 4, 5, 6])
+
     const availableSlots = (timeSlots || []).filter((slot) => {
-      if (!slot.slot_time) return false // Skip slots without a time
+      if (!slot.slot_time) return false
       const slotTime = DateTime.fromISO(slot.slot_time)
       const slotDate = slotTime.setZone(tz).toISODate()
-      if (!slotDate) return false // Skip if date conversion failed
+      if (!slotDate) return false
+
+      // Filter by allowed days of week
+      // Luxon weekday: 1=Monday...7=Sunday -> convert to JS: 0=Sunday...6=Saturday
+      const dayOfWeek = slotTime.setZone(tz).weekday % 7
+      if (!allowedDays.includes(dayOfWeek)) return false
+
       if (blackoutDates.includes(slotDate)) return false
       // lead time
       const slotTimeISO = slotTime.toUTC().toISO()
