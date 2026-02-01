@@ -31,6 +31,7 @@ const navGroups: NavGroup[] = [
     title: 'Sales & Orders',
     items: [
       { href: '/admin/orders', label: 'Orders' },
+      { href: '/admin/customers', label: 'Customers' },
       { href: '/admin/recovery', label: 'Payment Recovery' },
     ]
   },
@@ -38,8 +39,15 @@ const navGroups: NavGroup[] = [
     title: 'Operations',
     items: [
       { href: '/admin/menu', label: 'Menu' },
+      { href: '/admin/inventory', label: 'Inventory' },
       { href: '/admin/time-slots', label: 'Time Slots' },
       { href: '/admin/emails', label: 'Email Monitoring' },
+    ]
+  },
+  {
+    title: 'Analytics',
+    items: [
+      { href: '/admin/analytics', label: 'Reports & Analytics' },
     ]
   },
   {
@@ -71,7 +79,7 @@ export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarPr
         lg:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <nav className="p-4 space-y-6 overflow-y-auto h-[calc(100vh-90px)]">
+        <nav className="p-4 pb-20 space-y-6 overflow-y-auto h-[calc(100vh-90px)]">
           {navGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               <h3 

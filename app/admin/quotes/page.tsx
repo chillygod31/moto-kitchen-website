@@ -40,6 +40,23 @@ export default function AdminQuotesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedQuote, setSelectedQuote] = useState<QuoteRequest | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [csrfToken, setCsrfToken] = useState<string | null>(null);
+
+  // Fetch CSRF token on mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch('/api/csrf');
+        if (response.ok) {
+          const data = await response.json();
+          setCsrfToken(data.csrfToken);
+        }
+      } catch (error) {
+        console.error('Failed to fetch CSRF token:', error);
+      }
+    };
+    fetchCsrfToken();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -90,9 +107,13 @@ export default function AdminQuotesPage() {
   const updateStatus = async (id: string, newStatus: string) => {
     try {
       setUpdatingId(id);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) {
+        headers["x-csrf-token"] = csrfToken;
+      }
       const response = await fetch(`/api/quotes/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -101,6 +122,10 @@ export default function AdminQuotesPage() {
         if (selectedQuote?.id === id) {
           setSelectedQuote({ ...selectedQuote, status: newStatus });
         }
+      } else {
+        const errorData = await response.json();
+        console.error("Error updating status:", errorData);
+        alert("Failed to update status: " + (errorData.message || errorData.error || "Unknown error"));
       }
     } catch (error) {
       console.error("Error updating status:", error);
@@ -112,9 +137,13 @@ export default function AdminQuotesPage() {
 
   const updateNotes = async (id: string, notes: string) => {
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) {
+        headers["x-csrf-token"] = csrfToken;
+      }
       const response = await fetch(`/api/quotes/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ notes }),
       });
 
