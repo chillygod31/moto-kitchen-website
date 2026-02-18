@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
-  <!-- jsPDF and html2canvas for PDF generation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF and html2canvas for PDF generation (local copies to avoid CSP issues) -->
+  <script src="jspdf.umd.min.js"></script>
+  <script src="html2canvas.min.js"></script>
   <!-- Set logo immediately to prevent onerror handlers from firing -->
   <script>
     // This runs immediately when script loads, before body renders
@@ -185,7 +185,26 @@
             <span>Include Admin Fee (3%)</span>
           </label>
         </div>
-        
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="isAmendedInvoice" style="width: 18px; height: 18px;">
+            <span>This is an amended invoice (partial payment received)</span>
+          </label>
+          <div id="amendedInvoiceFields" style="display: none; margin-top: 12px; margin-left: 26px; padding: 12px; background: #fff3cd; border-radius: 4px;">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+              <div>
+                <label for="originalInvoiceNumber" style="font-weight: normal; font-size: 12px;">Original Invoice #:</label>
+                <input type="text" id="originalInvoiceNumber" placeholder="#1234" style="width: 120px;">
+              </div>
+              <div>
+                <label for="previouslyPaidAmount" style="font-weight: normal; font-size: 12px;">Previously Paid (EUR):</label>
+                <input type="number" id="previouslyPaidAmount" placeholder="0.00" min="0" step="0.01" style="width: 120px;">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group" style="grid-column: 1 / -1;">
           <label for="itemDescription">ITEM DESCRIPTION (Page 3):</label>
           <input type="text" id="itemDescription" placeholder="">
@@ -475,6 +494,11 @@
         <div class="body-line"><strong>INVOICE NUMBER:</strong> <span id="displayInvoiceNumber">#1112</span></div>
         <div class="body-line" style="margin-top: 12px;"><strong>TOTAL:</strong> <span id="displayTotal">EUR 0,00</span></div>
         <div class="body-line" style="margin-top: 12px;"><strong style="text-decoration: underline;">Deposit due to confirm order: <span id="displayDepositDue">EUR 0,00</span></strong></div>
+        <div id="amendedInvoiceInfo" style="display: none; margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 4px;">
+          <div class="body-line"><strong>ORIGINAL INVOICE:</strong> <span id="displayOriginalInvoiceNumber">#1234</span></div>
+          <div class="body-line" style="margin-top: 8px;"><strong>PREVIOUSLY PAID:</strong> <span id="displayPreviouslyPaid">EUR 0,00</span></div>
+          <div class="body-line" style="margin-top: 12px; font-size: 14px;"><strong style="background: #ffc107; padding: 4px 8px; color: #000;">BALANCE DUE: <span id="displayBalanceDue">EUR 0,00</span></strong></div>
+        </div>
       </div>
       <div class="section-title">Service Description:</div>
       <div class="body-line" id="displayServiceDescription">Wedding cocktail menu</div>
@@ -548,6 +572,8 @@
         <tr><td>Service fee - <span id="displayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="displayServiceFee">EUR 410,00</td></tr>
         <tr id="adminFeeRow"><td id="displayAdminFeeLabel">Admin Fee (3%)</td><td id="displayAdminFee">EUR 53,65</td></tr>
         <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="displayGrandTotal">EUR 1842,16</td></tr>
+        <tr id="previouslyPaidRow" style="display: none;"><td>Previously Paid</td><td id="displayPreviouslyPaidPage3">-EUR 0,00</td></tr>
+        <tr id="balanceDueRow" class="grand-total-row" style="display: none; background: #fff3cd;"><td><strong>BALANCE DUE</strong></td><td id="displayBalanceDuePage3"><strong>EUR 0,00</strong></td></tr>
       </table>
       <div class="below-text">
         <div style="text-align: center;">By signing <strong>below</strong> you confirm that you agree to the details, pricing and terms stated in this invoice. Your signature serves as a binding confirmation of the booking and authorizes Moto Kitchen to proceed with all preparations for your event.</div>

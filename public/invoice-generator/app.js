@@ -285,6 +285,9 @@ function getFormData(docType) {
       serviceFeeBuffet: getChecked('serviceFeeBuffet'),
       serviceFeeDecorations: getChecked('serviceFeeDecorations'),
       serviceFeeStaff: getChecked('serviceFeeStaff'),
+      isAmendedInvoice: getChecked('isAmendedInvoice'),
+      originalInvoiceNumber: getVal('originalInvoiceNumber'),
+      previouslyPaidAmount: getVal('previouslyPaidAmount'),
       selectedItems
     };
   } else if (docType === 'quote') {
@@ -366,6 +369,14 @@ function setFormData(docType, data) {
     setChecked('serviceFeeBuffet', data.serviceFeeBuffet);
     setChecked('serviceFeeDecorations', data.serviceFeeDecorations);
     setChecked('serviceFeeStaff', data.serviceFeeStaff);
+    setChecked('isAmendedInvoice', data.isAmendedInvoice);
+    setVal('originalInvoiceNumber', data.originalInvoiceNumber);
+    setVal('previouslyPaidAmount', data.previouslyPaidAmount);
+    // Show/hide amended invoice fields based on checkbox
+    const amendedFields = document.getElementById('amendedInvoiceFields');
+    if (amendedFields) {
+      amendedFields.style.display = data.isAmendedInvoice ? 'block' : 'none';
+    }
   } else if (docType === 'quote') {
     setVal('quoteDate', data.quoteDate);
     setVal('quoteCaterDate', data.quoteCaterDate);
@@ -559,7 +570,33 @@ function calculateTotals() {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  
+
+  // Update key fields on invoice display (for real-time preview updates)
+  const client = document.getElementById('client')?.value || '';
+  updateEl('displayClient', client);
+  updateEl('displayClient2', client);
+
+  const invoiceNumber = document.getElementById('invoiceNumber')?.value || '';
+  const formattedInvoiceNumber = invoiceNumber.startsWith('#') ? invoiceNumber : '#' + invoiceNumber;
+  updateEl('displayInvoiceNumber', formattedInvoiceNumber);
+  updateEl('displayInvoiceNumber2', formattedInvoiceNumber);
+
+  const serviceDescription = document.getElementById('serviceDescription')?.value || '';
+  updateEl('displayServiceDescription', serviceDescription);
+  updateEl('displayServiceDescription2', serviceDescription);
+
+  const itemDescription = document.getElementById('itemDescription')?.value || 'Custom wedding dinner menu';
+  updateEl('displayItemDescription', itemDescription);
+
+  // Update dates on invoice display
+  const formattedInvoiceDate = formatDate(invoiceDate);
+  const formattedCaterDate = formatDate(caterDate);
+  updateEl('displayDate', formattedInvoiceDate);
+  updateEl('displayCaterDate', formattedCaterDate);
+  updateEl('displayCaterDate2', formattedCaterDate);
+  updateEl('displayDate2', formattedCaterDate);
+  updateEl('displaySignatureDate', formattedInvoiceDate);
+
   updateEl('displayGuestCount', guestCount);
   updateEl('displayGuestCountTable', guestCount);
   updateEl('pricePerPersonDisplay', `EUR ${formatEUR(pricePerPerson)}`);
@@ -577,7 +614,39 @@ function calculateTotals() {
 
   window.selectedMenuItems = selectedItems;
   updateSelectedSummary('invoice');
-  
+
+  // Handle amended invoice (partial payment)
+  const isAmended = document.getElementById('isAmendedInvoice')?.checked || false;
+  const previouslyPaid = parseFloat(document.getElementById('previouslyPaidAmount')?.value) || 0;
+  const balanceDue = grandTotal - previouslyPaid;
+
+  // Update amended invoice display on Page 1
+  const amendedInfoEl = document.getElementById('amendedInvoiceInfo');
+  if (amendedInfoEl) {
+    amendedInfoEl.style.display = isAmended ? 'block' : 'none';
+  }
+  if (isAmended) {
+    updateEl('displayOriginalInvoiceNumber', document.getElementById('originalInvoiceNumber')?.value || '');
+    updateEl('displayPreviouslyPaid', `EUR ${formatEUR(previouslyPaid)}`);
+    updateEl('displayBalanceDue', `EUR ${formatEUR(balanceDue)}`);
+  }
+
+  // Update amended invoice display on Page 3
+  const previouslyPaidRow = document.getElementById('previouslyPaidRow');
+  const balanceDueRow = document.getElementById('balanceDueRow');
+  if (previouslyPaidRow) previouslyPaidRow.style.display = isAmended ? '' : 'none';
+  if (balanceDueRow) balanceDueRow.style.display = isAmended ? '' : 'none';
+  if (isAmended) {
+    updateEl('displayPreviouslyPaidPage3', `-EUR ${formatEUR(previouslyPaid)}`);
+    updateEl('displayBalanceDuePage3', `EUR ${formatEUR(balanceDue)}`);
+  }
+
+  // Change invoice title if amended
+  const invoiceTitle = document.querySelector('#invoicePages .invoice-title');
+  if (invoiceTitle) {
+    invoiceTitle.textContent = isAmended ? 'AMENDED INVOICE' : 'INVOICE';
+  }
+
   // Auto-save draft
   saveDraft('invoice');
 }
@@ -1685,6 +1754,17 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('includeMocktailPackage')?.addEventListener('change', calculateTotals);
   document.getElementById('mocktailHours')?.addEventListener('input', calculateTotals);
   document.getElementById('includeAdminFee')?.addEventListener('change', calculateTotals);
+
+  // Amended invoice fields
+  document.getElementById('isAmendedInvoice')?.addEventListener('change', function() {
+    const amendedFields = document.getElementById('amendedInvoiceFields');
+    if (amendedFields) {
+      amendedFields.style.display = this.checked ? 'block' : 'none';
+    }
+    calculateTotals();
+  });
+  document.getElementById('originalInvoiceNumber')?.addEventListener('input', calculateTotals);
+  document.getElementById('previouslyPaidAmount')?.addEventListener('input', calculateTotals);
   
   // Service fee type checkboxes
   ['serviceFeeDelivery', 'serviceFeeBuffet', 'serviceFeeDecorations', 'serviceFeeStaff'].forEach(id => {
