@@ -188,7 +188,174 @@ function updateDraftIndicator(docType, hasDraft) {
   }
 }
 
-function saveToHistory(docType, formData) {
+// ===== API-BASED HISTORY FUNCTIONS (with localStorage fallback) =====
+
+// Flag to track if API is available
+let useAPIForHistory = true;
+
+// Main history functions - try API first, fallback to localStorage
+async function saveToHistory(docType, formData) {
+  if (useAPIForHistory) {
+    await saveToHistoryAPI(docType, formData);
+  } else {
+    saveToHistoryLocal(docType, formData);
+  }
+}
+
+async function loadFromHistory(id) {
+  // Check if it's a UUID (API) or number (localStorage)
+  if (typeof id === 'string' && id.includes('-')) {
+    await loadFromHistoryAPI(id);
+  } else {
+    loadFromHistoryLocal(id);
+  }
+}
+
+async function deleteFromHistory(id) {
+  // Check if it's a UUID (API) or number (localStorage)
+  if (typeof id === 'string' && id.includes('-')) {
+    await deleteFromHistoryAPI(id);
+  } else {
+    deleteFromHistoryLocal(id);
+  }
+}
+
+async function renderHistory() {
+  if (useAPIForHistory) {
+    await renderHistoryAPI();
+  } else {
+    renderHistoryLocal();
+  }
+}
+
+// ===== API HISTORY FUNCTIONS =====
+async function saveToHistoryAPI(docType, formData) {
+  const numberField = docType === 'invoice' ? 'invoiceNumber' :
+                      docType === 'quote' ? 'quoteNumber' : 'embassyInvoiceNumber';
+  const clientField = docType === 'invoice' ? 'client' :
+                      docType === 'quote' ? 'quoteClient' : 'embassyInvoiceClient';
+
+  try {
+    const response = await fetch('/api/invoice-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        document_type: docType,
+        document_number: formData[numberField] || '',
+        client_name: formData[clientField] || '',
+        form_data: formData
+      })
+    });
+
+    if (response.ok) {
+      await renderHistoryAPI();
+    } else if (response.status === 401) {
+      // Not logged in, fallback to localStorage
+      console.log('Not authenticated, using localStorage for history');
+      useAPIForHistory = false;
+      saveToHistoryLocal(docType, formData);
+    } else {
+      console.error('Failed to save to API:', await response.text());
+      saveToHistoryLocal(docType, formData);
+    }
+  } catch (error) {
+    console.error('Failed to save to API, using localStorage:', error);
+    useAPIForHistory = false;
+    saveToHistoryLocal(docType, formData);
+  }
+}
+
+async function loadFromHistoryAPI(id) {
+  try {
+    const response = await fetch(`/api/invoice-history/${id}`, {
+      credentials: 'include'
+    });
+    if (response.ok) {
+      const invoice = await response.json();
+      switchDocumentType(invoice.document_type);
+      setFormData(invoice.document_type, invoice.form_data);
+      showToast('Invoice loaded from history', 'success');
+    } else {
+      showToast('Failed to load invoice', 'error');
+    }
+  } catch (error) {
+    console.error('Failed to load from API:', error);
+    showToast('Failed to load invoice', 'error');
+  }
+}
+
+async function deleteFromHistoryAPI(id) {
+  if (!confirm('Delete this invoice from history?')) return;
+
+  try {
+    const response = await fetch(`/api/invoice-history/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (response.ok) {
+      await renderHistoryAPI();
+      showToast('Deleted from history', 'success');
+    } else {
+      showToast('Failed to delete invoice', 'error');
+    }
+  } catch (error) {
+    console.error('Failed to delete from API:', error);
+    showToast('Failed to delete invoice', 'error');
+  }
+}
+
+async function renderHistoryAPI() {
+  const container = document.getElementById('historyList');
+  if (!container) return;
+
+  // Show loading state
+  container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Loading...</p>';
+
+  try {
+    const response = await fetch('/api/invoice-history?limit=50', {
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        // Not logged in, fallback to localStorage
+        console.log('Not authenticated, using localStorage for history');
+        useAPIForHistory = false;
+        renderHistoryLocal();
+        return;
+      }
+      throw new Error('Failed to fetch history');
+    }
+
+    const { invoices } = await response.json();
+
+    if (!invoices || invoices.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No saved invoices yet</p>';
+      return;
+    }
+
+    container.innerHTML = invoices.map(entry => `
+      <div class="history-item" data-id="${entry.id}">
+        <div class="history-item-info">
+          <strong>${entry.document_type === 'invoice' ? 'Invoice' : entry.document_type === 'quote' ? 'Quote' : 'Embassy Invoice'} ${entry.document_number || ''}</strong>
+          <span>${entry.client_name || 'No client'} - ${new Date(entry.created_at).toLocaleDateString()}</span>
+        </div>
+        <div class="history-item-actions">
+          <button class="btn btn-primary" onclick="loadFromHistory('${entry.id}')">Load</button>
+          <button class="btn btn-danger" onclick="deleteFromHistory('${entry.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Failed to fetch history from API:', error);
+    useAPIForHistory = false;
+    renderHistoryLocal();
+  }
+}
+
+// ===== LOCAL STORAGE HISTORY FUNCTIONS (fallback) =====
+function saveToHistoryLocal(docType, formData) {
   const history = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
   const entry = {
     id: Date.now(),
@@ -202,10 +369,10 @@ function saveToHistory(docType, formData) {
   // Keep last 50 entries
   if (history.length > 50) history.pop();
   localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(history));
-  renderHistory();
+  renderHistoryLocal();
 }
 
-function loadFromHistory(id) {
+function loadFromHistoryLocal(id) {
   const history = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
   const entry = history.find(h => h.id === id);
   if (entry) {
@@ -215,25 +382,26 @@ function loadFromHistory(id) {
   }
 }
 
-function deleteFromHistory(id) {
+function deleteFromHistoryLocal(id) {
+  if (!confirm('Delete this invoice from history?')) return;
   let history = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
   history = history.filter(h => h.id !== id);
   localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(history));
-  renderHistory();
+  renderHistoryLocal();
   showToast('Deleted from history', 'success');
 }
 
-function renderHistory() {
+function renderHistoryLocal() {
   const container = document.getElementById('historyList');
   if (!container) return;
-  
+
   const history = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
-  
+
   if (history.length === 0) {
     container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No saved invoices yet</p>';
     return;
   }
-  
+
   container.innerHTML = history.map(entry => `
     <div class="history-item" data-id="${entry.id}">
       <div class="history-item-info">
@@ -1811,8 +1979,14 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // Load drafts and render history
   loadDraft('invoice');
-  renderHistory();
-  
+
+  // Initialize history (try API first, fallback to localStorage)
+  renderHistory().catch(err => {
+    console.log('History render error, falling back to localStorage:', err);
+    useAPIForHistory = false;
+    renderHistoryLocal();
+  });
+
   // Set embedded logo on all images immediately
   setLogoOnAllImages();
   
