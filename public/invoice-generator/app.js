@@ -1112,8 +1112,7 @@ function generateInvoice() {
     setLogoOnAllImages();
   }, 100);
 
-  // Save to history
-  saveToHistory('invoice', getFormData('invoice'));
+  // Note: History is saved on download (printInvoice), not on generation
   clearDraft('invoice');
   showToast('Invoice generated successfully', 'success');
 }
@@ -1198,7 +1197,7 @@ function generateQuote() {
     setLogoOnAllImages();
   }, 100);
 
-  saveToHistory('quote', getFormData('quote'));
+  // Note: History is saved on download (printQuote), not on generation
   clearDraft('quote');
   showToast('Quote generated successfully', 'success');
 }
@@ -1275,7 +1274,7 @@ function generateEmbassyInvoice() {
     setLogoOnAllImages();
   }, 100);
 
-  saveToHistory('embassy-invoice', getFormData('embassy-invoice'));
+  // Note: History is saved on download (printEmbassyInvoice), not on generation
   clearDraft('embassy-invoice');
   showToast('Embassy Invoice generated successfully', 'success');
 }
@@ -1684,15 +1683,18 @@ function printInvoice() {
     showToast('Please generate the invoice first', 'error');
     return;
   }
-  
+
   const invoiceNumber = document.getElementById('invoiceNumber').value;
   const formattedNumber = invoiceNumber.startsWith('#') ? invoiceNumber : '#' + invoiceNumber;
   const filename = `Invoice_${formattedNumber.replace('#', '')}_${formatDate(document.getElementById('invoiceDate').value)}.pdf`;
-  
+
   const pagesElement = document.getElementById('invoicePages');
   document.getElementById('quotePages').style.display = 'none';
   document.getElementById('embassyInvoicePages').style.display = 'none';
-  
+
+  // Save to history on download
+  saveToHistory('invoice', getFormData('invoice'));
+
   generatePDF(pagesElement, filename);
 }
 
@@ -1701,15 +1703,18 @@ function printQuote() {
     showToast('Please generate the quote first', 'error');
     return;
   }
-  
+
   const quoteNumber = document.getElementById('quoteNumber').value;
   const formattedNumber = quoteNumber.startsWith('#') ? quoteNumber : '#' + quoteNumber;
   const filename = `Quote_${formattedNumber.replace('#', '')}_${formatDate(document.getElementById('quoteDate').value)}.pdf`;
-  
+
   const pagesElement = document.getElementById('quotePages');
   document.getElementById('invoicePages').style.display = 'none';
   document.getElementById('embassyInvoicePages').style.display = 'none';
-  
+
+  // Save to history on download
+  saveToHistory('quote', getFormData('quote'));
+
   generatePDF(pagesElement, filename);
 }
 
@@ -1718,15 +1723,18 @@ function printEmbassyInvoice() {
     showToast('Please generate the embassy invoice first', 'error');
     return;
   }
-  
+
   const invoiceNumber = document.getElementById('embassyInvoiceNumber').value;
   const formattedNumber = invoiceNumber.startsWith('#') ? invoiceNumber : '#' + invoiceNumber;
   const filename = `EmbassyInvoice_${formattedNumber.replace('#', '')}_${formatDate(document.getElementById('embassyInvoiceDate').value)}.pdf`;
-  
+
   const pagesElement = document.getElementById('embassyInvoicePages');
   document.getElementById('invoicePages').style.display = 'none';
   document.getElementById('quotePages').style.display = 'none';
-  
+
+  // Save to history on download
+  saveToHistory('embassy-invoice', getFormData('embassy-invoice'));
+
   generatePDF(pagesElement, filename);
 }
 
