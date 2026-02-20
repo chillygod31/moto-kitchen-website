@@ -451,7 +451,26 @@
             <span>Include Admin Fee (3%)</span>
           </label>
         </div>
-        
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="embassyInvoiceIsAmended" style="width: 18px; height: 18px;">
+            <span>This is an amended invoice (partial payment received)</span>
+          </label>
+          <div id="embassyInvoiceAmendedFields" style="display: none; margin-top: 12px; margin-left: 26px; padding: 12px; background: #fff3cd; border-radius: 4px;">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+              <div>
+                <label for="embassyInvoiceOriginalNumber" style="font-weight: normal; font-size: 12px;">Original Invoice #:</label>
+                <input type="text" id="embassyInvoiceOriginalNumber" placeholder="#1234" style="width: 120px;">
+              </div>
+              <div>
+                <label for="embassyInvoicePreviouslyPaid" style="font-weight: normal; font-size: 12px;">Previously Paid (EUR):</label>
+                <input type="number" id="embassyInvoicePreviouslyPaid" placeholder="0.00" min="0" step="0.01" style="width: 120px;">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group" style="grid-column: 1 / -1;">
           <label for="embassyInvoiceItemDescription">ITEM DESCRIPTION:</label>
           <input type="text" id="embassyInvoiceItemDescription" placeholder="">
@@ -750,7 +769,14 @@
         <tr><td>Service fee - <span id="embassyInvoiceDisplayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="embassyInvoiceDisplayServiceFee">EUR 410,00</td></tr>
         <tr id="embassyInvoiceAdminFeeRow"><td id="embassyInvoiceDisplayAdminFeeLabel">Admin Fee (3%)</td><td id="embassyInvoiceDisplayAdminFee">EUR 53,65</td></tr>
         <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="embassyInvoiceDisplayGrandTotal">EUR 1842,16</td></tr>
+        <tr id="embassyInvoicePreviouslyPaidRow" style="display: none;"><td>Previously Paid</td><td id="embassyInvoiceDisplayPreviouslyPaid">-EUR 0,00</td></tr>
+        <tr id="embassyInvoiceBalanceDueRow" class="grand-total-row" style="display: none; background: #fff3cd;"><td>BALANCE DUE</td><td id="embassyInvoiceDisplayBalanceDue">EUR 0,00</td></tr>
       </table>
+      <div id="embassyInvoiceAmendedInfo" style="display: none; margin-top: 16px;">
+        <div class="body-line"><strong>ORIGINAL INVOICE:</strong> <span id="embassyInvoiceDisplayOriginalNumber">#1234</span></div>
+        <div class="body-line"><strong>PREVIOUSLY PAID:</strong> <span id="embassyInvoiceDisplayPreviouslyPaidPage1">EUR 0,00</span></div>
+        <div class="body-line" style="margin-top: 12px; font-size: 14px;"><strong style="background: #fff3cd; padding: 4px 8px;">BALANCE DUE: <span id="embassyInvoiceDisplayBalanceDuePage1">EUR 0,00</span></strong></div>
+      </div>
       <div class="section-title" style="margin-top: 24px; font-style: italic;">Dietary &amp; Service Information</div>
       <div class="body-line" style="margin-top: 8px; font-style: italic;">Moto Kitchen is a fully <strong style="text-decoration: underline;">halal</strong> kitchen and does not handle pork or alcohol.</div>
       <div class="body-line" style="margin-top: 8px; font-style: italic;">Thank you for considering Moto Kitchen.</div>

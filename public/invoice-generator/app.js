@@ -193,6 +193,9 @@ function updateDraftIndicator(docType, hasDraft) {
 // Flag to track if API is available
 let useAPIForHistory = true;
 
+// Track current document type for filtering history
+let currentDocumentType = 'invoice';
+
 // Main history functions - try API first, fallback to localStorage
 async function saveToHistory(docType, formData) {
   if (useAPIForHistory) {
@@ -312,8 +315,12 @@ async function renderHistoryAPI() {
   // Show loading state
   container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Loading...</p>';
 
+  // Map current document type to API filter value
+  // The API expects 'invoice', 'quote', or 'embassyInvoice' (not 'embassy-invoice')
+  const apiDocType = currentDocumentType === 'embassy-invoice' ? 'embassyInvoice' : currentDocumentType;
+
   try {
-    const response = await fetch('/api/invoice-history?limit=50', {
+    const response = await fetch(`/api/invoice-history?limit=50&type=${apiDocType}`, {
       credentials: 'include'
     });
 
@@ -330,8 +337,12 @@ async function renderHistoryAPI() {
 
     const { invoices } = await response.json();
 
+    // Get display label for current tab
+    const tabLabel = currentDocumentType === 'invoice' ? 'invoices' :
+                     currentDocumentType === 'quote' ? 'quotes' : 'embassy invoices';
+
     if (!invoices || invoices.length === 0) {
-      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No saved invoices yet</p>';
+      container.innerHTML = `<p style="text-align: center; color: #666; padding: 20px;">No saved ${tabLabel} yet</p>`;
       return;
     }
 
@@ -395,10 +406,22 @@ function renderHistoryLocal() {
   const container = document.getElementById('historyList');
   if (!container) return;
 
-  const history = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+  const allHistory = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+
+  // Filter history by current document type
+  // localStorage uses 'invoice', 'quote', or 'embassy-invoice' as type
+  const history = allHistory.filter(entry => {
+    // Normalize types for comparison
+    const entryType = entry.type === 'embassyInvoice' ? 'embassy-invoice' : entry.type;
+    return entryType === currentDocumentType;
+  });
+
+  // Get display label for current tab
+  const tabLabel = currentDocumentType === 'invoice' ? 'invoices' :
+                   currentDocumentType === 'quote' ? 'quotes' : 'embassy invoices';
 
   if (history.length === 0) {
-    container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No saved invoices yet</p>';
+    container.innerHTML = `<p style="text-align: center; color: #666; padding: 20px;">No saved ${tabLabel} yet</p>`;
     return;
   }
 
@@ -496,6 +519,9 @@ function getFormData(docType) {
       embassyInvoiceServiceFeeBuffet: getChecked('embassyInvoiceServiceFeeBuffet'),
       embassyInvoiceServiceFeeDecorations: getChecked('embassyInvoiceServiceFeeDecorations'),
       embassyInvoiceServiceFeeStaff: getChecked('embassyInvoiceServiceFeeStaff'),
+      embassyInvoiceIsAmended: getChecked('embassyInvoiceIsAmended'),
+      embassyInvoiceOriginalNumber: getVal('embassyInvoiceOriginalNumber'),
+      embassyInvoicePreviouslyPaid: getVal('embassyInvoicePreviouslyPaid'),
       selectedItems
     };
   }
@@ -579,6 +605,14 @@ function setFormData(docType, data) {
     setChecked('embassyInvoiceServiceFeeBuffet', data.embassyInvoiceServiceFeeBuffet);
     setChecked('embassyInvoiceServiceFeeDecorations', data.embassyInvoiceServiceFeeDecorations);
     setChecked('embassyInvoiceServiceFeeStaff', data.embassyInvoiceServiceFeeStaff);
+    setChecked('embassyInvoiceIsAmended', data.embassyInvoiceIsAmended);
+    setVal('embassyInvoiceOriginalNumber', data.embassyInvoiceOriginalNumber);
+    setVal('embassyInvoicePreviouslyPaid', data.embassyInvoicePreviouslyPaid);
+    // Show/hide amended invoice fields based on checkbox
+    const embassyAmendedFields = document.getElementById('embassyInvoiceAmendedFields');
+    if (embassyAmendedFields) {
+      embassyAmendedFields.style.display = data.embassyInvoiceIsAmended ? 'block' : 'none';
+    }
   }
   
   // Re-select menu items
@@ -605,13 +639,23 @@ function setFormData(docType, data) {
 
 // ===== SELECTED ITEMS SUMMARY =====
 function updateSelectedSummary(docType) {
-  const section = document.getElementById(`${docType}FormSection`);
+  // Handle section ID - embassy-invoice uses embassyInvoiceFormSection
+  const sectionId = docType === 'embassy-invoice' ? 'embassyInvoiceFormSection' : `${docType}FormSection`;
+  const section = document.getElementById(sectionId);
   if (!section) return;
-  
+
   let summary = section.querySelector('.selected-summary');
   if (!summary) {
     // Create summary element if it doesn't exist
-    const menuSection = section.querySelector('.form-group[style*="grid-column: 1 / -1"]');
+    // Find the menu section - it's the form-group that contains pricing-table elements
+    const allFormGroups = section.querySelectorAll('.form-group[style*="grid-column: 1 / -1"]');
+    let menuSection = null;
+    for (const fg of allFormGroups) {
+      if (fg.querySelector('.pricing-table')) {
+        menuSection = fg;
+        break;
+      }
+    }
     if (menuSection) {
       summary = document.createElement('div');
       summary.className = 'selected-summary';
@@ -620,10 +664,11 @@ function updateSelectedSummary(docType) {
         <div class="selected-items-list"></div>
         <div class="summary-total">Total per person: EUR 0,00</div>
       `;
-      menuSection.parentNode.insertBefore(summary, menuSection.nextSibling);
+      // Insert summary BEFORE the menu section
+      menuSection.parentNode.insertBefore(summary, menuSection);
     }
   }
-  
+
   if (!summary) return;
   
   const listEl = summary.querySelector('.selected-items-list');
@@ -673,21 +718,30 @@ function filterMenuItems(searchTerm, docType) {
 
 // ===== DOCUMENT TYPE SWITCHING =====
 function switchDocumentType(type) {
+  // Normalize type for consistency (embassy-invoice and embassyInvoice are the same)
+  const normalizedType = type === 'embassyInvoice' ? 'embassy-invoice' : type;
+
+  // Update current document type
+  currentDocumentType = normalizedType;
+
   document.querySelectorAll('.document-type-option').forEach(btn => {
     btn.classList.remove('active');
   });
-  document.querySelector(`[data-type="${type}"]`)?.classList.add('active');
-  
-  document.getElementById('invoiceFormSection')?.classList.toggle('active', type === 'invoice');
-  document.getElementById('quoteFormSection')?.classList.toggle('active', type === 'quote');
-  document.getElementById('embassyInvoiceFormSection')?.classList.toggle('active', type === 'embassy-invoice' || type === 'embassyInvoice');
-  
-  document.getElementById('invoicePages').style.display = type === 'invoice' ? 'block' : 'none';
-  document.getElementById('quotePages').style.display = type === 'quote' ? 'block' : 'none';
-  document.getElementById('embassyInvoicePages').style.display = type === 'embassy-invoice' ? 'block' : 'none';
-  
+  document.querySelector(`[data-type="${normalizedType}"]`)?.classList.add('active');
+
+  document.getElementById('invoiceFormSection')?.classList.toggle('active', normalizedType === 'invoice');
+  document.getElementById('quoteFormSection')?.classList.toggle('active', normalizedType === 'quote');
+  document.getElementById('embassyInvoiceFormSection')?.classList.toggle('active', normalizedType === 'embassy-invoice');
+
+  document.getElementById('invoicePages').style.display = normalizedType === 'invoice' ? 'block' : 'none';
+  document.getElementById('quotePages').style.display = normalizedType === 'quote' ? 'block' : 'none';
+  document.getElementById('embassyInvoicePages').style.display = normalizedType === 'embassy-invoice' ? 'block' : 'none';
+
   // Load draft if exists
-  loadDraft(type);
+  loadDraft(normalizedType);
+
+  // Re-render history filtered by current document type
+  renderHistory();
 }
 
 // ===== CALCULATION FUNCTIONS =====
@@ -778,15 +832,19 @@ function calculateTotals() {
   updateEl('displayGrandTotal', `EUR ${formatEUR(grandTotal)}`);
   updateEl('displayTotal2', `EUR ${formatEUR(grandTotal)}`);
   updateEl('displayTotal', `EUR ${formatEUR(grandTotal)}`);
-  updateEl('displayDepositDue', `EUR ${formatEUR(depositDue)}`);
-
-  window.selectedMenuItems = selectedItems;
-  updateSelectedSummary('invoice');
 
   // Handle amended invoice (partial payment)
   const isAmended = document.getElementById('isAmendedInvoice')?.checked || false;
   const previouslyPaid = parseFloat(document.getElementById('previouslyPaidAmount')?.value) || 0;
   const balanceDue = grandTotal - previouslyPaid;
+
+  // For amended invoices, deposit due shows balance due (what's left to pay)
+  // For normal invoices, deposit due is calculated as before
+  const displayDeposit = isAmended ? balanceDue : depositDue;
+  updateEl('displayDepositDue', `EUR ${formatEUR(displayDeposit)}`);
+
+  window.selectedMenuItems = selectedItems;
+  updateSelectedSummary('invoice');
 
   // Update amended invoice display on Page 1
   const amendedInfoEl = document.getElementById('amendedInvoiceInfo');
@@ -809,11 +867,7 @@ function calculateTotals() {
     updateEl('displayBalanceDuePage3', `EUR ${formatEUR(balanceDue)}`);
   }
 
-  // Change invoice title if amended
-  const invoiceTitle = document.querySelector('#invoicePages .invoice-title');
-  if (invoiceTitle) {
-    invoiceTitle.textContent = isAmended ? 'AMENDED INVOICE' : 'INVOICE';
-  }
+  // Keep title as INVOICE (not AMENDED INVOICE)
 
   // Auto-save draft
   saveDraft('invoice');
@@ -937,6 +991,32 @@ function calculateEmbassyInvoiceTotals() {
   updateEl('embassyInvoiceDisplayAdminFee', `EUR ${formatEUR(adminFee)}`);
   updateEl('embassyInvoiceDisplayGrandTotal', `EUR ${formatEUR(grandTotal)}`);
   updateEl('embassyInvoiceDisplayTotalPaymentDetails', `EUR ${formatEUR(grandTotal)}`);
+
+  // Handle amended invoice (partial payment) for embassy invoice
+  const isAmended = document.getElementById('embassyInvoiceIsAmended')?.checked || false;
+  const previouslyPaid = parseFloat(document.getElementById('embassyInvoicePreviouslyPaid')?.value) || 0;
+  const balanceDue = grandTotal - previouslyPaid;
+
+  // Update amended invoice display elements
+  const amendedInfoEl = document.getElementById('embassyInvoiceAmendedInfo');
+  if (amendedInfoEl) {
+    amendedInfoEl.style.display = isAmended ? 'block' : 'none';
+  }
+  if (isAmended) {
+    updateEl('embassyInvoiceDisplayOriginalNumber', document.getElementById('embassyInvoiceOriginalNumber')?.value || '');
+    updateEl('embassyInvoiceDisplayPreviouslyPaidPage1', `EUR ${formatEUR(previouslyPaid)}`);
+    updateEl('embassyInvoiceDisplayBalanceDuePage1', `EUR ${formatEUR(balanceDue)}`);
+  }
+
+  // Update amended invoice rows in totals table
+  const previouslyPaidRow = document.getElementById('embassyInvoicePreviouslyPaidRow');
+  const balanceDueRow = document.getElementById('embassyInvoiceBalanceDueRow');
+  if (previouslyPaidRow) previouslyPaidRow.style.display = isAmended ? '' : 'none';
+  if (balanceDueRow) balanceDueRow.style.display = isAmended ? '' : 'none';
+  if (isAmended) {
+    updateEl('embassyInvoiceDisplayPreviouslyPaid', `-EUR ${formatEUR(previouslyPaid)}`);
+    updateEl('embassyInvoiceDisplayBalanceDue', `EUR ${formatEUR(balanceDue)}`);
+  }
 
   window.selectedEmbassyInvoiceMenuItems = selectedItems;
   updateSelectedSummary('embassy-invoice');
@@ -1963,7 +2043,18 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('embassyInvoiceIncludeMocktailPackage')?.addEventListener('change', calculateEmbassyInvoiceTotals);
   document.getElementById('embassyInvoiceMocktailHours')?.addEventListener('input', calculateEmbassyInvoiceTotals);
   document.getElementById('embassyInvoiceIncludeAdminFee')?.addEventListener('change', calculateEmbassyInvoiceTotals);
-  
+
+  // Embassy invoice amended fields
+  document.getElementById('embassyInvoiceIsAmended')?.addEventListener('change', function() {
+    const amendedFields = document.getElementById('embassyInvoiceAmendedFields');
+    if (amendedFields) {
+      amendedFields.style.display = this.checked ? 'block' : 'none';
+    }
+    calculateEmbassyInvoiceTotals();
+  });
+  document.getElementById('embassyInvoiceOriginalNumber')?.addEventListener('input', calculateEmbassyInvoiceTotals);
+  document.getElementById('embassyInvoicePreviouslyPaid')?.addEventListener('input', calculateEmbassyInvoiceTotals);
+
   // Menu search functionality
   document.querySelectorAll('.menu-search').forEach(input => {
     input.addEventListener('input', (e) => {
