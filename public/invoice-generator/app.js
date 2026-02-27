@@ -442,19 +442,27 @@ function renderHistoryLocal() {
 // ===== FORM DATA HELPERS =====
 function getFormData(docType) {
   const prefix = docType === 'invoice' ? '' : docType === 'quote' ? 'quote' : 'embassyInvoice';
+  const customOrderId = docType === 'invoice' ? 'isCustomOrder' : docType === 'quote' ? 'quoteIsCustomOrder' : 'embassyInvoiceIsCustomOrder';
+  const isCustomOrder = document.getElementById(customOrderId)?.checked || false;
   const getVal = (id) => document.getElementById(id)?.value || '';
   const getChecked = (id) => document.getElementById(id)?.checked || false;
-  
+
   // Get selected menu items
   const selectedItems = [];
-  const section = document.getElementById(`${docType}FormSection`);
+  const sectionId = docType === 'embassy-invoice' ? 'embassyInvoiceFormSection' : `${docType}FormSection`;
+  const section = document.getElementById(sectionId);
   if (section) {
     section.querySelectorAll('.pricing-table tbody tr input[type="checkbox"]:checked').forEach(cb => {
       const row = cb.closest('tr');
-      selectedItems.push({
+      const qtyInput = row.querySelector('.qty-input');
+      const item = {
         name: row.getAttribute('data-item'),
         price: parseFloat(row.getAttribute('data-price')) || 0
-      });
+      };
+      if (isCustomOrder && qtyInput) {
+        item.quantity = parseInt(qtyInput.value) || 0;
+      }
+      selectedItems.push(item);
     });
   }
   
@@ -479,6 +487,7 @@ function getFormData(docType) {
       isAmendedInvoice: getChecked('isAmendedInvoice'),
       originalInvoiceNumber: getVal('originalInvoiceNumber'),
       previouslyPaidAmount: getVal('previouslyPaidAmount'),
+      isCustomOrder,
       selectedItems
     };
   } else if (docType === 'quote') {
@@ -499,6 +508,7 @@ function getFormData(docType) {
       quoteServiceFeeBuffet: getChecked('quoteServiceFeeBuffet'),
       quoteServiceFeeDecorations: getChecked('quoteServiceFeeDecorations'),
       quoteServiceFeeStaff: getChecked('quoteServiceFeeStaff'),
+      isCustomOrder,
       selectedItems
     };
   } else {
@@ -522,6 +532,7 @@ function getFormData(docType) {
       embassyInvoiceIsAmended: getChecked('embassyInvoiceIsAmended'),
       embassyInvoiceOriginalNumber: getVal('embassyInvoiceOriginalNumber'),
       embassyInvoicePreviouslyPaid: getVal('embassyInvoicePreviouslyPaid'),
+      isCustomOrder,
       selectedItems
     };
   }
@@ -538,7 +549,8 @@ function setFormData(docType, data) {
   };
   
   // Clear all checkboxes first
-  const section = document.getElementById(`${docType}FormSection`);
+  const sectionId = docType === 'embassy-invoice' ? 'embassyInvoiceFormSection' : `${docType}FormSection`;
+  const section = document.getElementById(sectionId);
   if (section) {
     section.querySelectorAll('.pricing-table tbody tr input[type="checkbox"]').forEach(cb => {
       cb.checked = false;
@@ -566,6 +578,8 @@ function setFormData(docType, data) {
     setChecked('isAmendedInvoice', data.isAmendedInvoice);
     setVal('originalInvoiceNumber', data.originalInvoiceNumber);
     setVal('previouslyPaidAmount', data.previouslyPaidAmount);
+    setChecked('isCustomOrder', data.isCustomOrder);
+    if (data.isCustomOrder) toggleCustomOrder('invoice', true);
     // Show/hide amended invoice fields based on checkbox
     const amendedFields = document.getElementById('amendedInvoiceFields');
     if (amendedFields) {
@@ -588,6 +602,8 @@ function setFormData(docType, data) {
     setChecked('quoteServiceFeeBuffet', data.quoteServiceFeeBuffet);
     setChecked('quoteServiceFeeDecorations', data.quoteServiceFeeDecorations);
     setChecked('quoteServiceFeeStaff', data.quoteServiceFeeStaff);
+    setChecked('quoteIsCustomOrder', data.isCustomOrder);
+    if (data.isCustomOrder) toggleCustomOrder('quote', true);
   } else {
     setVal('embassyInvoiceDate', data.embassyInvoiceDate);
     setVal('embassyInvoiceCaterDate', data.embassyInvoiceCaterDate);
@@ -608,6 +624,8 @@ function setFormData(docType, data) {
     setChecked('embassyInvoiceIsAmended', data.embassyInvoiceIsAmended);
     setVal('embassyInvoiceOriginalNumber', data.embassyInvoiceOriginalNumber);
     setVal('embassyInvoicePreviouslyPaid', data.embassyInvoicePreviouslyPaid);
+    setChecked('embassyInvoiceIsCustomOrder', data.isCustomOrder);
+    if (data.isCustomOrder) toggleCustomOrder('embassy-invoice', true);
     // Show/hide amended invoice fields based on checkbox
     const embassyAmendedFields = document.getElementById('embassyInvoiceAmendedFields');
     if (embassyAmendedFields) {
@@ -625,6 +643,10 @@ function setFormData(docType, data) {
           cb.checked = true;
           row.classList.add('selected');
         }
+        if (item.quantity && data.isCustomOrder) {
+          const qtyInput = row.querySelector('.qty-input');
+          if (qtyInput) qtyInput.value = item.quantity;
+        }
       }
     });
   }
@@ -635,6 +657,65 @@ function setFormData(docType, data) {
   else calculateEmbassyInvoiceTotals();
   
   updateSelectedSummary(docType);
+}
+
+// ===== CUSTOM ORDER TOGGLE =====
+function toggleCustomOrder(docType, show) {
+  const sectionId = docType === 'embassy-invoice' ? 'embassyInvoiceFormSection' : `${docType}FormSection`;
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+
+  // Show/hide quantity columns and headers
+  section.querySelectorAll('.qty-col').forEach(el => {
+    el.style.display = show ? '' : 'none';
+  });
+  section.querySelectorAll('.qty-header').forEach(el => {
+    el.style.display = show ? '' : 'none';
+  });
+
+  // Show/hide guest count field
+  const guestCountId = docType === 'invoice' ? 'guestCount' : docType === 'quote' ? 'quoteGuestCount' : 'embassyInvoiceGuestCount';
+  const guestCountEl = document.getElementById(guestCountId);
+  if (guestCountEl) {
+    const formGroup = guestCountEl.closest('.form-group');
+    if (formGroup) formGroup.style.display = show ? 'none' : '';
+  }
+
+  // Show/hide price per person display in form
+  const pppId = docType === 'invoice' ? 'pricePerPersonDisplay' : docType === 'quote' ? 'quotePricePerPersonDisplay' : 'embassyInvoicePricePerPersonDisplay';
+  const pppEl = document.getElementById(pppId);
+  if (pppEl) {
+    const formGroup = pppEl.closest('.form-group');
+    if (formGroup) formGroup.style.display = show ? 'none' : '';
+  }
+
+  // Show/hide discount (not applicable for custom order)
+  const discountId = docType === 'invoice' ? 'discount' : docType === 'quote' ? 'quoteDiscount' : 'embassyInvoiceDiscount';
+  const discountEl = document.getElementById(discountId);
+  if (discountEl) {
+    const formGroup = discountEl.closest('.form-group');
+    if (formGroup) formGroup.style.display = show ? 'none' : '';
+  }
+
+  // Show/hide mocktail package (not applicable for custom order)
+  const mocktailId = docType === 'invoice' ? 'includeMocktailPackage' : docType === 'quote' ? 'quoteIncludeMocktailPackage' : 'embassyInvoiceIncludeMocktailPackage';
+  const mocktailEl = document.getElementById(mocktailId);
+  if (mocktailEl) {
+    const formGroup = mocktailEl.closest('.form-group');
+    if (formGroup) formGroup.style.display = show ? 'none' : '';
+  }
+
+  // Clear quantities when turning off custom order
+  if (!show) {
+    section.querySelectorAll('.qty-input').forEach(input => {
+      input.value = '';
+    });
+  }
+
+  // Recalculate
+  if (docType === 'invoice') calculateTotals();
+  else if (docType === 'quote') calculateQuoteTotals();
+  else calculateEmbassyInvoiceTotals();
 }
 
 // ===== SELECTED ITEMS SUMMARY =====
@@ -674,18 +755,33 @@ function updateSelectedSummary(docType) {
   const listEl = summary.querySelector('.selected-items-list');
   const totalEl = summary.querySelector('.summary-total');
   
+  const customOrderId = docType === 'invoice' ? 'isCustomOrder' : docType === 'quote' ? 'quoteIsCustomOrder' : 'embassyInvoiceIsCustomOrder';
+  const isCustomOrder = document.getElementById(customOrderId)?.checked || false;
+
   const selectedItems = [];
   section.querySelectorAll('.pricing-table tbody tr input[type="checkbox"]:checked').forEach(cb => {
     const row = cb.closest('tr');
+    const qtyInput = row.querySelector('.qty-input');
+    const quantity = isCustomOrder ? (parseInt(qtyInput?.value) || 0) : 1;
     selectedItems.push({
       name: row.getAttribute('data-item'),
-      price: parseFloat(row.getAttribute('data-price')) || 0
+      price: parseFloat(row.getAttribute('data-price')) || 0,
+      quantity: quantity
     });
   });
-  
+
   if (selectedItems.length === 0) {
     listEl.innerHTML = '<p style="color: #666; font-size: 11px;">No items selected</p>';
-    totalEl.textContent = 'Total per person: EUR 0,00';
+    totalEl.textContent = isCustomOrder ? 'Total: EUR 0,00' : 'Total per person: EUR 0,00';
+  } else if (isCustomOrder) {
+    listEl.innerHTML = selectedItems.map(item => `
+      <div class="selected-item">
+        <span>${item.quantity > 0 ? item.quantity + 'x ' : ''}${item.name}</span>
+        <span>€${formatEUR(item.price * item.quantity)}</span>
+      </div>
+    `).join('');
+    const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    totalEl.textContent = `Total: EUR ${formatEUR(total)}`;
   } else {
     listEl.innerHTML = selectedItems.map(item => `
       <div class="selected-item">
@@ -746,6 +842,7 @@ function switchDocumentType(type) {
 
 // ===== CALCULATION FUNCTIONS =====
 function calculateTotals() {
+  const isCustomOrder = document.getElementById('isCustomOrder')?.checked || false;
   const guestCount = parseFloat(document.getElementById('guestCount')?.value) || 0;
   const discount = parseFloat(document.getElementById('discount')?.value) || 0;
   const serviceFee = parseFloat(document.getElementById('serviceFee')?.value) || 0;
@@ -758,17 +855,35 @@ function calculateTotals() {
     const row = checkbox.closest('tr');
     const itemName = row.getAttribute('data-item');
     const price = parseFloat(row.getAttribute('data-price')) || 0;
-    subtotal += price;
-    selectedItems.push({ name: itemName, price: price });
+    const qtyInput = row.querySelector('.qty-input');
+    const quantity = isCustomOrder ? (parseInt(qtyInput?.value) || 0) : 1;
+
+    if (isCustomOrder) {
+      subtotal += price * quantity;
+      if (quantity > 0) selectedItems.push({ name: itemName, price: price, quantity: quantity });
+    } else {
+      subtotal += price;
+      selectedItems.push({ name: itemName, price: price });
+    }
   });
 
   const includeMocktail = document.getElementById('includeMocktailPackage')?.checked;
   const mocktailHours = parseFloat(document.getElementById('mocktailHours')?.value) || 0;
   const mocktailCostPerPerson = includeMocktail && mocktailHours > 0 ? 11 * mocktailHours : 0;
 
-  const pricePerPerson = subtotal - discount + mocktailCostPerPerson;
-  const rate = pricePerPerson;
-  const itemTotal = rate * guestCount;
+  let itemTotal;
+  let rate;
+  let pricePerPerson;
+
+  if (isCustomOrder) {
+    itemTotal = subtotal;
+    rate = 0;
+    pricePerPerson = 0;
+  } else {
+    pricePerPerson = subtotal - discount + mocktailCostPerPerson;
+    rate = pricePerPerson;
+    itemTotal = rate * guestCount;
+  }
 
   const includeAdminFee = document.getElementById('includeAdminFee')?.checked;
   const adminFeeBase = itemTotal + serviceFee;
@@ -874,6 +989,7 @@ function calculateTotals() {
 }
 
 function calculateQuoteTotals() {
+  const isCustomOrder = document.getElementById('quoteIsCustomOrder')?.checked || false;
   const guestCount = parseFloat(document.getElementById('quoteGuestCount')?.value) || 0;
   const discount = parseFloat(document.getElementById('quoteDiscount')?.value) || 0;
   const serviceFee = parseFloat(document.getElementById('quoteServiceFee')?.value) || 0;
@@ -886,17 +1002,33 @@ function calculateQuoteTotals() {
     const row = checkbox.closest('tr');
     const itemName = row.getAttribute('data-item');
     const price = parseFloat(row.getAttribute('data-price')) || 0;
-    subtotal += price;
-    selectedItems.push({ name: itemName, price: price });
+    const qtyInput = row.querySelector('.qty-input');
+    const quantity = isCustomOrder ? (parseInt(qtyInput?.value) || 0) : 1;
+
+    if (isCustomOrder) {
+      subtotal += price * quantity;
+      if (quantity > 0) selectedItems.push({ name: itemName, price: price, quantity: quantity });
+    } else {
+      subtotal += price;
+      selectedItems.push({ name: itemName, price: price });
+    }
   });
 
   const includeMocktail = document.getElementById('quoteIncludeMocktailPackage')?.checked;
   const mocktailHours = parseFloat(document.getElementById('quoteMocktailHours')?.value) || 0;
   const mocktailCostPerPerson = includeMocktail && mocktailHours > 0 ? 11 * mocktailHours : 0;
 
-  const pricePerPerson = subtotal - discount + mocktailCostPerPerson;
-  const rate = pricePerPerson;
-  const itemTotal = rate * guestCount;
+  let itemTotal, rate, pricePerPerson;
+
+  if (isCustomOrder) {
+    itemTotal = subtotal;
+    rate = 0;
+    pricePerPerson = 0;
+  } else {
+    pricePerPerson = subtotal - discount + mocktailCostPerPerson;
+    rate = pricePerPerson;
+    itemTotal = rate * guestCount;
+  }
 
   const includeAdminFee = document.getElementById('quoteIncludeAdminFee')?.checked;
   const adminFeeBase = itemTotal + serviceFee;
@@ -941,6 +1073,7 @@ function calculateQuoteTotals() {
 }
 
 function calculateEmbassyInvoiceTotals() {
+  const isCustomOrder = document.getElementById('embassyInvoiceIsCustomOrder')?.checked || false;
   const guestCount = parseFloat(document.getElementById('embassyInvoiceGuestCount')?.value) || 0;
   const discount = parseFloat(document.getElementById('embassyInvoiceDiscount')?.value) || 0;
   const serviceFee = parseFloat(document.getElementById('embassyInvoiceServiceFee')?.value) || 0;
@@ -953,17 +1086,33 @@ function calculateEmbassyInvoiceTotals() {
     const row = checkbox.closest('tr');
     const itemName = row.getAttribute('data-item');
     const price = parseFloat(row.getAttribute('data-price')) || 0;
-    subtotal += price;
-    selectedItems.push({ name: itemName, price: price });
+    const qtyInput = row.querySelector('.qty-input');
+    const quantity = isCustomOrder ? (parseInt(qtyInput?.value) || 0) : 1;
+
+    if (isCustomOrder) {
+      subtotal += price * quantity;
+      if (quantity > 0) selectedItems.push({ name: itemName, price: price, quantity: quantity });
+    } else {
+      subtotal += price;
+      selectedItems.push({ name: itemName, price: price });
+    }
   });
 
   const includeMocktail = document.getElementById('embassyInvoiceIncludeMocktailPackage')?.checked;
   const mocktailHours = parseFloat(document.getElementById('embassyInvoiceMocktailHours')?.value) || 0;
   const mocktailCostPerPerson = includeMocktail && mocktailHours > 0 ? 11 * mocktailHours : 0;
 
-  const pricePerPerson = subtotal - discount + mocktailCostPerPerson;
-  const rate = pricePerPerson;
-  const itemTotal = rate * guestCount;
+  let itemTotal, rate, pricePerPerson;
+
+  if (isCustomOrder) {
+    itemTotal = subtotal;
+    rate = 0;
+    pricePerPerson = 0;
+  } else {
+    pricePerPerson = subtotal - discount + mocktailCostPerPerson;
+    rate = pricePerPerson;
+    itemTotal = rate * guestCount;
+  }
 
   const includeAdminFee = document.getElementById('embassyInvoiceIncludeAdminFee')?.checked;
   const adminFeeBase = itemTotal + serviceFee;
@@ -1025,7 +1174,10 @@ function calculateEmbassyInvoiceTotals() {
 
 // ===== GENERATE FUNCTIONS =====
 function generateInvoice() {
-  const requiredFields = ['invoiceDate', 'caterDate', 'invoiceNumber', 'client', 'guestCount', 'serviceDescription'];
+  const isCustomOrder = document.getElementById('isCustomOrder')?.checked || false;
+  const requiredFields = isCustomOrder
+    ? ['invoiceDate', 'caterDate', 'invoiceNumber', 'client', 'serviceDescription']
+    : ['invoiceDate', 'caterDate', 'invoiceNumber', 'client', 'guestCount', 'serviceDescription'];
   let valid = true;
   
   requiredFields.forEach(id => {
@@ -1087,14 +1239,39 @@ function generateInvoice() {
   // Menu items
   const menuList = document.getElementById('displayMenuItems');
   const selectedItems = window.selectedMenuItems || [];
-  
+
   if (selectedItems.length > 0) {
-    menuList.innerHTML = selectedItems.map(item => `<li>- ${item.name}</li>`).join('');
+    if (isCustomOrder) {
+      menuList.innerHTML = selectedItems.map(item => `<li>${item.quantity}x ${item.name}</li>`).join('');
+    } else {
+      menuList.innerHTML = selectedItems.map(item => `<li>- ${item.name}</li>`).join('');
+    }
   }
 
-  // Page 3
+  // Page 3 - Cost breakdown
   document.getElementById('displaySignatureDate').textContent = formattedInvoiceDate;
-  document.getElementById('displayGuestCountTable').textContent = guestCount;
+  const costBreakdownBody = document.getElementById('invoiceCostBreakdownBody');
+  if (isCustomOrder && selectedItems.length > 0) {
+    costBreakdownBody.innerHTML = selectedItems.map(item =>
+      `<tr><td>${item.name}</td><td>${formatEUR(item.price)}</td><td>${item.quantity}</td><td>EUR ${formatEUR(item.price * item.quantity)}</td></tr>`
+    ).join('');
+  } else {
+    // Normal mode: restore single-row template (calculateTotals already set the values)
+    costBreakdownBody.innerHTML = `<tr>
+      <td id="displayItemDescription"></td>
+      <td id="displayRate"></td>
+      <td id="displayGuestCountTable"></td>
+      <td id="displayItemTotal"></td>
+    </tr>`;
+    // Re-run calculateTotals to fill in the restored elements
+    calculateTotals();
+  }
+
+  // Hide guest count and price per person in custom order mode
+  const guestCountDisplay = document.getElementById('invoiceGuestCountDisplay');
+  const pricePerPersonRow = document.getElementById('invoicePricePerPersonRow');
+  if (guestCountDisplay) guestCountDisplay.style.display = isCustomOrder ? 'none' : '';
+  if (pricePerPersonRow) pricePerPersonRow.style.display = isCustomOrder ? 'none' : '';
 
   // Mocktail section
   const includeMocktail = document.getElementById('includeMocktailPackage')?.checked;
@@ -1118,7 +1295,10 @@ function generateInvoice() {
 }
 
 function generateQuote() {
-  const requiredFields = ['quoteDate', 'quoteCaterDate', 'quoteNumber', 'quoteClient', 'quoteGuestCount', 'quoteServiceDescription'];
+  const quoteIsCustomOrder = document.getElementById('quoteIsCustomOrder')?.checked || false;
+  const requiredFields = quoteIsCustomOrder
+    ? ['quoteDate', 'quoteCaterDate', 'quoteNumber', 'quoteClient', 'quoteServiceDescription']
+    : ['quoteDate', 'quoteCaterDate', 'quoteNumber', 'quoteClient', 'quoteGuestCount', 'quoteServiceDescription'];
   let valid = true;
   
   requiredFields.forEach(id => {
@@ -1176,16 +1356,40 @@ function generateQuote() {
 
   const menuList = document.getElementById('quoteDisplayMenuItems');
   const selectedItems = window.selectedQuoteMenuItems || [];
-  
+
   if (selectedItems.length > 0) {
-    menuList.innerHTML = selectedItems.map(item => `<li>- ${item.name}</li>`).join('');
+    if (quoteIsCustomOrder) {
+      menuList.innerHTML = selectedItems.map(item => `<li>${item.quantity}x ${item.name}</li>`).join('');
+    } else {
+      menuList.innerHTML = selectedItems.map(item => `<li>- ${item.name}</li>`).join('');
+    }
   }
 
-  document.getElementById('quoteDisplayGuestCountTable').textContent = guestCount;
+  // Page 3 - Cost breakdown
+  const quoteCostBreakdownBody = document.getElementById('quoteCostBreakdownBody');
+  if (quoteIsCustomOrder && selectedItems.length > 0) {
+    quoteCostBreakdownBody.innerHTML = selectedItems.map(item =>
+      `<tr><td>${item.name}</td><td>${formatEUR(item.price)}</td><td>${item.quantity}</td><td>EUR ${formatEUR(item.price * item.quantity)}</td></tr>`
+    ).join('');
+  } else {
+    quoteCostBreakdownBody.innerHTML = `<tr>
+      <td id="quoteDisplayItemDescription"></td>
+      <td id="quoteDisplayRate"></td>
+      <td id="quoteDisplayGuestCountTable"></td>
+      <td id="quoteDisplayItemTotal"></td>
+    </tr>`;
+    calculateQuoteTotals();
+  }
 
   const includeMocktail = document.getElementById('quoteIncludeMocktailPackage')?.checked;
   const mocktailSection = document.getElementById('quoteMocktailSection');
   if (mocktailSection) mocktailSection.style.display = includeMocktail ? 'block' : 'none';
+
+  // Hide guest count and price per person in custom order mode
+  const quoteGuestCountDisplay = document.getElementById('quoteGuestCountDisplay');
+  const quotePricePerPersonRow = document.getElementById('quotePricePerPersonRow');
+  if (quoteGuestCountDisplay) quoteGuestCountDisplay.style.display = quoteIsCustomOrder ? 'none' : '';
+  if (quotePricePerPersonRow) quotePricePerPersonRow.style.display = quoteIsCustomOrder ? 'none' : '';
 
   document.getElementById('quotePages').style.display = 'block';
   document.getElementById('invoicePages').style.display = 'none';
@@ -1203,7 +1407,10 @@ function generateQuote() {
 }
 
 function generateEmbassyInvoice() {
-  const requiredFields = ['embassyInvoiceDate', 'embassyInvoiceCaterDate', 'embassyInvoiceNumber', 'embassyInvoiceClient', 'embassyInvoiceGuestCount', 'embassyInvoiceServiceDescription'];
+  const embassyIsCustomOrder = document.getElementById('embassyInvoiceIsCustomOrder')?.checked || false;
+  const requiredFields = embassyIsCustomOrder
+    ? ['embassyInvoiceDate', 'embassyInvoiceCaterDate', 'embassyInvoiceNumber', 'embassyInvoiceClient', 'embassyInvoiceServiceDescription']
+    : ['embassyInvoiceDate', 'embassyInvoiceCaterDate', 'embassyInvoiceNumber', 'embassyInvoiceClient', 'embassyInvoiceGuestCount', 'embassyInvoiceServiceDescription'];
   let valid = true;
   
   requiredFields.forEach(id => {
@@ -1259,10 +1466,34 @@ function generateEmbassyInvoice() {
   const selectedItems = window.selectedEmbassyInvoiceMenuItems || [];
   const menuItemsComma = document.getElementById('embassyInvoiceDisplayMenuItemsComma');
   if (menuItemsComma && selectedItems.length > 0) {
-    menuItemsComma.textContent = selectedItems.map(item => item.name).join(', ');
+    if (embassyIsCustomOrder) {
+      menuItemsComma.textContent = selectedItems.map(item => `${item.quantity}x ${item.name}`).join(', ');
+    } else {
+      menuItemsComma.textContent = selectedItems.map(item => item.name).join(', ');
+    }
   }
 
-  document.getElementById('embassyInvoiceDisplayGuestCountTable').textContent = guestCount;
+  // Page 3 - Cost breakdown
+  const embassyCostBreakdownBody = document.getElementById('embassyInvoiceCostBreakdownBody');
+  if (embassyIsCustomOrder && selectedItems.length > 0) {
+    embassyCostBreakdownBody.innerHTML = selectedItems.map(item =>
+      `<tr><td>${item.name}</td><td>${formatEUR(item.price)}</td><td>${item.quantity}</td><td>EUR ${formatEUR(item.price * item.quantity)}</td></tr>`
+    ).join('');
+  } else {
+    embassyCostBreakdownBody.innerHTML = `<tr>
+      <td id="embassyInvoiceDisplayItemDescription"></td>
+      <td id="embassyInvoiceDisplayRate"></td>
+      <td id="embassyInvoiceDisplayGuestCountTable"></td>
+      <td id="embassyInvoiceDisplayItemTotal"></td>
+    </tr>`;
+    calculateEmbassyInvoiceTotals();
+  }
+
+  // Hide guest count and price per person in custom order mode
+  const embassyGuestCountDisplay = document.getElementById('embassyInvoiceGuestCountDisplay');
+  const embassyPricePerPersonRow = document.getElementById('embassyInvoicePricePerPersonRow');
+  if (embassyGuestCountDisplay) embassyGuestCountDisplay.style.display = embassyIsCustomOrder ? 'none' : '';
+  if (embassyPricePerPersonRow) embassyPricePerPersonRow.style.display = embassyIsCustomOrder ? 'none' : '';
 
   document.getElementById('embassyInvoicePages').style.display = 'block';
   document.getElementById('invoicePages').style.display = 'none';
@@ -1745,6 +1976,9 @@ function resetForm() {
     cb.checked = false;
     cb.closest('tr').classList.remove('selected');
   });
+  document.querySelectorAll('#invoiceFormSection .qty-input').forEach(input => input.value = '');
+  document.getElementById('isCustomOrder').checked = false;
+  toggleCustomOrder('invoice', false);
   document.getElementById('pricePerPersonDisplay').textContent = 'EUR 0,00';
   document.getElementById('mocktailSection').style.display = 'none';
   clearDraft('invoice');
@@ -1758,6 +1992,9 @@ function resetQuoteForm() {
     cb.checked = false;
     cb.closest('tr').classList.remove('selected');
   });
+  document.querySelectorAll('#quoteFormSection .qty-input').forEach(input => input.value = '');
+  document.getElementById('quoteIsCustomOrder').checked = false;
+  toggleCustomOrder('quote', false);
   document.getElementById('quotePricePerPersonDisplay').textContent = 'EUR 0,00';
   document.getElementById('quoteMocktailSection').style.display = 'none';
   clearDraft('quote');
@@ -1772,6 +2009,9 @@ function resetEmbassyInvoiceForm() {
     cb.checked = false;
     cb.closest('tr').classList.remove('selected');
   });
+  document.querySelectorAll('#embassyInvoiceFormSection .qty-input').forEach(input => input.value = '');
+  document.getElementById('embassyInvoiceIsCustomOrder').checked = false;
+  toggleCustomOrder('embassy-invoice', false);
   document.getElementById('embassyInvoicePricePerPersonDisplay').textContent = 'EUR 0,00';
   clearDraft('embassy-invoice');
   updateSelectedSummary('embassy-invoice');
@@ -1878,7 +2118,7 @@ async function populatePricingTables() {
   function populateTable(tableId, items, docType) {
     const table = document.getElementById(tableId);
     if (!table) return;
-    
+
     table.innerHTML = items.map(item => {
       const price = menuPrices[item] || 0;
       return `<tr data-item="${item}" data-price="${price}">
@@ -1887,24 +2127,43 @@ async function populatePricingTables() {
         </td>
         <td>${item}</td>
         <td>€${formatEUR(price)}</td>
+        <td class="qty-col" style="display: none; width: 60px;">
+          <input type="number" class="qty-input" min="0" value="" placeholder="0" style="width: 50px; padding: 2px 4px; text-align: center; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;">
+        </td>
       </tr>`;
     }).join('');
-    
+
     table.querySelectorAll('tr').forEach(row => {
       const checkbox = row.querySelector('input[type="checkbox"]');
-      
+      const qtyInput = row.querySelector('.qty-input');
+
       row.addEventListener('click', function(e) {
-        if (e.target.type !== 'checkbox') {
+        if (e.target.type !== 'checkbox' && e.target.type !== 'number') {
           checkbox.checked = !checkbox.checked;
           this.classList.toggle('selected', checkbox.checked);
           triggerCalculation(docType);
         }
       });
-      
+
       checkbox.addEventListener('change', function() {
         row.classList.toggle('selected', this.checked);
+        if (!this.checked && qtyInput) qtyInput.value = '';
         triggerCalculation(docType);
       });
+
+      if (qtyInput) {
+        qtyInput.addEventListener('input', function() {
+          const qty = parseInt(this.value) || 0;
+          if (qty > 0 && !checkbox.checked) {
+            checkbox.checked = true;
+            row.classList.add('selected');
+          }
+          triggerCalculation(docType);
+        });
+        qtyInput.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+      }
     });
   }
   
@@ -2011,6 +2270,11 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('mocktailHours')?.addEventListener('input', calculateTotals);
   document.getElementById('includeAdminFee')?.addEventListener('change', calculateTotals);
 
+  // Custom order toggle
+  document.getElementById('isCustomOrder')?.addEventListener('change', function() {
+    toggleCustomOrder('invoice', this.checked);
+  });
+
   // Amended invoice fields
   document.getElementById('isAmendedInvoice')?.addEventListener('change', function() {
     const amendedFields = document.getElementById('amendedInvoiceFields');
@@ -2039,6 +2303,9 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById(id)?.addEventListener('input', calculateQuoteTotals);
     document.getElementById(id)?.addEventListener('change', calculateQuoteTotals);
   });
+  document.getElementById('quoteIsCustomOrder')?.addEventListener('change', function() {
+    toggleCustomOrder('quote', this.checked);
+  });
   document.getElementById('quoteIncludeMocktailPackage')?.addEventListener('change', calculateQuoteTotals);
   document.getElementById('quoteMocktailHours')?.addEventListener('input', calculateQuoteTotals);
   document.getElementById('quoteIncludeAdminFee')?.addEventListener('change', calculateQuoteTotals);
@@ -2047,6 +2314,9 @@ window.addEventListener('DOMContentLoaded', function() {
   ['embassyInvoiceGuestCount', 'embassyInvoiceDiscount', 'embassyInvoiceServiceFee', 'embassyInvoiceDate', 'embassyInvoiceCaterDate'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', calculateEmbassyInvoiceTotals);
     document.getElementById(id)?.addEventListener('change', calculateEmbassyInvoiceTotals);
+  });
+  document.getElementById('embassyInvoiceIsCustomOrder')?.addEventListener('change', function() {
+    toggleCustomOrder('embassy-invoice', this.checked);
   });
   document.getElementById('embassyInvoiceIncludeMocktailPackage')?.addEventListener('change', calculateEmbassyInvoiceTotals);
   document.getElementById('embassyInvoiceMocktailHours')?.addEventListener('input', calculateEmbassyInvoiceTotals);
