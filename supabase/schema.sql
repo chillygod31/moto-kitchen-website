@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS quote_requests (
   budget_range TEXT,
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'quoted', 'converted', 'lost')),
   notes TEXT,
+  quote_file TEXT,
+  quote_file_name TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

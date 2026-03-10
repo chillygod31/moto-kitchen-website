@@ -19,6 +19,8 @@ interface QuoteRequest {
   budget_range: string | null;
   status: string;
   notes: string | null;
+  quote_file: string | null;
+  quote_file_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +42,7 @@ export default function AdminQuotesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedQuote, setSelectedQuote] = useState<QuoteRequest | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [uploadingFileId, setUploadingFileId] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
   // Fetch CSRF token on mount
@@ -155,6 +158,61 @@ export default function AdminQuotesPage() {
       }
     } catch (error) {
       console.error("Error updating notes:", error);
+    }
+  };
+
+  const uploadQuoteFile = async (id: string, file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File too large. Maximum size is 5MB.");
+      return;
+    }
+    try {
+      setUploadingFileId(id);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (csrfToken) headers["x-csrf-token"] = csrfToken;
+        const response = await fetch(`/api/quotes/${id}`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ quote_file: base64, quote_file_name: file.name }),
+        });
+        if (response.ok) {
+          fetchQuotes();
+          if (selectedQuote?.id === id) {
+            setSelectedQuote({ ...selectedQuote, quote_file: base64, quote_file_name: file.name });
+          }
+        } else {
+          alert("Failed to upload file");
+        }
+        setUploadingFileId(null);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file");
+      setUploadingFileId(null);
+    }
+  };
+
+  const deleteQuoteFile = async (id: string) => {
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) headers["x-csrf-token"] = csrfToken;
+      const response = await fetch(`/api/quotes/${id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ quote_file: null, quote_file_name: null }),
+      });
+      if (response.ok) {
+        fetchQuotes();
+        if (selectedQuote?.id === id) {
+          setSelectedQuote({ ...selectedQuote, quote_file: null, quote_file_name: null });
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
     }
   };
 
@@ -311,6 +369,13 @@ export default function AdminQuotesPage() {
                         {quote.status === 'new' && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">New</span>
                         )}
+                        {quote.quote_file && (
+                          <span title="Quote attached">
+                            <svg className="w-3.5 h-3.5 text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                          </span>
+                        )}
                       </div>
                       <a href={`mailto:${quote.email}`} className="text-sm text-[#C9653B] hover:underline block truncate">
                         {quote.email}
@@ -401,6 +466,13 @@ export default function AdminQuotesPage() {
                               <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" title="Not responded"></span>
                             )}
                             {quote.name}
+                            {quote.quote_file && (
+                              <span title="Quote attached">
+                                <svg className="w-3.5 h-3.5 text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-[#4B4B4B]">
@@ -530,6 +602,57 @@ export default function AdminQuotesPage() {
                       <p className="text-sm text-[#4B4B4B]">{selectedQuote.how_found}</p>
                     </div>
                   )}
+
+                  {/* Quote Attachment */}
+                  <div>
+                    <h3 className="font-semibold text-sm text-[#1F1F1F] mb-2">Quote Attachment</h3>
+                    {selectedQuote.quote_file ? (
+                      <div className="flex items-center gap-3 p-3 bg-[#FAF6EF] rounded-lg border border-[#E6D9C8]">
+                        <svg className="w-5 h-5 text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm text-[#1F1F1F] flex-1 truncate">{selectedQuote.quote_file_name || "quote.pdf"}</span>
+                        <a
+                          href={selectedQuote.quote_file}
+                          download={selectedQuote.quote_file_name || "quote.pdf"}
+                          className="text-xs px-3 py-1 text-[#C9653B] border border-[#C9653B] rounded hover:bg-[#C9653B]/5"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Download
+                        </a>
+                        <button
+                          onClick={() => {
+                            if (confirm("Remove attached file?")) {
+                              deleteQuoteFile(selectedQuote.id);
+                            }
+                          }}
+                          className="text-xs px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-[#E6D9C8] rounded-lg cursor-pointer hover:border-[#C9653B] hover:bg-[#FAF6EF] transition-colors">
+                        <svg className="w-5 h-5 text-[#6B5B55]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span className="text-sm text-[#6B5B55]">
+                          {uploadingFileId === selectedQuote.id ? "Uploading..." : "Upload quote PDF"}
+                        </span>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                          className="hidden"
+                          disabled={uploadingFileId === selectedQuote.id}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) uploadQuoteFile(selectedQuote.id, file);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
 
                   {/* Notes */}
                   <div>

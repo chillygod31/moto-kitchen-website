@@ -65,11 +65,13 @@ export async function PATCH(
     const supabase = await createServerAuthClient();
     const body = await request.json();
     
-    const { status, notes } = body;
+    const { status, notes, quote_file, quote_file_name } = body;
 
     const updateData: any = {};
     if (status) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes;
+    if (quote_file !== undefined) updateData.quote_file = quote_file;
+    if (quote_file_name !== undefined) updateData.quote_file_name = quote_file_name;
 
     const { data, error } = await supabase
       .from('quote_requests')
