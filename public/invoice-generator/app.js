@@ -1232,6 +1232,18 @@ function generateInvoice() {
   document.getElementById('displayDate2').textContent = formattedCaterDate;
   document.getElementById('displayClient2').textContent = client;
   document.getElementById('displayServiceDescription2').textContent = serviceDescription;
+  // Page 3 - Restore cost breakdown template before calculateTotals populates it
+  document.getElementById('displaySignatureDate').textContent = formattedInvoiceDate;
+  const costBreakdownBody = document.getElementById('invoiceCostBreakdownBody');
+  if (!isCustomOrder) {
+    costBreakdownBody.innerHTML = `<tr>
+      <td id="displayItemDescription"></td>
+      <td id="displayRate"></td>
+      <td id="displayGuestCountTable"></td>
+      <td id="displayItemTotal"></td>
+    </tr>`;
+  }
+
   document.getElementById('displayItemDescription').textContent = itemDescription;
 
   calculateTotals();
@@ -1248,23 +1260,11 @@ function generateInvoice() {
     }
   }
 
-  // Page 3 - Cost breakdown
-  document.getElementById('displaySignatureDate').textContent = formattedInvoiceDate;
-  const costBreakdownBody = document.getElementById('invoiceCostBreakdownBody');
+  // Page 3 - Custom order: replace with itemized rows
   if (isCustomOrder && selectedItems.length > 0) {
     costBreakdownBody.innerHTML = selectedItems.map(item =>
       `<tr><td>${item.name}</td><td>${formatEUR(item.price)}</td><td>${item.quantity}</td><td>EUR ${formatEUR(item.price * item.quantity)}</td></tr>`
     ).join('');
-  } else {
-    // Normal mode: restore single-row template (calculateTotals already set the values)
-    costBreakdownBody.innerHTML = `<tr>
-      <td id="displayItemDescription"></td>
-      <td id="displayRate"></td>
-      <td id="displayGuestCountTable"></td>
-      <td id="displayItemTotal"></td>
-    </tr>`;
-    // Re-run calculateTotals to fill in the restored elements
-    calculateTotals();
   }
 
   // Hide guest count and price per person in custom order mode
@@ -1350,6 +1350,17 @@ function generateQuote() {
   document.getElementById('quoteDisplayDate2').textContent = formattedCaterDate;
   document.getElementById('quoteDisplayClient2').textContent = client;
   document.getElementById('quoteDisplayServiceDescription2').textContent = serviceDescription;
+  // Page 3 - Restore cost breakdown template before calculateQuoteTotals populates it
+  const quoteCostBreakdownBody = document.getElementById('quoteCostBreakdownBody');
+  if (!quoteIsCustomOrder) {
+    quoteCostBreakdownBody.innerHTML = `<tr>
+      <td id="quoteDisplayItemDescription"></td>
+      <td id="quoteDisplayRate"></td>
+      <td id="quoteDisplayGuestCountTable"></td>
+      <td id="quoteDisplayItemTotal"></td>
+    </tr>`;
+  }
+
   document.getElementById('quoteDisplayItemDescription').textContent = itemDescription;
 
   calculateQuoteTotals();
@@ -1365,20 +1376,11 @@ function generateQuote() {
     }
   }
 
-  // Page 3 - Cost breakdown
-  const quoteCostBreakdownBody = document.getElementById('quoteCostBreakdownBody');
+  // Page 3 - Custom order: replace with itemized rows
   if (quoteIsCustomOrder && selectedItems.length > 0) {
     quoteCostBreakdownBody.innerHTML = selectedItems.map(item =>
       `<tr><td>${item.name}</td><td>${formatEUR(item.price)}</td><td>${item.quantity}</td><td>EUR ${formatEUR(item.price * item.quantity)}</td></tr>`
     ).join('');
-  } else {
-    quoteCostBreakdownBody.innerHTML = `<tr>
-      <td id="quoteDisplayItemDescription"></td>
-      <td id="quoteDisplayRate"></td>
-      <td id="quoteDisplayGuestCountTable"></td>
-      <td id="quoteDisplayItemTotal"></td>
-    </tr>`;
-    calculateQuoteTotals();
   }
 
   const includeMocktail = document.getElementById('quoteIncludeMocktailPackage')?.checked;
@@ -1459,6 +1461,17 @@ function generateEmbassyInvoice() {
   if (document.getElementById('embassyInvoiceServiceFeeStaff')?.checked) serviceFeeTypes.push('staff');
   document.getElementById('embassyInvoiceDisplayServiceFeeType').textContent = formatServiceFeeTypes([...serviceFeeTypes]);
 
+  // Page 3 - Restore cost breakdown template before calculateEmbassyInvoiceTotals populates it
+  const embassyCostBreakdownBody = document.getElementById('embassyInvoiceCostBreakdownBody');
+  if (!embassyIsCustomOrder) {
+    embassyCostBreakdownBody.innerHTML = `<tr>
+      <td id="embassyInvoiceDisplayItemDescription"></td>
+      <td id="embassyInvoiceDisplayRate"></td>
+      <td id="embassyInvoiceDisplayGuestCountTable"></td>
+      <td id="embassyInvoiceDisplayItemTotal"></td>
+    </tr>`;
+  }
+
   document.getElementById('embassyInvoiceDisplayItemDescription').textContent = itemDescription;
 
   calculateEmbassyInvoiceTotals();
@@ -1473,20 +1486,11 @@ function generateEmbassyInvoice() {
     }
   }
 
-  // Page 3 - Cost breakdown
-  const embassyCostBreakdownBody = document.getElementById('embassyInvoiceCostBreakdownBody');
+  // Page 3 - Custom order: replace with itemized rows
   if (embassyIsCustomOrder && selectedItems.length > 0) {
     embassyCostBreakdownBody.innerHTML = selectedItems.map(item =>
       `<tr><td>${item.name}</td><td>${formatEUR(item.price)}</td><td>${item.quantity}</td><td>EUR ${formatEUR(item.price * item.quantity)}</td></tr>`
     ).join('');
-  } else {
-    embassyCostBreakdownBody.innerHTML = `<tr>
-      <td id="embassyInvoiceDisplayItemDescription"></td>
-      <td id="embassyInvoiceDisplayRate"></td>
-      <td id="embassyInvoiceDisplayGuestCountTable"></td>
-      <td id="embassyInvoiceDisplayItemTotal"></td>
-    </tr>`;
-    calculateEmbassyInvoiceTotals();
   }
 
   // Hide guest count and price per person in custom order mode
