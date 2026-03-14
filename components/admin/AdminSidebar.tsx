@@ -25,6 +25,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/quotes', label: 'Quotes' },
       { href: '/admin/invoice', label: 'Generate Invoice' },
+      { href: '/admin/calendar', label: 'Calendar' },
     ]
   },
   {
@@ -42,6 +43,7 @@ const navGroups: NavGroup[] = [
       { href: '/admin/inventory', label: 'Inventory' },
       { href: '/admin/time-slots', label: 'Time Slots' },
       { href: '/admin/emails', label: 'Email Monitoring' },
+      { href: '/admin/events', label: 'Event Planner' },
     ]
   },
   {

@@ -44,6 +44,12 @@ export default function AdminQuotesPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [uploadingFileId, setUploadingFileId] = useState<string | null>(null);
   const [csrfToken, setCsrfToken] = useState<string | null>(null);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [calendarForm, setCalendarForm] = useState({
+    summary: '', date: '', startTime: '', endTime: '', location: '', description: '',
+  });
+  const [addingToCalendar, setAddingToCalendar] = useState(false);
+  const [calendarSuccess, setCalendarSuccess] = useState(false);
 
   // Fetch CSRF token on mount
   useEffect(() => {
@@ -269,6 +275,69 @@ export default function AdminQuotesPage() {
       day: "numeric",
       month: "short",
     });
+  };
+
+  const openCalendarModal = (quote: QuoteRequest) => {
+    // Parse event_date to YYYY-MM-DD format if possible
+    let dateStr = '';
+    if (quote.event_date) {
+      try {
+        const parsed = new Date(quote.event_date);
+        if (!isNaN(parsed.getTime())) {
+          dateStr = parsed.toISOString().split('T')[0];
+        }
+      } catch {
+        dateStr = '';
+      }
+    }
+
+    const descParts = [];
+    if (quote.guest_count) descParts.push(`Guests: ${quote.guest_count}`);
+    if (quote.budget_range) descParts.push(`Budget: ${formatBudgetRange(quote.budget_range)}`);
+    if (quote.service_type) descParts.push(`Service: ${formatServiceType(quote.service_type)}`);
+    if (quote.dietary_requirements?.length) descParts.push(`Dietary: ${quote.dietary_requirements.join(', ')}`);
+    if (quote.message) descParts.push(`\nMessage: ${quote.message}`);
+
+    setCalendarForm({
+      summary: `${quote.name} - ${quote.event_type}${quote.guest_count ? ` (${quote.guest_count} guests)` : ''}`,
+      date: dateStr,
+      startTime: '',
+      endTime: '',
+      location: quote.location || '',
+      description: descParts.join('\n'),
+    });
+    setCalendarSuccess(false);
+    setShowCalendarModal(true);
+  };
+
+  const handleAddToCalendar = async () => {
+    if (!calendarForm.summary || !calendarForm.date) return;
+    setAddingToCalendar(true);
+    try {
+      const res = await fetch('/api/admin/calendar/from-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken || '' },
+        body: JSON.stringify({
+          summary: calendarForm.summary,
+          date: calendarForm.date,
+          startTime: calendarForm.startTime || undefined,
+          endTime: calendarForm.endTime || undefined,
+          location: calendarForm.location || undefined,
+          description: calendarForm.description || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to add to calendar');
+      setCalendarSuccess(true);
+      setTimeout(() => {
+        setShowCalendarModal(false);
+        setCalendarSuccess(false);
+      }, 1500);
+    } catch (err) {
+      console.error('Error adding to calendar:', err);
+      alert('Failed to add to calendar. Check that Google Calendar is configured.');
+    } finally {
+      setAddingToCalendar(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -667,6 +736,20 @@ export default function AdminQuotesPage() {
                     />
                   </div>
 
+                  {/* Add to Calendar */}
+                  <div>
+                    <button
+                      onClick={() => openCalendarModal(selectedQuote)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition"
+                      style={{ backgroundColor: 'var(--brand-primary, #C9653B)' }}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Add to Calendar
+                    </button>
+                  </div>
+
                   {/* Footer */}
                   <div className="pt-3 border-t border-gray-200 text-xs text-[#6B5B55]">
                     Submitted: {new Date(selectedQuote.created_at).toLocaleDateString("en-NL", {
@@ -677,6 +760,101 @@ export default function AdminQuotesPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Add to Calendar Modal */}
+      {showCalendarModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowCalendarModal(false)}>
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Add to Calendar</h2>
+            </div>
+            {calendarSuccess ? (
+              <div className="p-10 text-center">
+                <div className="text-4xl mb-3">&#10003;</div>
+                <p className="text-sm font-medium text-green-700">Added to calendar</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-5 space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Title *</label>
+                    <input
+                      type="text"
+                      value={calendarForm.summary}
+                      onChange={(e) => setCalendarForm(p => ({ ...p, summary: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Date *</label>
+                    <input
+                      type="date"
+                      value={calendarForm.date}
+                      onChange={(e) => setCalendarForm(p => ({ ...p, date: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Start Time</label>
+                      <input
+                        type="time"
+                        value={calendarForm.startTime}
+                        onChange={(e) => setCalendarForm(p => ({ ...p, startTime: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">End Time</label>
+                      <input
+                        type="time"
+                        value={calendarForm.endTime}
+                        onChange={(e) => setCalendarForm(p => ({ ...p, endTime: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                    <input
+                      type="text"
+                      value={calendarForm.location}
+                      onChange={(e) => setCalendarForm(p => ({ ...p, location: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea
+                      value={calendarForm.description}
+                      onChange={(e) => setCalendarForm(p => ({ ...p, description: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-gray-400 focus:outline-none resize-none"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <div className="p-5 border-t border-gray-100 flex justify-end gap-2">
+                  <button
+                    onClick={() => setShowCalendarModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddToCalendar}
+                    disabled={addingToCalendar || !calendarForm.summary || !calendarForm.date}
+                    className="px-4 py-2 text-sm font-medium text-white rounded-lg transition disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--brand-primary, #C9653B)' }}
+                  >
+                    {addingToCalendar ? 'Adding...' : 'Add to Calendar'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>

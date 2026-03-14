@@ -95,6 +95,42 @@ export interface TimeSlot {
   updated_at: string
 }
 
+// Event Planner Types
+export interface Event {
+  id: string
+  tenant_id: string
+  name: string
+  date: string
+  start_time: string | null
+  end_time: string | null
+  event_type: 'private' | 'festival' | 'market' | 'corporate'
+  expected_guests: number | null
+  location: string | null
+  notes: string | null
+  pack_level: 'pack1' | 'pack2' | 'custom'
+  status: 'planning' | 'completed'
+  created_at: string
+  updated_at: string
+  event_prep_items?: EventPrepItem[]
+}
+
+export interface EventPrepItem {
+  id: string
+  event_id: string
+  item_name: string
+  category: string | null
+  planned_qty: number
+  planned_kg: number | null
+  planned_boxes: number | null
+  cost_per_kg: number | null
+  sell_price: number | null
+  actual_qty_sold: number | null
+  actual_revenue: number | null
+  notes: string | null
+  sort_order: number
+  created_at: string
+}
+
 // Subscription Types
 export interface SubscriptionPlan {
   id: string
