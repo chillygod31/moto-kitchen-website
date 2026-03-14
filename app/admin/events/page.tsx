@@ -850,7 +850,7 @@ export default function AdminEventsPage() {
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   {tab !== 'all' && (
                     <span className="ml-1.5 text-xs text-gray-400">
-                      {events.filter(e => tab === 'all' || e.status === tab).length}
+                      {events.filter(e => e.status === tab).length}
                     </span>
                   )}
                 </button>
