@@ -1913,15 +1913,21 @@ async function generatePDF(pagesElement, filename) {
 }
 
 // ===== PRINT FUNCTIONS =====
+function formatDateYYMMDD(dateStr) {
+  if (!dateStr) return 'unknown';
+  const [y, m, d] = dateStr.split('-');
+  return `${y.slice(2)}${m}${d}`;
+}
+
 function printInvoice() {
   if (!document.getElementById('invoiceNumber')?.value) {
     showToast('Please generate the invoice first', 'error');
     return;
   }
 
-  const invoiceNumber = document.getElementById('invoiceNumber').value;
-  const formattedNumber = invoiceNumber.startsWith('#') ? invoiceNumber : '#' + invoiceNumber;
-  const filename = `Invoice_${formattedNumber.replace('#', '')}_${formatDate(document.getElementById('invoiceDate').value)}.pdf`;
+  const caterDate = formatDateYYMMDD(document.getElementById('caterDate').value);
+  const clientName = (document.getElementById('client').value || 'Client').trim();
+  const filename = `Invoice - ${caterDate} - ${clientName}.pdf`;
 
   const pagesElement = document.getElementById('invoicePages');
   document.getElementById('quotePages').style.display = 'none';
@@ -1939,9 +1945,9 @@ function printQuote() {
     return;
   }
 
-  const quoteNumber = document.getElementById('quoteNumber').value;
-  const formattedNumber = quoteNumber.startsWith('#') ? quoteNumber : '#' + quoteNumber;
-  const filename = `Quote_${formattedNumber.replace('#', '')}_${formatDate(document.getElementById('quoteDate').value)}.pdf`;
+  const caterDate = formatDateYYMMDD(document.getElementById('quoteCaterDate').value);
+  const clientName = (document.getElementById('quoteClient').value || 'Client').trim();
+  const filename = `Quote - ${caterDate} - ${clientName}.pdf`;
 
   const pagesElement = document.getElementById('quotePages');
   document.getElementById('invoicePages').style.display = 'none';
@@ -1959,9 +1965,9 @@ function printEmbassyInvoice() {
     return;
   }
 
-  const invoiceNumber = document.getElementById('embassyInvoiceNumber').value;
-  const formattedNumber = invoiceNumber.startsWith('#') ? invoiceNumber : '#' + invoiceNumber;
-  const filename = `EmbassyInvoice_${formattedNumber.replace('#', '')}_${formatDate(document.getElementById('embassyInvoiceDate').value)}.pdf`;
+  const caterDate = formatDateYYMMDD(document.getElementById('embassyInvoiceCaterDate').value);
+  const clientName = (document.getElementById('embassyInvoiceClient').value || 'Client').trim();
+  const filename = `Embassy Invoice - ${caterDate} - ${clientName}.pdf`;
 
   const pagesElement = document.getElementById('embassyInvoicePages');
   document.getElementById('invoicePages').style.display = 'none';
