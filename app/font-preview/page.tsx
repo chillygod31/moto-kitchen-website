@@ -96,6 +96,8 @@ const fonts = [
   },
 ];
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default function FontPreviewPage() {
   const getFontStyle = (fontVar: string) => ({
     fontFamily: `var(${fontVar}), system-ui, -apple-system, sans-serif`,

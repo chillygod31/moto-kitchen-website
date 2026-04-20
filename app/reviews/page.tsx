@@ -3,6 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Reviews | Moto Kitchen",
   description: "Read what our clients say about Moto Kitchen's authentic Tanzanian catering. Real testimonials from weddings, corporate events, and private parties.",
+  alternates: { canonical: "https://motokitchen.nl/reviews" },
 };
 
 const reviews = [

@@ -5,6 +5,7 @@ import { galleryItems } from "../../../lib/gallery-data";
 export const metadata = {
   title: "Pick Up & Delivery | Moto Kitchen",
   description: "Convenient pick-up and delivery service for authentic Tanzanian cuisine across the Netherlands, Belgium, Germany, and beyond.",
+  alternates: { canonical: "https://motokitchen.nl/services/pick-up-delivery" },
 };
 
 const includedItems = [

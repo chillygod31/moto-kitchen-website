@@ -4,6 +4,7 @@ import Image from "next/image";
 export const metadata = {
   title: "About Us | Moto Kitchen",
   description: "Learn about Moto Kitchen's story, our passion for Tanzanian cuisine, and our mission to bring authentic East African flavours to the Netherlands.",
+  alternates: { canonical: "https://motokitchen.nl/about" },
 };
 
 export default function AboutPage() {

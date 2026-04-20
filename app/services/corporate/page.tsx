@@ -6,6 +6,7 @@ import { formatPricing } from "../../../lib/pricing-data";
 export const metadata = {
   title: "Corporate Catering | Moto Kitchen",
   description: "Professional Tanzanian catering for corporate events in the Netherlands. Team lunches, conferences, client meetings, and company celebrations.",
+  alternates: { canonical: "https://motokitchen.nl/services/corporate" },
 };
 
 const includedItems = [

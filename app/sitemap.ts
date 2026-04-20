@@ -7,6 +7,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/services",
     "/services/private-events",
+    "/services/corporate",
+    "/services/weddings",
     "/services/pick-up-delivery",
     "/menu",
     "/gallery",

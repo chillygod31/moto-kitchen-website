@@ -4,6 +4,7 @@ import { galleryItems } from "../../lib/gallery-data";
 export const metadata = {
   title: "Gallery | Moto Kitchen",
   description: "Browse photos from Moto Kitchen's catering events. Weddings, corporate events, private parties, and delicious Tanzanian food.",
+  alternates: { canonical: "https://motokitchen.nl/gallery" },
 };
 
 export default function GalleryPage() {

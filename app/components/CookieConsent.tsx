@@ -76,7 +76,7 @@ export default function CookieConsent() {
                   Privacy Policy
                 </a>
                 {' • '}
-                <a href="/cookie-policy" className="text-[#C9653B] hover:underline">
+                <a href="/cookies" className="text-[#C9653B] hover:underline">
                   Cookie Policy
                 </a>
               </p>

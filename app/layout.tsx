@@ -53,6 +53,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Moto Kitchen" }],
   creator: "Moto Kitchen",
   metadataBase: new URL("https://motokitchen.nl"),
+  alternates: {
+    canonical: "https://motokitchen.nl",
+  },
   openGraph: {
     type: "website",
     locale: "en_NL",

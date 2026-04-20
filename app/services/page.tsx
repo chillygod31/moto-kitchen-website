@@ -4,6 +4,7 @@ import CTASection from "../components/CTASection";
 export const metadata = {
   title: "Catering Services | Moto Kitchen",
   description: "Authentic Tanzanian catering for weddings, corporate events, and private parties across the Netherlands. Custom menus, professional service.",
+  alternates: { canonical: "https://motokitchen.nl/services" },
 };
 
 const services = [
@@ -20,7 +21,7 @@ const services = [
     ],
   },
   {
-    href: "/services/private-events",
+    href: "/services/corporate",
     title: "Corporate",
     description: "Professional catering for team lunches, conferences, client meetings, and company celebrations.",
     image: "/corporate-2.jpg",
@@ -32,7 +33,7 @@ const services = [
     ],
   },
   {
-    href: "/services/private-events",
+    href: "/services/weddings",
     title: "Weddings",
     description: "Make your special day unforgettable with authentic Tanzanian cuisine for your wedding celebration.",
     image: "/private-3.jpg",

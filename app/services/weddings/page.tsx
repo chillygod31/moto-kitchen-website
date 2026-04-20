@@ -3,6 +3,7 @@ import ServicePageTemplate from "../../components/ServicePageTemplate";
 export const metadata = {
   title: "Wedding Catering | Moto Kitchen",
   description: "Authentic Tanzanian wedding catering in the Netherlands. Custom menus, tasting sessions, and full-service for your special day.",
+  alternates: { canonical: "https://motokitchen.nl/services/weddings" },
 };
 
 const includedItems = [

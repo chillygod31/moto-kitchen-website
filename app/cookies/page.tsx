@@ -1,6 +1,7 @@
 export const metadata = {
   title: "Cookie Policy | Moto Kitchen",
   description: "Moto Kitchen's cookie policy. Learn how we use cookies on our website.",
+  alternates: { canonical: "https://motokitchen.nl/cookies" },
 };
 
 export default function CookiesPage() {

@@ -57,6 +57,8 @@ const fontOptions = [
   },
 ];
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default function FAQFontPreviewPage() {
   return (
     <div className={`min-h-screen bg-[#FAF6EF] pt-32 pb-20 ${inter.variable} ${dmSans.variable} ${manrope.variable}`}>

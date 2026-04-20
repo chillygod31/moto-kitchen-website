@@ -1,6 +1,7 @@
 export const metadata = {
   title: "Terms of Service | Moto Kitchen",
   description: "Moto Kitchen's terms of service. Read our terms and conditions for catering services.",
+  alternates: { canonical: "https://motokitchen.nl/terms" },
 };
 
 export default function TermsPage() {
