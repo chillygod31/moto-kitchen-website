@@ -80,10 +80,13 @@ export async function getCalendarEvents(
   const calendar = getCalendar()
   const calendarId = getCalendarId()
 
+  const endOfDay = new Date(endDate)
+  endOfDay.setUTCHours(23, 59, 59, 999)
+
   const response = await calendar.events.list({
     calendarId,
     timeMin: new Date(startDate).toISOString(),
-    timeMax: new Date(endDate).toISOString(),
+    timeMax: endOfDay.toISOString(),
     singleEvents: true,
     orderBy: 'startTime',
     maxResults: 250,
