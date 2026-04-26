@@ -44,7 +44,7 @@ const menuPrices = {
   "Rice": 3.00,
   "Biriyani": 4.00,
   "Vegetarian Rices with peas": 4.00,
-  "Kachumbari": 1.00,
+  "Kachumbari": 2.00,
   "Salad": 3.00,
   "Samosa": 3.50,
   "Bahjia": 1.50,
