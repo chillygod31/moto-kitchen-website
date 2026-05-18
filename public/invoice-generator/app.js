@@ -223,6 +223,69 @@ async function deleteFromHistory(id) {
   }
 }
 
+// Convert a saved quote into a draft invoice, pre-filling the Invoice form.
+// Reuses the quote number as the invoice number. Invoice date defaults to today.
+function quoteDataToInvoiceData(quoteData) {
+  const today = new Date().toISOString().split('T')[0];
+  return {
+    invoiceDate: today,
+    caterDate: quoteData.quoteCaterDate || '',
+    invoiceNumber: quoteData.quoteNumber || '',
+    client: quoteData.quoteClient || '',
+    guestCount: quoteData.quoteGuestCount || '',
+    serviceDescription: quoteData.quoteServiceDescription || '',
+    itemDescription: quoteData.quoteItemDescription || '',
+    discount: quoteData.quoteDiscount || '',
+    serviceFee: quoteData.quoteServiceFee || '',
+    includeMocktailPackage: !!quoteData.quoteIncludeMocktailPackage,
+    mocktailHours: quoteData.quoteMocktailHours || '',
+    includeAdminFee: !!quoteData.quoteIncludeAdminFee,
+    serviceFeeDelivery: !!quoteData.quoteServiceFeeDelivery,
+    serviceFeeBuffet: !!quoteData.quoteServiceFeeBuffet,
+    serviceFeeDecorations: !!quoteData.quoteServiceFeeDecorations,
+    serviceFeeStaff: !!quoteData.quoteServiceFeeStaff,
+    isAmendedInvoice: false,
+    originalInvoiceNumber: '',
+    previouslyPaidAmount: '',
+    isCustomOrder: !!quoteData.isCustomOrder,
+    selectedItems: quoteData.selectedItems || []
+  };
+}
+
+async function convertQuoteToInvoice(id) {
+  let quoteData = null;
+
+  if (typeof id === 'string' && id.includes('-')) {
+    try {
+      const response = await fetch(`/api/invoice-history/${id}`, { credentials: 'include' });
+      if (!response.ok) {
+        showToast('Failed to load quote', 'error');
+        return;
+      }
+      const invoice = await response.json();
+      quoteData = invoice.form_data;
+    } catch (error) {
+      console.error('Failed to fetch quote for conversion:', error);
+      showToast('Failed to load quote', 'error');
+      return;
+    }
+  } else {
+    const history = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY) || '[]');
+    const entry = history.find(h => h.id === id);
+    if (!entry) {
+      showToast('Quote not found', 'error');
+      return;
+    }
+    quoteData = entry.data;
+  }
+
+  const invoiceData = quoteDataToInvoiceData(quoteData);
+  switchDocumentType('invoice');
+  setFormData('invoice', invoiceData);
+  if (typeof calculateTotals === 'function') calculateTotals();
+  showToast('Quote converted to invoice — review and generate', 'success');
+}
+
 async function renderHistory() {
   if (useAPIForHistory) {
     await renderHistoryAPI();
@@ -238,13 +301,16 @@ async function saveToHistoryAPI(docType, formData) {
   const clientField = docType === 'invoice' ? 'client' :
                       docType === 'quote' ? 'quoteClient' : 'embassyInvoiceClient';
 
+  // API expects 'embassyInvoice' not 'embassy-invoice'
+  const apiDocType = docType === 'embassy-invoice' ? 'embassyInvoice' : docType;
+
   try {
     const response = await fetch('/api/invoice-history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
-        document_type: docType,
+        document_type: apiDocType,
         document_number: formData[numberField] || '',
         client_name: formData[clientField] || '',
         form_data: formData
@@ -276,8 +342,10 @@ async function loadFromHistoryAPI(id) {
     });
     if (response.ok) {
       const invoice = await response.json();
-      switchDocumentType(invoice.document_type);
-      setFormData(invoice.document_type, invoice.form_data);
+      // API stores 'embassyInvoice' but local code uses 'embassy-invoice'
+      const localDocType = invoice.document_type === 'embassyInvoice' ? 'embassy-invoice' : invoice.document_type;
+      switchDocumentType(localDocType);
+      setFormData(localDocType, invoice.form_data);
       showToast('Invoice loaded from history', 'success');
     } else {
       showToast('Failed to load invoice', 'error');
@@ -354,6 +422,7 @@ async function renderHistoryAPI() {
         </div>
         <div class="history-item-actions">
           <button class="btn btn-primary" onclick="loadFromHistory('${entry.id}')">Load</button>
+          ${entry.document_type === 'quote' ? `<button class="btn btn-success" onclick="convertQuoteToInvoice('${entry.id}')">Convert to Invoice</button>` : ''}
           <button class="btn btn-danger" onclick="deleteFromHistory('${entry.id}')">Delete</button>
         </div>
       </div>
@@ -433,6 +502,7 @@ function renderHistoryLocal() {
       </div>
       <div class="history-item-actions">
         <button class="btn btn-primary" onclick="loadFromHistory(${entry.id})">Load</button>
+        ${entry.type === 'quote' ? `<button class="btn btn-success" onclick="convertQuoteToInvoice(${entry.id})">Convert to Invoice</button>` : ''}
         <button class="btn btn-danger" onclick="deleteFromHistory(${entry.id})">Delete</button>
       </div>
     </div>
