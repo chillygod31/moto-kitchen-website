@@ -536,7 +536,7 @@
       <div style="margin-top: 16px;">
         <div class="body-line"><strong>INVOICE NUMBER:</strong> <span id="displayInvoiceNumber">#1112</span></div>
         <div class="body-line" style="margin-top: 12px;"><strong>TOTAL:</strong> <span id="displayTotal">EUR 0,00</span></div>
-        <div class="body-line" style="margin-top: 12px;"><strong style="text-decoration: underline;">Deposit due to confirm order: <span id="displayDepositDue">EUR 0,00</span></strong></div>
+        <div id="depositDueRow" class="body-line" style="margin-top: 12px;"><strong style="text-decoration: underline;">Deposit due to confirm order: <span id="displayDepositDue">EUR 0,00</span></strong></div>
         <div id="amendedInvoiceInfo" style="display: none; margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 4px;">
           <div class="body-line"><strong>ORIGINAL INVOICE:</strong> <span id="displayOriginalInvoiceNumber">#1234</span></div>
           <div class="body-line" style="margin-top: 8px;"><strong>PREVIOUSLY PAID:</strong> <span id="displayPreviouslyPaid">EUR 0,00</span></div>
@@ -618,10 +618,10 @@
         <tr id="previouslyPaidRow" style="display: none;"><td>Previously Paid</td><td id="displayPreviouslyPaidPage3">-EUR 0,00</td></tr>
         <tr id="balanceDueRow" class="grand-total-row" style="display: none; background: #fff3cd;"><td><strong>BALANCE DUE</strong></td><td id="displayBalanceDuePage3"><strong>EUR 0,00</strong></td></tr>
       </table>
-      <div class="below-text">
+      <div class="below-text" id="signingFooter">
         <div style="text-align: center;">By signing <strong>below</strong> you confirm that you agree to the details, pricing and terms stated in this invoice. Your signature serves as a binding confirmation of the booking and authorizes Moto Kitchen to proceed with all preparations for your event.</div>
       </div>
-      <div class="signature-row">
+      <div class="signature-row" id="signatureSection">
         <div class="signature-col">
           <div class="body-line"><strong>Name:</strong> Susan Smith</div>
           <div class="body-line"><strong>Title:</strong> Manager Moto Kitchen NL</div>

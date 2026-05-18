@@ -1042,6 +1042,14 @@ function calculateTotals() {
     updateEl('displayBalanceDue', `EUR ${formatEUR(balanceDue)}`);
   }
 
+  // For amended invoices: hide deposit-due line (already paid) and signing footer
+  const depositDueRow = document.getElementById('depositDueRow');
+  if (depositDueRow) depositDueRow.style.display = isAmended ? 'none' : '';
+  const signingFooter = document.getElementById('signingFooter');
+  if (signingFooter) signingFooter.style.display = isAmended ? 'none' : '';
+  const signatureSection = document.getElementById('signatureSection');
+  if (signatureSection) signatureSection.style.display = isAmended ? 'none' : '';
+
   // Update amended invoice display on Page 3
   const previouslyPaidRow = document.getElementById('previouslyPaidRow');
   const balanceDueRow = document.getElementById('balanceDueRow');
