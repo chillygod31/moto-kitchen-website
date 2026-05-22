@@ -56,7 +56,7 @@ const menuPrices = {
   "Eggchop": 2.00,
   "Kebab": 3.00,
   "Mandazi": 1.50,
-  "Vitumbua": 1.75,
+  "Vitumbua": 3.50,
   "Coconut cake": 3.00,
   "Fresh Fruit": 4.00,
   "Fresh juice": 4.50,
