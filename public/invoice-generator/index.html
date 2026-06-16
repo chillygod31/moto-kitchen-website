@@ -214,6 +214,13 @@
         </div>
 
         <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="isBtwInvoice" style="width: 18px; height: 18px;">
+            <span>BTW invoice (9% catering VAT — show tax breakdown)</span>
+          </label>
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
           <label for="itemDescription">ITEM DESCRIPTION (Page 3):</label>
           <input type="text" id="itemDescription" placeholder="">
         </div>
@@ -537,6 +544,7 @@
         <div class="body-line"><strong>INVOICE NUMBER:</strong> <span id="displayInvoiceNumber">#1112</span></div>
         <div class="body-line" style="margin-top: 12px;"><strong>TOTAL:</strong> <span id="displayTotal">EUR 0,00</span></div>
         <div id="depositDueRow" class="body-line" style="margin-top: 12px;"><strong style="text-decoration: underline;">Deposit due to confirm order: <span id="displayDepositDue">EUR 0,00</span></strong></div>
+        <div id="btwDisclaimerPage1" class="body-line" style="display: none; margin-top: 8px; font-style: italic;">All prices include 9% BTW</div>
         <div id="amendedInvoiceInfo" style="display: none; margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 4px;">
           <div class="body-line"><strong>ORIGINAL INVOICE:</strong> <span id="displayOriginalInvoiceNumber">#1234</span></div>
           <div class="body-line" style="margin-top: 8px;"><strong>PREVIOUSLY PAID:</strong> <span id="displayPreviouslyPaid">EUR 0,00</span></div>
@@ -555,7 +563,7 @@
       <div class="paragraph">Cancellations made within 7 days of the event date will forfeit the deposit.</div>
       <div class="paragraph">For cancellations within 48 hours of the event, the full invoice amount remains payable.</div>
       <div class="paragraph" style="font-weight:700; margin-top:8px;">ALL CANCELLATIONS MUST BE MADE IN WRITING</div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
       <div class="page-number">Page 1 of 3</div>
     </div>
 
@@ -592,7 +600,7 @@
       </div>
       <div id="invoicePricePerPersonRow" class="price-row">Price per person <span id="displayPricePerPerson">EUR 45,95</span></div>
       <div class="small-italic">All meals are HALAL</div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
       <div class="page-number">Page 2 of 3</div>
     </div>
 
@@ -617,6 +625,9 @@
         <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="displayGrandTotal">EUR 1842,16</td></tr>
         <tr id="previouslyPaidRow" style="display: none;"><td>Previously Paid</td><td id="displayPreviouslyPaidPage3">-EUR 0,00</td></tr>
         <tr id="balanceDueRow" class="grand-total-row" style="display: none; background: #fff3cd;"><td><strong>BALANCE DUE</strong></td><td id="displayBalanceDuePage3"><strong>EUR 0,00</strong></td></tr>
+        <tr id="btwExclRow" style="display: none;"><td>Total excl. BTW</td><td id="displayTotaalExclBtw">EUR 0,00</td></tr>
+        <tr id="btwAmountRow" style="display: none;"><td>BTW 9%</td><td id="displayBtwAmount">EUR 0,00</td></tr>
+        <tr id="btwInclRow" class="grand-total-row" style="display: none;"><td><strong>Total incl. BTW</strong></td><td id="displayTotaalInclBtw"><strong>EUR 0,00</strong></td></tr>
       </table>
       <div class="below-text" id="signingFooter">
         <div style="text-align: center;">By signing <strong>below</strong> you confirm that you agree to the details, pricing and terms stated in this invoice. Your signature serves as a binding confirmation of the booking and authorizes Moto Kitchen to proceed with all preparations for your event.</div>
@@ -635,7 +646,7 @@
           <div class="signature-line"></div>
         </div>
       </div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
       <div class="page-number">Page 3 of 3</div>
     </div>
   </div>
@@ -678,7 +689,7 @@
       <div class="paragraph">For cancellations within 48 hours of the event, the full invoice amount remains payable.</div>
       <div class="paragraph" style="font-weight:700; margin-top:8px;">ALL CANCELLATIONS MUST BE MADE IN WRITING</div>
       <div class="paragraph" style="margin-top: 24px; text-align: center; text-decoration: underline; font-size: 12px;">This document is a non binding quotation provided for informational purposes only. No financial obligations, commitments or agreements are created until both parties have approved and signed the final invoice.</div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
       <div class="page-number">Page 1 of 3</div>
     </div>
 
@@ -715,7 +726,7 @@
       </div>
       <div id="quotePricePerPersonRow" class="price-row">Price per person <span id="quoteDisplayPricePerPerson">EUR 45,95</span></div>
       <div class="small-italic">All meals are HALAL</div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
       <div class="page-number">Page 2 of 3</div>
     </div>
 
@@ -740,7 +751,7 @@
         <tr class="grand-total-row"><td>TOTAL (incl. delivery)</td><td id="quoteDisplayGrandTotal">EUR 1842,16</td></tr>
       </table>
       <div class="paragraph" style="margin-top: 40px; text-align: center; text-decoration: underline; font-size: 12px;">This document is a non binding quotation provided for informational purposes only. No financial obligations, commitments or agreements are created until both parties have approved and signed the final invoice.</div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
       <div class="page-number">Page 3 of 3</div>
     </div>
   </div>
@@ -804,7 +815,7 @@
       <div class="section-title" style="margin-top: 24px; font-style: italic;">Dietary &amp; Service Information</div>
       <div class="body-line" style="margin-top: 8px; font-style: italic;">Moto Kitchen is a fully <strong style="text-decoration: underline;">halal</strong> kitchen and does not handle pork or alcohol.</div>
       <div class="body-line" style="margin-top: 8px; font-style: italic;">Thank you for considering Moto Kitchen.</div>
-      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B6</div>
+      <div class="invoice-footer">Moto Kitchen | contact@motokitchen.nl | @motokitchen.nl<br>Galjootstraat 6-B, 3028 VL Rotterdam | KVK: 27344924 | BTW: NL002346948B67</div>
     </div>
   </div>
 

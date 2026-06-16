@@ -247,6 +247,7 @@ function quoteDataToInvoiceData(quoteData) {
     isAmendedInvoice: false,
     originalInvoiceNumber: '',
     previouslyPaidAmount: '',
+    isBtwInvoice: false,
     isCustomOrder: !!quoteData.isCustomOrder,
     selectedItems: quoteData.selectedItems || []
   };
@@ -557,6 +558,7 @@ function getFormData(docType) {
       isAmendedInvoice: getChecked('isAmendedInvoice'),
       originalInvoiceNumber: getVal('originalInvoiceNumber'),
       previouslyPaidAmount: getVal('previouslyPaidAmount'),
+      isBtwInvoice: getChecked('isBtwInvoice'),
       isCustomOrder,
       selectedItems
     };
@@ -648,6 +650,7 @@ function setFormData(docType, data) {
     setChecked('isAmendedInvoice', data.isAmendedInvoice);
     setVal('originalInvoiceNumber', data.originalInvoiceNumber);
     setVal('previouslyPaidAmount', data.previouslyPaidAmount);
+    setChecked('isBtwInvoice', data.isBtwInvoice);
     setChecked('isCustomOrder', data.isCustomOrder);
     if (data.isCustomOrder) toggleCustomOrder('invoice', true);
     // Show/hide amended invoice fields based on checkbox
@@ -1049,6 +1052,24 @@ function calculateTotals() {
   if (signingFooter) signingFooter.style.display = isAmended ? 'none' : '';
   const signatureSection = document.getElementById('signatureSection');
   if (signatureSection) signatureSection.style.display = isAmended ? 'none' : '';
+
+  // BTW (Dutch VAT) breakdown — prices already include 9% BTW
+  const isBtw = document.getElementById('isBtwInvoice')?.checked || false;
+  const btwRate = 0.09;
+  const totaalInclBtw = grandTotal;
+  const totaalExclBtw = totaalInclBtw / (1 + btwRate);
+  const btwAmount = totaalInclBtw - totaalExclBtw;
+  const btwDisclaimer = document.getElementById('btwDisclaimerPage1');
+  if (btwDisclaimer) btwDisclaimer.style.display = isBtw ? '' : 'none';
+  ['btwExclRow', 'btwAmountRow', 'btwInclRow'].forEach(id => {
+    const row = document.getElementById(id);
+    if (row) row.style.display = isBtw ? '' : 'none';
+  });
+  if (isBtw) {
+    updateEl('displayTotaalExclBtw', `EUR ${formatEUR(totaalExclBtw)}`);
+    updateEl('displayBtwAmount', `EUR ${formatEUR(btwAmount)}`);
+    updateEl('displayTotaalInclBtw', `EUR ${formatEUR(totaalInclBtw)}`);
+  }
 
   // Update amended invoice display on Page 3
   const previouslyPaidRow = document.getElementById('previouslyPaidRow');
