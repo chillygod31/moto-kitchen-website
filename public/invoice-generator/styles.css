@@ -35,16 +35,19 @@ body {
 
 .page {
   width: 210mm;
+  /* Grow past one A4 sheet when a long item list needs the room. A fixed
+     height with overflow:hidden silently clipped any items that did not fit,
+     so a 15-item order printed as 10 with no warning. */
   min-height: 297mm;
-  height: 297mm;
+  height: auto;
   margin: 0 auto 12mm;
   background: #ffffff;
   padding: 18mm 18mm 24mm;
   position: relative;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   page-break-after: always;
-  page-break-inside: avoid;
-  overflow: hidden;
+  page-break-inside: auto;
+  overflow: visible;
 }
 
 .page:last-child {

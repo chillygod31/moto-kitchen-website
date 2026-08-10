@@ -1358,6 +1358,10 @@ function generateInvoice() {
     } else {
       menuList.innerHTML = selectedItems.map(item => `<li>- ${item.name}</li>`).join('');
     }
+  } else {
+    // Clear the placeholder menu from the template; leaving it would bill the
+    // customer for items nobody selected.
+    menuList.innerHTML = '';
   }
 
   // Page 3 - Custom order: replace with itemized rows
@@ -1474,6 +1478,8 @@ function generateQuote() {
     } else {
       menuList.innerHTML = selectedItems.map(item => `<li>- ${item.name}</li>`).join('');
     }
+  } else {
+    menuList.innerHTML = '';
   }
 
   // Page 3 - Custom order: replace with itemized rows
@@ -1584,6 +1590,8 @@ function generateEmbassyInvoice() {
     } else {
       menuItemsComma.textContent = selectedItems.map(item => item.name).join(', ');
     }
+  } else if (menuItemsComma) {
+    menuItemsComma.textContent = '';
   }
 
   // Page 3 - Custom order: replace with itemized rows
@@ -1976,15 +1984,50 @@ async function generatePDF(pagesElement, filename) {
         });
       }
       const imgWidth = 210; // A4 width in mm
+      const pdfPageHeight = 297; // A4 height in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       // Add new page if not first page
       if (i > 0) {
         pdf.addPage();
       }
-      
+
+      // A long item list can make a page taller than one A4 sheet. Slice it
+      // across as many PDF pages as it needs; placing it as a single image
+      // would run past the sheet and silently lose the overflow.
+      let sliced = false;
+      if (imgHeight > pdfPageHeight + 0.5) {
+        try {
+          const pxPerMm = canvas.height / imgHeight;
+          const sliceHeightPx = Math.floor(pdfPageHeight * pxPerMm);
+          let offsetPx = 0;
+          let firstSlice = true;
+          while (offsetPx < canvas.height) {
+            const heightPx = Math.min(sliceHeightPx, canvas.height - offsetPx);
+            const sliceCanvas = document.createElement('canvas');
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = heightPx;
+            const ctx = sliceCanvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+            ctx.drawImage(canvas, 0, offsetPx, canvas.width, heightPx, 0, 0, canvas.width, heightPx);
+            const sliceData = sliceCanvas.toDataURL('image/png', 1.0);
+            if (!firstSlice) pdf.addPage();
+            pdf.addImage(sliceData, 'PNG', 0, 0, imgWidth, heightPx / pxPerMm, undefined, 'SLOW');
+            offsetPx += heightPx;
+            firstSlice = false;
+          }
+          sliced = true;
+        } catch (e) {
+          // Tainted canvas cannot be re-read; fall back to one image.
+          sliced = false;
+        }
+      }
+
       // Add image to PDF with maximum quality (SLOW compression = best quality)
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'SLOW');
+      if (!sliced) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'SLOW');
+      }
     }
     
     // Save PDF
