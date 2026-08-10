@@ -46,6 +46,7 @@ const menuPrices = {
   "Vegetarian Rices with peas": 4.00,
   "Kachumbari": 2.00,
   "Salad": 3.00,
+  "Fries": 3.00,
   "Samosa": 3.50,
   "Bahjia": 1.50,
   "Bahjia with chutney": 1.50,
@@ -2215,7 +2216,7 @@ async function populatePricingTables() {
   
   const defaultSidesItems = [
     "Pilau Veg", "Pilau Beef", "Pilau Chicken", "Wali wa nazi/coconut flavoured rice", "Chapati", "Ugali",
-    "Mihogo", "Plantain", "Rice", "Biriyani", "Vegetarian Rices with peas", "Kachumbari", "Salad"
+    "Mihogo", "Plantain", "Rice", "Biriyani", "Vegetarian Rices with peas", "Kachumbari", "Salad", "Fries"
   ];
   
   const defaultBitesItems = [
@@ -2369,7 +2370,15 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // Populate pricing tables
   populatePricingTables();
-  
+
+  // Browsers step a focused number input up/down on wheel events, so scrolling
+  // the page with the cursor over a field silently changes its value. Drop focus
+  // instead; the page still scrolls and the value stays put.
+  document.addEventListener('wheel', function(e) {
+    const el = document.activeElement;
+    if (el && el.type === 'number' && el === e.target) el.blur();
+  }, { passive: true });
+
   // Setup event listeners for invoice form
   ['guestCount', 'discount', 'serviceFee', 'invoiceDate', 'caterDate'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', calculateTotals);
