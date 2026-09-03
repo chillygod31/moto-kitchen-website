@@ -162,6 +162,18 @@ export default function AdminCalendarPage() {
   }
 
   // ─── CRUD handlers ───────────────────────────────────────────────────────
+  // The API replies with { message, error } naming what actually went wrong
+  // (unauthorized, calendar not connected, a Google API refusal). Throwing a
+  // fixed string here discarded that and left every failure looking alike.
+  const errorMessageFrom = async (res: Response, fallback: string) => {
+    try {
+      const body = await res.json()
+      return [body?.message, body?.error].filter(Boolean).join(' — ') || fallback
+    } catch {
+      return fallback
+    }
+  }
+
   const handleCreate = async () => {
     if (!formData.summary || !formData.date) return
     setSaving(true); setError('')
@@ -175,7 +187,7 @@ export default function AdminCalendarPage() {
           location: formData.location || undefined, description: formData.description || undefined,
         }),
       })
-      if (!res.ok) throw new Error('Failed to create event')
+      if (!res.ok) throw new Error(await errorMessageFrom(res, 'Failed to create event'))
       setShowAddModal(false); setFormData(EMPTY_FORM); await fetchEvents()
     } catch (err: any) { setError(err.message) } finally { setSaving(false) }
   }
@@ -193,7 +205,7 @@ export default function AdminCalendarPage() {
           location: formData.location || undefined, description: formData.description || undefined,
         }),
       })
-      if (!res.ok) throw new Error('Failed to update event')
+      if (!res.ok) throw new Error(await errorMessageFrom(res, 'Failed to update event'))
       setShowEditModal(false); setEditingEvent(null); setFormData(EMPTY_FORM); await fetchEvents()
     } catch (err: any) { setError(err.message) } finally { setSaving(false) }
   }
@@ -206,9 +218,9 @@ export default function AdminCalendarPage() {
         headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
         body: JSON.stringify({ eventId }),
       })
-      if (!res.ok) throw new Error('Failed to delete event')
+      if (!res.ok) throw new Error(await errorMessageFrom(res, 'Failed to delete event'))
       await fetchEvents()
-    } catch (err) { console.error('Error deleting event:', err) }
+    } catch (err: any) { console.error('Error deleting event:', err); setError(err.message) }
   }
 
   const openAddModal = (date?: string) => {
