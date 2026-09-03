@@ -17,6 +17,7 @@ interface CalendarEvent {
 interface EventFormData {
   summary: string
   date: string
+  endDate: string
   startTime: string
   endTime: string
   location: string
@@ -26,6 +27,7 @@ interface EventFormData {
 const EMPTY_FORM: EventFormData = {
   summary: '',
   date: '',
+  endDate: '',
   startTime: '',
   endTime: '',
   location: '',
@@ -174,15 +176,29 @@ export default function AdminCalendarPage() {
     }
   }
 
+  // Google rejects a range that ends at or before it starts. Catch that here
+  // with a message naming the fix, rather than relaying an opaque API error.
+  const rangeError = (): string => {
+    const { date, endDate, startTime, endTime } = formData
+    const finish = endDate || date
+    if (finish < date) return 'End date cannot be before the start date.'
+    if (startTime && endTime && `${finish}T${endTime}` <= `${date}T${startTime}`) {
+      return 'End must be after the start. For an event running past midnight, set the end date to the next day.'
+    }
+    return ''
+  }
+
   const handleCreate = async () => {
     if (!formData.summary || !formData.date) return
+    const invalid = rangeError()
+    if (invalid) { setError(invalid); return }
     setSaving(true); setError('')
     try {
       const res = await fetch('/api/admin/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
         body: JSON.stringify({
-          summary: formData.summary, date: formData.date,
+          summary: formData.summary, date: formData.date, endDate: formData.endDate || undefined,
           startTime: formData.startTime || undefined, endTime: formData.endTime || undefined,
           location: formData.location || undefined, description: formData.description || undefined,
         }),
@@ -194,13 +210,15 @@ export default function AdminCalendarPage() {
 
   const handleUpdate = async () => {
     if (!editingEvent || !formData.summary || !formData.date) return
+    const invalid = rangeError()
+    if (invalid) { setError(invalid); return }
     setSaving(true); setError('')
     try {
       const res = await fetch('/api/admin/calendar', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrfToken },
         body: JSON.stringify({
-          eventId: editingEvent.id, summary: formData.summary, date: formData.date,
+          eventId: editingEvent.id, summary: formData.summary, date: formData.date, endDate: formData.endDate || undefined,
           startTime: formData.startTime || undefined, endTime: formData.endTime || undefined,
           location: formData.location || undefined, description: formData.description || undefined,
         }),
@@ -231,8 +249,17 @@ export default function AdminCalendarPage() {
     const dateStr = event.allDay ? event.start : event.start.split('T')[0]
     const startTime = event.allDay ? '' : event.start.split('T')[1]?.slice(0, 5) || ''
     const endTime = event.allDay ? '' : event.end.split('T')[1]?.slice(0, 5) || ''
+    // Google stores an all-day end as the following day; show the last day covered.
+    let endDateStr = event.end.split('T')[0]
+    if (event.allDay) {
+      const d = new Date(endDateStr + 'T12:00:00')
+      d.setDate(d.getDate() - 1)
+      endDateStr = d.toISOString().split('T')[0]
+    }
+    // Leave the field blank when the event ends the same day it starts.
+    const endDate = endDateStr === dateStr ? '' : endDateStr
     setEditingEvent(event)
-    setFormData({ summary: event.summary, date: dateStr, startTime, endTime, location: event.location || '', description: event.description || '' })
+    setFormData({ summary: event.summary, date: dateStr, endDate, startTime, endTime, location: event.location || '', description: event.description || '' })
     setError(''); setShowEditModal(true)
   }
 
@@ -253,13 +280,26 @@ export default function AdminCalendarPage() {
           onBlur={(e) => e.currentTarget.style.borderColor = '#E6D9C8'}
           placeholder="e.g. Jane Smith - Wedding" autoFocus />
       </div>
-      <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#6B5B55' }}>Date</label>
-        <input type="date" value={formData.date} onChange={(e) => setFormData(p => ({ ...p, date: e.target.value }))}
-          className="w-full px-3.5 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none"
-          style={{ borderColor: '#E6D9C8', color: '#1F1F1F' }}
-          onFocus={(e) => e.currentTarget.style.borderColor = '#C9653B'}
-          onBlur={(e) => e.currentTarget.style.borderColor = '#E6D9C8'} />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#6B5B55' }}>Date</label>
+          <input type="date" value={formData.date} onChange={(e) => setFormData(p => ({ ...p, date: e.target.value }))}
+            className="w-full px-3.5 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none"
+            style={{ borderColor: '#E6D9C8', color: '#1F1F1F' }}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#C9653B'}
+            onBlur={(e) => e.currentTarget.style.borderColor = '#E6D9C8'} />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: '#6B5B55' }}>
+            End date <span className="normal-case font-normal" style={{ color: '#9A8A82' }}>(if different)</span>
+          </label>
+          <input type="date" value={formData.endDate} min={formData.date || undefined}
+            onChange={(e) => setFormData(p => ({ ...p, endDate: e.target.value }))}
+            className="w-full px-3.5 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none"
+            style={{ borderColor: '#E6D9C8', color: '#1F1F1F' }}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#C9653B'}
+            onBlur={(e) => e.currentTarget.style.borderColor = '#E6D9C8'} />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>

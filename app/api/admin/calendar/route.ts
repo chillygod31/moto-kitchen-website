@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     verifyCsrfToken(request)
 
     const body = await request.json()
-    const { summary, date, startTime, endTime, location, description } = body
+    const { summary, date, endDate, startTime, endTime, location, description } = body
 
     if (!summary || !date) {
       return NextResponse.json(
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
     const event = await createCalendarEvent({
       summary,
       date,
+      endDate,
       startTime,
       endTime,
       location,

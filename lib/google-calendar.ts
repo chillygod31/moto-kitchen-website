@@ -2,6 +2,13 @@ import { google, calendar_v3 } from 'googleapis'
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar']
 
+// Zone that timed events are written in. NOTE: the connected calendar
+// (contact@motokitchen.nl) is Europe/Amsterdam, so events currently land an
+// hour out. Changing this shifts the times of events people already rely on,
+// so it stays as it was until that call is made deliberately — collected here
+// rather than repeated at each call site so it is a one-line change.
+const EVENT_TIME_ZONE = 'Europe/Dublin'
+
 function getOAuth2Client() {
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
@@ -98,6 +105,7 @@ export async function getCalendarEvents(
 export async function createCalendarEvent(params: {
   summary: string
   date: string
+  endDate?: string
   startTime?: string
   endTime?: string
   location?: string
@@ -109,14 +117,21 @@ export async function createCalendarEvent(params: {
   let start: calendar_v3.Schema$EventDateTime
   let end: calendar_v3.Schema$EventDateTime
 
+  // An event may finish on a later day than it starts — a booking running past
+  // midnight, or a multi-day job. Without endDate the finish was pinned to the
+  // start date, so those ranges ended before they began and Google refused them.
+  const finishDate = params.endDate || params.date
+
   if (params.startTime && params.endTime) {
-    start = { dateTime: `${params.date}T${params.startTime}:00`, timeZone: 'Europe/Dublin' }
-    end = { dateTime: `${params.date}T${params.endTime}:00`, timeZone: 'Europe/Dublin' }
+    start = { dateTime: `${params.date}T${params.startTime}:00`, timeZone: EVENT_TIME_ZONE }
+    end = { dateTime: `${finishDate}T${params.endTime}:00`, timeZone: EVENT_TIME_ZONE }
   } else {
     start = { date: params.date }
-    const endDate = new Date(params.date)
-    endDate.setDate(endDate.getDate() + 1)
-    end = { date: endDate.toISOString().split('T')[0] }
+    // Google treats an all-day end as exclusive, so advance a day to make the
+    // date picked the last one the event actually covers.
+    const endExclusive = new Date(finishDate)
+    endExclusive.setDate(endExclusive.getDate() + 1)
+    end = { date: endExclusive.toISOString().split('T')[0] }
   }
 
   const response = await calendar.events.insert({
@@ -138,6 +153,7 @@ export async function updateCalendarEvent(
   updates: {
     summary?: string
     date?: string
+    endDate?: string
     startTime?: string
     endTime?: string
     location?: string
@@ -155,14 +171,16 @@ export async function updateCalendarEvent(
   if (updates.location !== undefined) body.location = updates.location
 
   if (updates.date) {
+    const finishDate = updates.endDate || updates.date
+
     if (updates.startTime && updates.endTime) {
-      body.start = { dateTime: `${updates.date}T${updates.startTime}:00`, timeZone: 'Europe/Dublin' }
-      body.end = { dateTime: `${updates.date}T${updates.endTime}:00`, timeZone: 'Europe/Dublin' }
+      body.start = { dateTime: `${updates.date}T${updates.startTime}:00`, timeZone: EVENT_TIME_ZONE }
+      body.end = { dateTime: `${finishDate}T${updates.endTime}:00`, timeZone: EVENT_TIME_ZONE }
     } else {
       body.start = { date: updates.date }
-      const endDate = new Date(updates.date)
-      endDate.setDate(endDate.getDate() + 1)
-      body.end = { date: endDate.toISOString().split('T')[0] }
+      const endExclusive = new Date(finishDate)
+      endExclusive.setDate(endExclusive.getDate() + 1)
+      body.end = { date: endExclusive.toISOString().split('T')[0] }
     }
   }
 
