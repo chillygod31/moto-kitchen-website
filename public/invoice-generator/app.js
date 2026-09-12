@@ -285,6 +285,7 @@ async function convertQuoteToInvoice(id) {
   switchDocumentType('invoice');
   setFormData('invoice', invoiceData);
   if (typeof calculateTotals === 'function') calculateTotals();
+  renderPreviewForDocType('invoice');
   showToast('Quote converted to invoice — review and generate', 'success');
 }
 
@@ -348,6 +349,7 @@ async function loadFromHistoryAPI(id) {
       const localDocType = invoice.document_type === 'embassyInvoice' ? 'embassy-invoice' : invoice.document_type;
       switchDocumentType(localDocType);
       setFormData(localDocType, invoice.form_data);
+      renderPreviewForDocType(localDocType);
       showToast('Invoice loaded from history', 'success');
     } else {
       showToast('Failed to load invoice', 'error');
@@ -460,6 +462,7 @@ function loadFromHistoryLocal(id) {
   if (entry) {
     switchDocumentType(entry.type);
     setFormData(entry.type, entry.data);
+    renderPreviewForDocType(entry.type);
     showToast('Invoice loaded from history', 'success');
   }
 }
@@ -1272,15 +1275,29 @@ function calculateEmbassyInvoiceTotals() {
   saveDraft('embassy-invoice');
 }
 
+// Paint the preview from the form that was just restored. The menu list and
+// cost breakdown are written ONLY inside the generate* functions, so a load
+// that skipped them left the page template's placeholder dishes (Samosa beef,
+// Kachori, Chicken wings) and a zeroed cost line on screen until the user
+// pressed Generate. Reusing the same render keeps the two from ever drifting.
+function renderPreviewForDocType(docType) {
+  if (docType === 'invoice') generateInvoice({ silent: true });
+  else if (docType === 'quote') generateQuote({ silent: true });
+  else generateEmbassyInvoice({ silent: true });
+}
+
 // ===== GENERATE FUNCTIONS =====
-function generateInvoice() {
+function generateInvoice(options) {
+  // Silent mode renders the preview without acting like a button press:
+  // no validation toast, no scroll, no draft clearing, no success message.
+  const silent = !!(options && options.silent === true);
   const isCustomOrder = document.getElementById('isCustomOrder')?.checked || false;
   const requiredFields = isCustomOrder
     ? ['invoiceDate', 'caterDate', 'invoiceNumber', 'client', 'serviceDescription']
     : ['invoiceDate', 'caterDate', 'invoiceNumber', 'client', 'guestCount', 'serviceDescription'];
   let valid = true;
   
-  requiredFields.forEach(id => {
+  if (!silent) requiredFields.forEach(id => {
     const el = document.getElementById(id);
     if (!el?.value) {
       el?.classList.add('invalid');
@@ -1290,7 +1307,7 @@ function generateInvoice() {
     }
   });
   
-  if (!valid) {
+  if (!valid && !silent) {
     showToast('Please fill in all required fields', 'error');
     return;
   }
@@ -1386,7 +1403,7 @@ function generateInvoice() {
   document.getElementById('invoicePages').style.display = 'block';
   document.getElementById('quotePages').style.display = 'none';
   document.getElementById('embassyInvoicePages').style.display = 'none';
-  document.getElementById('invoicePages').scrollIntoView({ behavior: 'smooth' });
+  if (!silent) document.getElementById('invoicePages').scrollIntoView({ behavior: 'smooth' });
 
   // Set logo on displayed pages (after they're visible)
   setTimeout(() => {
@@ -1394,18 +1411,23 @@ function generateInvoice() {
   }, 100);
 
   // Note: History is saved on download (printInvoice), not on generation
-  clearDraft('invoice');
-  showToast('Invoice generated successfully', 'success');
+  if (!silent) {
+    clearDraft('invoice');
+    showToast('Invoice generated successfully', 'success');
+  }
 }
 
-function generateQuote() {
+function generateQuote(options) {
+  // Silent mode renders the preview without acting like a button press:
+  // no validation toast, no scroll, no draft clearing, no success message.
+  const silent = !!(options && options.silent === true);
   const quoteIsCustomOrder = document.getElementById('quoteIsCustomOrder')?.checked || false;
   const requiredFields = quoteIsCustomOrder
     ? ['quoteDate', 'quoteCaterDate', 'quoteNumber', 'quoteClient', 'quoteServiceDescription']
     : ['quoteDate', 'quoteCaterDate', 'quoteNumber', 'quoteClient', 'quoteGuestCount', 'quoteServiceDescription'];
   let valid = true;
   
-  requiredFields.forEach(id => {
+  if (!silent) requiredFields.forEach(id => {
     const el = document.getElementById(id);
     if (!el?.value) {
       el?.classList.add('invalid');
@@ -1415,7 +1437,7 @@ function generateQuote() {
     }
   });
   
-  if (!valid) {
+  if (!valid && !silent) {
     showToast('Please fill in all required fields', 'error');
     return;
   }
@@ -1502,7 +1524,7 @@ function generateQuote() {
   document.getElementById('quotePages').style.display = 'block';
   document.getElementById('invoicePages').style.display = 'none';
   document.getElementById('embassyInvoicePages').style.display = 'none';
-  document.getElementById('quotePages').scrollIntoView({ behavior: 'smooth' });
+  if (!silent) document.getElementById('quotePages').scrollIntoView({ behavior: 'smooth' });
 
   // Set logo on displayed pages (after they're visible)
   setTimeout(() => {
@@ -1510,18 +1532,23 @@ function generateQuote() {
   }, 100);
 
   // Note: History is saved on download (printQuote), not on generation
-  clearDraft('quote');
-  showToast('Quote generated successfully', 'success');
+  if (!silent) {
+    clearDraft('quote');
+    showToast('Quote generated successfully', 'success');
+  }
 }
 
-function generateEmbassyInvoice() {
+function generateEmbassyInvoice(options) {
+  // Silent mode renders the preview without acting like a button press:
+  // no validation toast, no scroll, no draft clearing, no success message.
+  const silent = !!(options && options.silent === true);
   const embassyIsCustomOrder = document.getElementById('embassyInvoiceIsCustomOrder')?.checked || false;
   const requiredFields = embassyIsCustomOrder
     ? ['embassyInvoiceDate', 'embassyInvoiceCaterDate', 'embassyInvoiceNumber', 'embassyInvoiceClient', 'embassyInvoiceServiceDescription']
     : ['embassyInvoiceDate', 'embassyInvoiceCaterDate', 'embassyInvoiceNumber', 'embassyInvoiceClient', 'embassyInvoiceGuestCount', 'embassyInvoiceServiceDescription'];
   let valid = true;
   
-  requiredFields.forEach(id => {
+  if (!silent) requiredFields.forEach(id => {
     const el = document.getElementById(id);
     if (!el?.value) {
       el?.classList.add('invalid');
@@ -1531,7 +1558,7 @@ function generateEmbassyInvoice() {
     }
   });
   
-  if (!valid) {
+  if (!valid && !silent) {
     showToast('Please fill in all required fields', 'error');
     return;
   }
@@ -1610,7 +1637,7 @@ function generateEmbassyInvoice() {
   document.getElementById('embassyInvoicePages').style.display = 'block';
   document.getElementById('invoicePages').style.display = 'none';
   document.getElementById('quotePages').style.display = 'none';
-  document.getElementById('embassyInvoicePages').scrollIntoView({ behavior: 'smooth' });
+  if (!silent) document.getElementById('embassyInvoicePages').scrollIntoView({ behavior: 'smooth' });
 
   // Set logo on displayed pages (after they're visible)
   setTimeout(() => {
@@ -1618,8 +1645,10 @@ function generateEmbassyInvoice() {
   }, 100);
 
   // Note: History is saved on download (printEmbassyInvoice), not on generation
-  clearDraft('embassy-invoice');
-  showToast('Embassy Invoice generated successfully', 'success');
+  if (!silent) {
+    clearDraft('embassy-invoice');
+    showToast('Embassy Invoice generated successfully', 'success');
+  }
 }
 
 // ===== LOGO EMBEDDED AS BASE64 =====
