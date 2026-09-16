@@ -14,6 +14,7 @@ const CONFIG = {
 // ===== DEFAULT MENU PRICES =====
 const menuPrices = {
   "Mshikaki/Skewers": 5.00,
+  "Mshikaki Fish": 5.00,
   "Goat meat/Mbuzi": 5.00,
   "Chicken/Kuku": 3.50,
   "Fried Fish/Samaki": 4.50,
@@ -2274,7 +2275,7 @@ async function fetchMenuItemsFromGoogleSheets() {
 // ===== POPULATE PRICING TABLES =====
 async function populatePricingTables() {
   const defaultMeatItems = [
-    "Mshikaki/Skewers", "Goat meat/Mbuzi", "Chicken/Kuku", "Fried Fish/Samaki",
+    "Mshikaki/Skewers", "Mshikaki Fish", "Goat meat/Mbuzi", "Chicken/Kuku", "Fried Fish/Samaki",
     "Minced meat in tomato sauce", "Chicken biriyani stew", "Mchuzi wa Samaki/Fish stew",
     "Mchuzi wa Kuku/Chicken stew", "Mchuzi wa Nyama/Beef stew",
     "Ndizi wa Nyama/Green bananas and beef", "Urojo/Zanzibar mix"
