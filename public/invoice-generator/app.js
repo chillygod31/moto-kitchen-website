@@ -2154,7 +2154,8 @@ function printEmbassyInvoice() {
 }
 
 // ===== RESET FUNCTIONS =====
-function resetForm() {
+function resetForm(options) {
+  const silent = !!(options && options.silent === true);
   document.getElementById('invoiceForm')?.reset();
   document.querySelectorAll('#invoiceFormSection .pricing-table tbody tr input[type="checkbox"]').forEach(cb => {
     cb.checked = false;
@@ -2167,10 +2168,11 @@ function resetForm() {
   document.getElementById('mocktailSection').style.display = 'none';
   clearDraft('invoice');
   updateSelectedSummary('invoice');
-  showToast('Form reset', 'success');
+  if (!silent) showToast('Form reset', 'success');
 }
 
-function resetQuoteForm() {
+function resetQuoteForm(options) {
+  const silent = !!(options && options.silent === true);
   document.getElementById('quoteForm')?.reset();
   document.querySelectorAll('#quoteFormSection .pricing-table tbody tr input[type="checkbox"]').forEach(cb => {
     cb.checked = false;
@@ -2183,10 +2185,56 @@ function resetQuoteForm() {
   document.getElementById('quoteMocktailSection').style.display = 'none';
   clearDraft('quote');
   updateSelectedSummary('quote');
-  showToast('Form reset', 'success');
+  if (!silent) showToast('Form reset', 'success');
 }
 
-function resetEmbassyInvoiceForm() {
+// Starting the next document is the common move after finishing one, and Reset
+// alone does not manage it: none of the date inputs carry a value attribute in
+// the HTML, so form.reset() blanks them and today's date had to be retyped every
+// time, while the finished document stayed in the preview belonging to nobody.
+const NEW_DOCUMENT_CONFIG = {
+  'invoice': {
+    reset: resetForm, dateId: 'invoiceDate', pagesId: 'invoicePages',
+    // Embassy prefills its client with the embassy's name, so that form starts
+    // at the number instead.
+    focusId: 'client', label: 'invoice',
+  },
+  'quote': {
+    reset: resetQuoteForm, dateId: 'quoteDate', pagesId: 'quotePages',
+    focusId: 'quoteClient', label: 'quote',
+  },
+  'embassy-invoice': {
+    reset: resetEmbassyInvoiceForm, dateId: 'embassyInvoiceDate',
+    pagesId: 'embassyInvoicePages', focusId: 'embassyInvoiceNumber',
+    label: 'embassy invoice',
+  },
+};
+
+function startNewDocument(docType) {
+  const config = NEW_DOCUMENT_CONFIG[docType];
+  if (!config) return;
+
+  config.reset({ silent: true });
+
+  const dateEl = document.getElementById(config.dateId);
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+
+  const pages = document.getElementById(config.pagesId);
+  if (pages) pages.style.display = 'none';
+
+  // Land the cursor where typing starts, so the button leads straight into work.
+  const firstField = document.getElementById(config.focusId);
+  if (firstField) firstField.focus();
+
+  showToast('New ' + config.label + ' started', 'success');
+}
+
+function startNewInvoice() { startNewDocument('invoice'); }
+function startNewQuote() { startNewDocument('quote'); }
+function startNewEmbassyInvoice() { startNewDocument('embassy-invoice'); }
+
+function resetEmbassyInvoiceForm(options) {
+  const silent = !!(options && options.silent === true);
   document.getElementById('embassyInvoiceForm')?.reset();
   document.getElementById('embassyInvoiceClient').value = 'Embassy of the United Republic of Tanzania, Netherlands';
   document.querySelectorAll('#embassyInvoiceFormSection .pricing-table tbody tr input[type="checkbox"]').forEach(cb => {
@@ -2199,7 +2247,7 @@ function resetEmbassyInvoiceForm() {
   document.getElementById('embassyInvoicePricePerPersonDisplay').textContent = 'EUR 0,00';
   clearDraft('embassy-invoice');
   updateSelectedSummary('embassy-invoice');
-  showToast('Form reset', 'success');
+  if (!silent) showToast('Form reset', 'success');
 }
 
 // ===== GOOGLE SHEETS FETCH =====
