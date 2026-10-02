@@ -564,6 +564,8 @@ function getFormData(docType) {
       staffCount: getVal('staffCount'),
       staffHours: getVal('staffHours'),
       staffRate: getVal('staffRate'),
+      additionalFeeLabel: getVal('additionalFeeLabel'),
+      additionalFeeAmount: getVal('additionalFeeAmount'),
       isAmendedInvoice: getChecked('isAmendedInvoice'),
       originalInvoiceNumber: getVal('originalInvoiceNumber'),
       previouslyPaidAmount: getVal('previouslyPaidAmount'),
@@ -592,6 +594,8 @@ function getFormData(docType) {
       quoteStaffCount: getVal('quoteStaffCount'),
       quoteStaffHours: getVal('quoteStaffHours'),
       quoteStaffRate: getVal('quoteStaffRate'),
+      quoteAdditionalFeeLabel: getVal('quoteAdditionalFeeLabel'),
+      quoteAdditionalFeeAmount: getVal('quoteAdditionalFeeAmount'),
       isCustomOrder,
       selectedItems
     };
@@ -616,6 +620,8 @@ function getFormData(docType) {
       embassyInvoiceStaffCount: getVal('embassyInvoiceStaffCount'),
       embassyInvoiceStaffHours: getVal('embassyInvoiceStaffHours'),
       embassyInvoiceStaffRate: getVal('embassyInvoiceStaffRate'),
+      embassyInvoiceAdditionalFeeLabel: getVal('embassyInvoiceAdditionalFeeLabel'),
+      embassyInvoiceAdditionalFeeAmount: getVal('embassyInvoiceAdditionalFeeAmount'),
       embassyInvoiceIsAmended: getChecked('embassyInvoiceIsAmended'),
       embassyInvoiceOriginalNumber: getVal('embassyInvoiceOriginalNumber'),
       embassyInvoicePreviouslyPaid: getVal('embassyInvoicePreviouslyPaid'),
@@ -666,6 +672,8 @@ function setFormData(docType, data) {
     setVal('staffHours', data.staffHours);
     // Records saved before staff billing existed carry no rate; fall back to the default.
     setVal('staffRate', data.staffRate || '20');
+    setVal('additionalFeeLabel', data.additionalFeeLabel);
+    setVal('additionalFeeAmount', data.additionalFeeAmount);
     setChecked('isAmendedInvoice', data.isAmendedInvoice);
     setVal('originalInvoiceNumber', data.originalInvoiceNumber);
     setVal('previouslyPaidAmount', data.previouslyPaidAmount);
@@ -697,6 +705,8 @@ function setFormData(docType, data) {
     setVal('quoteStaffCount', data.quoteStaffCount);
     setVal('quoteStaffHours', data.quoteStaffHours);
     setVal('quoteStaffRate', data.quoteStaffRate || '20');
+    setVal('quoteAdditionalFeeLabel', data.quoteAdditionalFeeLabel);
+    setVal('quoteAdditionalFeeAmount', data.quoteAdditionalFeeAmount);
     setChecked('quoteIsCustomOrder', data.isCustomOrder);
     if (data.isCustomOrder) toggleCustomOrder('quote', true);
   } else {
@@ -719,6 +729,8 @@ function setFormData(docType, data) {
     setVal('embassyInvoiceStaffCount', data.embassyInvoiceStaffCount);
     setVal('embassyInvoiceStaffHours', data.embassyInvoiceStaffHours);
     setVal('embassyInvoiceStaffRate', data.embassyInvoiceStaffRate || '20');
+    setVal('embassyInvoiceAdditionalFeeLabel', data.embassyInvoiceAdditionalFeeLabel);
+    setVal('embassyInvoiceAdditionalFeeAmount', data.embassyInvoiceAdditionalFeeAmount);
     setChecked('embassyInvoiceIsAmended', data.embassyInvoiceIsAmended);
     setVal('embassyInvoiceOriginalNumber', data.embassyInvoiceOriginalNumber);
     setVal('embassyInvoicePreviouslyPaid', data.embassyInvoicePreviouslyPaid);
@@ -945,6 +957,7 @@ function calculateTotals() {
   const discount = parseFloat(document.getElementById('discount')?.value) || 0;
   const serviceFee = parseFloat(document.getElementById('serviceFee')?.value) || 0;
   const staffCost = getStaffCost('invoice');
+  const additionalFee = getAdditionalFee('invoice');
 
   const selectedCheckboxes = document.querySelectorAll('#invoiceFormSection .pricing-table tbody tr input[type="checkbox"]:checked');
   let subtotal = 0;
@@ -985,9 +998,9 @@ function calculateTotals() {
   }
 
   const includeAdminFee = document.getElementById('includeAdminFee')?.checked;
-  const adminFeeBase = itemTotal + serviceFee + staffCost;
+  const adminFeeBase = itemTotal + serviceFee + staffCost + additionalFee;
   const adminFee = includeAdminFee ? adminFeeBase * 0.03 : 0;
-  const grandTotal = itemTotal + serviceFee + staffCost + adminFee;
+  const grandTotal = itemTotal + serviceFee + staffCost + additionalFee + adminFee;
   
   const adminFeeRow = document.getElementById('adminFeeRow');
   if (adminFeeRow) adminFeeRow.style.display = includeAdminFee ? '' : 'none';
@@ -1040,8 +1053,9 @@ function calculateTotals() {
   updateEl('displayRate', formatEUR(rate));
   updateEl('displayItemTotal', `EUR ${formatEUR(itemTotal)}`);
   updateEl('displaySubtotal', `EUR ${formatEUR(itemTotal)}`);
-  updateEl('displayServiceFee', `EUR ${formatEUR(serviceFee)}`);
+  updateEl('displayServiceFee', `EUR ${formatEUR(serviceFee + staffCost)}`);
   updateStaffFields('invoice');
+  updateAdditionalFeeFields('invoice');
   updateEl('displayAdminFeeLabel', `Admin Fee (3% over EUR ${formatEUR(adminFeeBase)})`);
   updateEl('displayAdminFee', `EUR ${formatEUR(adminFee)}`);
   updateEl('displayGrandTotal', `EUR ${formatEUR(grandTotal)}`);
@@ -1120,6 +1134,7 @@ function calculateQuoteTotals() {
   const discount = parseFloat(document.getElementById('quoteDiscount')?.value) || 0;
   const serviceFee = parseFloat(document.getElementById('quoteServiceFee')?.value) || 0;
   const staffCost = getStaffCost('quote');
+  const additionalFee = getAdditionalFee('quote');
 
   const selectedCheckboxes = document.querySelectorAll('#quoteFormSection .pricing-table tbody tr input[type="checkbox"]:checked');
   let subtotal = 0;
@@ -1158,9 +1173,9 @@ function calculateQuoteTotals() {
   }
 
   const includeAdminFee = document.getElementById('quoteIncludeAdminFee')?.checked;
-  const adminFeeBase = itemTotal + serviceFee + staffCost;
+  const adminFeeBase = itemTotal + serviceFee + staffCost + additionalFee;
   const adminFee = includeAdminFee ? adminFeeBase * 0.03 : 0;
-  const grandTotal = itemTotal + serviceFee + staffCost + adminFee;
+  const grandTotal = itemTotal + serviceFee + staffCost + additionalFee + adminFee;
   
   const adminFeeRow = document.getElementById('quoteAdminFeeRow');
   if (adminFeeRow) adminFeeRow.style.display = includeAdminFee ? '' : 'none';
@@ -1186,8 +1201,9 @@ function calculateQuoteTotals() {
   updateEl('quoteDisplayRate', formatEUR(rate));
   updateEl('quoteDisplayItemTotal', `EUR ${formatEUR(itemTotal)}`);
   updateEl('quoteDisplaySubtotal', `EUR ${formatEUR(itemTotal)}`);
-  updateEl('quoteDisplayServiceFee', `EUR ${formatEUR(serviceFee)}`);
+  updateEl('quoteDisplayServiceFee', `EUR ${formatEUR(serviceFee + staffCost)}`);
   updateStaffFields('quote');
+  updateAdditionalFeeFields('quote');
   updateEl('quoteDisplayAdminFeeLabel', `Admin Fee (3% over EUR ${formatEUR(adminFeeBase)})`);
   updateEl('quoteDisplayAdminFee', `EUR ${formatEUR(adminFee)}`);
   updateEl('quoteDisplayGrandTotal', `EUR ${formatEUR(grandTotal)}`);
@@ -1206,6 +1222,7 @@ function calculateEmbassyInvoiceTotals() {
   const discount = parseFloat(document.getElementById('embassyInvoiceDiscount')?.value) || 0;
   const serviceFee = parseFloat(document.getElementById('embassyInvoiceServiceFee')?.value) || 0;
   const staffCost = getStaffCost('embassy-invoice');
+  const additionalFee = getAdditionalFee('embassy-invoice');
 
   const selectedCheckboxes = document.querySelectorAll('#embassyInvoiceFormSection .pricing-table tbody tr input[type="checkbox"]:checked');
   let subtotal = 0;
@@ -1244,9 +1261,9 @@ function calculateEmbassyInvoiceTotals() {
   }
 
   const includeAdminFee = document.getElementById('embassyInvoiceIncludeAdminFee')?.checked;
-  const adminFeeBase = itemTotal + serviceFee + staffCost;
+  const adminFeeBase = itemTotal + serviceFee + staffCost + additionalFee;
   const adminFee = includeAdminFee ? adminFeeBase * 0.03 : 0;
-  const grandTotal = itemTotal + serviceFee + staffCost + adminFee;
+  const grandTotal = itemTotal + serviceFee + staffCost + additionalFee + adminFee;
 
   const adminFeeRow = document.getElementById('embassyInvoiceAdminFeeRow');
   if (adminFeeRow) adminFeeRow.style.display = includeAdminFee ? '' : 'none';
@@ -1264,8 +1281,9 @@ function calculateEmbassyInvoiceTotals() {
   updateEl('embassyInvoiceDisplayRate', formatEUR(rate));
   updateEl('embassyInvoiceDisplayItemTotal', `EUR ${formatEUR(itemTotal)}`);
   updateEl('embassyInvoiceDisplaySubtotal', `EUR ${formatEUR(itemTotal)}`);
-  updateEl('embassyInvoiceDisplayServiceFee', `EUR ${formatEUR(serviceFee)}`);
+  updateEl('embassyInvoiceDisplayServiceFee', `EUR ${formatEUR(serviceFee + staffCost)}`);
   updateStaffFields('embassy-invoice');
+  updateAdditionalFeeFields('embassy-invoice');
   updateEl('embassyInvoiceDisplayAdminFeeLabel', `Admin Fee (3% over EUR ${formatEUR(adminFeeBase)})`);
   updateEl('embassyInvoiceDisplayAdminFee', `EUR ${formatEUR(adminFee)}`);
   updateEl('embassyInvoiceDisplayGrandTotal', `EUR ${formatEUR(grandTotal)}`);
@@ -1366,7 +1384,7 @@ function generateInvoice(options) {
   if (document.getElementById('serviceFeeDelivery')?.checked) serviceFeeTypes.push('delivery');
   if (document.getElementById('serviceFeeBuffet')?.checked) serviceFeeTypes.push('buffet set up');
   if (document.getElementById('serviceFeeDecorations')?.checked) serviceFeeTypes.push('decorations');
-  if (document.getElementById('serviceFeeStaff')?.checked && getStaffCost('invoice') === 0) serviceFeeTypes.push('staff');
+  if (document.getElementById('serviceFeeStaff')?.checked) serviceFeeTypes.push('staff');
   document.getElementById('displayServiceFeeType').textContent = formatServiceFeeTypes([...serviceFeeTypes]);
 
   // Page 2
@@ -1494,7 +1512,7 @@ function generateQuote(options) {
   if (document.getElementById('quoteServiceFeeDelivery')?.checked) serviceFeeTypes.push('delivery');
   if (document.getElementById('quoteServiceFeeBuffet')?.checked) serviceFeeTypes.push('buffet set up');
   if (document.getElementById('quoteServiceFeeDecorations')?.checked) serviceFeeTypes.push('decorations');
-  if (document.getElementById('quoteServiceFeeStaff')?.checked && getStaffCost('quote') === 0) serviceFeeTypes.push('staff');
+  if (document.getElementById('quoteServiceFeeStaff')?.checked) serviceFeeTypes.push('staff');
   document.getElementById('quoteDisplayServiceFeeType').textContent = formatServiceFeeTypes([...serviceFeeTypes]);
 
   document.getElementById('quoteDisplayCaterDate2').textContent = formattedCaterDate;
@@ -1618,7 +1636,7 @@ function generateEmbassyInvoice(options) {
   if (document.getElementById('embassyInvoiceServiceFeeDelivery')?.checked) serviceFeeTypes.push('delivery');
   if (document.getElementById('embassyInvoiceServiceFeeBuffet')?.checked) serviceFeeTypes.push('buffet set up');
   if (document.getElementById('embassyInvoiceServiceFeeDecorations')?.checked) serviceFeeTypes.push('decorations');
-  if (document.getElementById('embassyInvoiceServiceFeeStaff')?.checked && getStaffCost('embassy-invoice') === 0) serviceFeeTypes.push('staff');
+  if (document.getElementById('embassyInvoiceServiceFeeStaff')?.checked) serviceFeeTypes.push('staff');
   document.getElementById('embassyInvoiceDisplayServiceFeeType').textContent = formatServiceFeeTypes([...serviceFeeTypes]);
 
   // Page 3 - Restore cost breakdown template before calculateEmbassyInvoiceTotals populates it
@@ -2194,6 +2212,7 @@ function resetForm(options) {
   clearDraft('invoice');
   updateSelectedSummary('invoice');
   updateStaffFields('invoice');
+  updateAdditionalFeeFields('invoice');
   if (!silent) showToast('Form reset', 'success');
 }
 
@@ -2212,6 +2231,7 @@ function resetQuoteForm(options) {
   clearDraft('quote');
   updateSelectedSummary('quote');
   updateStaffFields('quote');
+  updateAdditionalFeeFields('quote');
   if (!silent) showToast('Form reset', 'success');
 }
 
@@ -2219,25 +2239,64 @@ function resetQuoteForm(options) {
 // alone does not manage it: none of the date inputs carry a value attribute in
 // the HTML, so form.reset() blanks them and today's date had to be retyped every
 // time, while the finished document stayed in the preview belonging to nobody.
-// Staff is billed on its own line rather than folded into the service fee:
-// people x hours each x hourly rate. The rate defaults to EUR 20 in the markup
-// and is editable per job.
+// Staff is billed inside the service fee, as it always was — the calculator
+// works the figure out (people x hours each x hourly rate) instead of it being
+// typed by hand. The rate defaults to EUR 20 in the markup, editable per job.
+// A one-off charge with a name the customer reads: a late-night surcharge, an
+// extra trip. It bills on its own line between the service fee and the admin fee.
+const ADDITIONAL_FEE_IDS = {
+  'invoice': {
+    label: 'additionalFeeLabel', amount: 'additionalFeeAmount', row: 'additionalFeeRow',
+    rowLabel: 'displayAdditionalFeeLabel', rowAmount: 'displayAdditionalFee',
+  },
+  'quote': {
+    label: 'quoteAdditionalFeeLabel', amount: 'quoteAdditionalFeeAmount', row: 'quoteAdditionalFeeRow',
+    rowLabel: 'quoteDisplayAdditionalFeeLabel', rowAmount: 'quoteDisplayAdditionalFee',
+  },
+  'embassy-invoice': {
+    label: 'embassyInvoiceAdditionalFeeLabel', amount: 'embassyInvoiceAdditionalFeeAmount',
+    row: 'embassyInvoiceAdditionalFeeRow', rowLabel: 'embassyInvoiceDisplayAdditionalFeeLabel',
+    rowAmount: 'embassyInvoiceDisplayAdditionalFee',
+  },
+};
+
+function getAdditionalFee(docType) {
+  const ids = ADDITIONAL_FEE_IDS[docType];
+  if (!ids) return 0;
+  return parseFloat(document.getElementById(ids.amount)?.value) || 0;
+}
+
+// The row carries whatever the fee was called, falling back to a neutral label
+// so an amount entered without a description still reads properly.
+function updateAdditionalFeeFields(docType) {
+  const ids = ADDITIONAL_FEE_IDS[docType];
+  if (!ids) return;
+  const amount = getAdditionalFee(docType);
+  const described = (document.getElementById(ids.label)?.value || '').trim();
+
+  const rowLabel = document.getElementById(ids.rowLabel);
+  if (rowLabel) rowLabel.textContent = described || 'Additional fee';
+
+  const rowAmount = document.getElementById(ids.rowAmount);
+  if (rowAmount) rowAmount.textContent = 'EUR ' + formatEUR(amount);
+
+  const row = document.getElementById(ids.row);
+  if (row) row.style.display = amount > 0 ? '' : 'none';
+}
+
 const STAFF_FIELD_IDS = {
   'invoice': {
     checkbox: 'serviceFeeStaff', fields: 'staffCostFields', count: 'staffCount',
     hours: 'staffHours', rate: 'staffRate', formTotal: 'staffCostDisplay',
-    row: 'staffCostRow', amount: 'displayStaffCost',
   },
   'quote': {
     checkbox: 'quoteServiceFeeStaff', fields: 'quoteStaffCostFields', count: 'quoteStaffCount',
     hours: 'quoteStaffHours', rate: 'quoteStaffRate', formTotal: 'quoteStaffCostDisplay',
-    row: 'quoteStaffCostRow', amount: 'quoteDisplayStaffCost',
   },
   'embassy-invoice': {
     checkbox: 'embassyInvoiceServiceFeeStaff', fields: 'embassyInvoiceStaffCostFields',
     count: 'embassyInvoiceStaffCount', hours: 'embassyInvoiceStaffHours',
     rate: 'embassyInvoiceStaffRate', formTotal: 'embassyInvoiceStaffCostDisplay',
-    row: 'embassyInvoiceStaffCostRow', amount: 'embassyInvoiceDisplayStaffCost',
   },
 };
 
@@ -2252,8 +2311,8 @@ function getStaffCost(docType) {
   return people * hours * rate;
 }
 
-// Reveal the fields only while Staff is ticked, and keep the running total in
-// the form and the Staff row on the document in step with them.
+// Reveal the fields only while Staff is ticked, and keep the running total
+// beside them in step.
 function updateStaffFields(docType) {
   const ids = STAFF_FIELD_IDS[docType];
   if (!ids) return;
@@ -2266,11 +2325,6 @@ function updateStaffFields(docType) {
   const formTotal = document.getElementById(ids.formTotal);
   if (formTotal) formTotal.textContent = 'EUR ' + formatEUR(cost);
 
-  const amount = document.getElementById(ids.amount);
-  if (amount) amount.textContent = 'EUR ' + formatEUR(cost);
-
-  const row = document.getElementById(ids.row);
-  if (row) row.style.display = cost > 0 ? '' : 'none';
 }
 
 const NEW_DOCUMENT_CONFIG = {
@@ -2329,6 +2383,7 @@ function resetEmbassyInvoiceForm(options) {
   clearDraft('embassy-invoice');
   updateSelectedSummary('embassy-invoice');
   updateStaffFields('embassy-invoice');
+  updateAdditionalFeeFields('embassy-invoice');
   if (!silent) showToast('Form reset', 'success');
 }
 
@@ -2615,7 +2670,7 @@ window.addEventListener('DOMContentLoaded', function() {
       if (document.getElementById('serviceFeeDelivery')?.checked) types.push('delivery');
       if (document.getElementById('serviceFeeBuffet')?.checked) types.push('buffet set up');
       if (document.getElementById('serviceFeeDecorations')?.checked) types.push('decorations');
-      if (document.getElementById('serviceFeeStaff')?.checked && getStaffCost('invoice') === 0) types.push('staff');
+      if (document.getElementById('serviceFeeStaff')?.checked) types.push('staff');
       document.getElementById('displayServiceFeeType').textContent = formatServiceFeeTypes([...types]);
     });
   });
@@ -2629,11 +2684,13 @@ window.addEventListener('DOMContentLoaded', function() {
       else calculateEmbassyInvoiceTotals();
     };
     document.getElementById(ids.checkbox)?.addEventListener('change', recalc);
-    [ids.count, ids.hours, ids.rate].forEach(id => {
+    const extra = ADDITIONAL_FEE_IDS[docType];
+    [ids.count, ids.hours, ids.rate, extra.label, extra.amount].forEach(id => {
       document.getElementById(id)?.addEventListener('input', recalc);
       document.getElementById(id)?.addEventListener('change', recalc);
     });
     updateStaffFields(docType);
+    updateAdditionalFeeFields(docType);
   });
 
   // Quote form listeners
