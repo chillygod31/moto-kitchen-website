@@ -998,7 +998,9 @@ function calculateTotals() {
   }
 
   const includeAdminFee = document.getElementById('includeAdminFee')?.checked;
-  const adminFeeBase = itemTotal + serviceFee + staffCost + additionalFee;
+  // The additional fee is a pass-through charge, so the 3% admin fee is worked
+  // out without it. It still counts toward the total below.
+  const adminFeeBase = itemTotal + serviceFee + staffCost;
   const adminFee = includeAdminFee ? adminFeeBase * 0.03 : 0;
   const grandTotal = itemTotal + serviceFee + staffCost + additionalFee + adminFee;
   
@@ -1173,7 +1175,9 @@ function calculateQuoteTotals() {
   }
 
   const includeAdminFee = document.getElementById('quoteIncludeAdminFee')?.checked;
-  const adminFeeBase = itemTotal + serviceFee + staffCost + additionalFee;
+  // The additional fee is a pass-through charge, so the 3% admin fee is worked
+  // out without it. It still counts toward the total below.
+  const adminFeeBase = itemTotal + serviceFee + staffCost;
   const adminFee = includeAdminFee ? adminFeeBase * 0.03 : 0;
   const grandTotal = itemTotal + serviceFee + staffCost + additionalFee + adminFee;
   
@@ -1261,7 +1265,9 @@ function calculateEmbassyInvoiceTotals() {
   }
 
   const includeAdminFee = document.getElementById('embassyInvoiceIncludeAdminFee')?.checked;
-  const adminFeeBase = itemTotal + serviceFee + staffCost + additionalFee;
+  // The additional fee is a pass-through charge, so the 3% admin fee is worked
+  // out without it. It still counts toward the total below.
+  const adminFeeBase = itemTotal + serviceFee + staffCost;
   const adminFee = includeAdminFee ? adminFeeBase * 0.03 : 0;
   const grandTotal = itemTotal + serviceFee + staffCost + additionalFee + adminFee;
 
