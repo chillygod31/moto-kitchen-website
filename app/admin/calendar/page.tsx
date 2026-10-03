@@ -160,7 +160,7 @@ export default function AdminCalendarPage() {
   const formatTime = (dateTimeStr: string) => {
     if (!dateTimeStr.includes('T')) return 'All day'
     const d = new Date(dateTimeStr)
-    return d.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit', hour12: false })
+    return d.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Amsterdam' })
   }
 
   // ─── CRUD handlers ───────────────────────────────────────────────────────

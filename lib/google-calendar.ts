@@ -2,12 +2,13 @@ import { google, calendar_v3 } from 'googleapis'
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar']
 
-// Zone that timed events are written in. NOTE: the connected calendar
-// (contact@motokitchen.nl) is Europe/Amsterdam, so events currently land an
-// hour out. Changing this shifts the times of events people already rely on,
-// so it stays as it was until that call is made deliberately — collected here
-// rather than repeated at each call site so it is a one-line change.
-const EVENT_TIME_ZONE = 'Europe/Dublin'
+// The business and its calendar (contact@motokitchen.nl) are both in Amsterdam,
+// so every timed event is written, read and shown in this zone. Reading in the
+// same zone it is written in is what makes an edit round-trip: the form shows
+// Amsterdam wall-clock times, so saving them as Amsterdam leaves the event where
+// it was. Writing in Europe/Dublin instead moved every edited event an hour later.
+// Existing events are untouched by this; they keep the instant they were saved at.
+const EVENT_TIME_ZONE = 'Europe/Amsterdam'
 
 function getOAuth2Client() {
   const clientId = process.env.GOOGLE_CLIENT_ID
@@ -87,13 +88,24 @@ export async function getCalendarEvents(
   const calendar = getCalendar()
   const calendarId = getCalendarId()
 
-  const endOfDay = new Date(endDate)
-  endOfDay.setUTCHours(23, 59, 59, 999)
+  // The range arrives as plain dates. Read as UTC midnight they begin an hour or
+  // two into the Amsterdam day, so an event just after midnight on the 1st fell
+  // outside the window and never appeared. Pad a day either side; the page files
+  // each event under its own date, so the extra margin only fills the grid's
+  // neighbouring-month cells correctly.
+  const rangeStart = new Date(startDate)
+  rangeStart.setUTCDate(rangeStart.getUTCDate() - 1)
+  const rangeEnd = new Date(endDate)
+  rangeEnd.setUTCDate(rangeEnd.getUTCDate() + 1)
+  rangeEnd.setUTCHours(23, 59, 59, 999)
 
   const response = await calendar.events.list({
     calendarId,
-    timeMin: new Date(startDate).toISOString(),
-    timeMax: endOfDay.toISOString(),
+    timeMin: rangeStart.toISOString(),
+    timeMax: rangeEnd.toISOString(),
+    // Ask for Amsterdam explicitly rather than relying on the calendar's own
+    // setting, so the dates the page groups by are always Amsterdam dates.
+    timeZone: EVENT_TIME_ZONE,
     singleEvents: true,
     orderBy: 'startTime',
     maxResults: 250,
