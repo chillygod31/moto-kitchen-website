@@ -4,6 +4,13 @@ import { verifyCsrfToken } from '@/lib/csrf'
 import { logger, getTenantContextFromHeaders } from '@/lib/logging'
 import { captureException } from '@/lib/error-tracking'
 
+// Everything the list shows, and nothing it does not. quote_file holds a whole
+// PDF as base64 (up to ~6.7 MB a row), so selecting * shipped every attachment
+// just to draw a list — enough to push the request past the database's
+// statement timeout. The file is fetched from /api/quotes/[id] on download.
+const QUOTE_LIST_COLUMNS =
+  'id, name, email, phone, event_type, event_date, guest_count, location, service_type, dietary_requirements, message, how_found, budget_range, status, notes, quote_file_name, created_at, updated_at';
+
 export async function GET(request: NextRequest) {
   const context = getTenantContextFromHeaders(request.headers)
   logger.api.request('GET', '/api/quotes', context)
@@ -20,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('quote_requests')
-      .select('*')
+      .select(QUOTE_LIST_COLUMNS)
       .order('created_at', { ascending: false });
 
     // Apply filters
@@ -51,8 +58,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    logger.info('Quotes fetched successfully', { ...context, count: data?.length || 0 })
-    return NextResponse.json({ quotes: data || [] });
+    // Which quotes carry an attachment, without pulling the files: IS NOT NULL is
+    // answered from the row itself and never reads the base64 content.
+    const { data: withFiles } = await supabase
+      .from('quote_requests')
+      .select('id')
+      .not('quote_file', 'is', null);
+    const hasFile = new Set((withFiles || []).map((row) => row.id));
+
+    const quotes = (data || []).map((quote) => ({
+      ...quote,
+      // quote_file_name is written alongside the file, so it stands in if the
+      // lookup above fails.
+      has_quote_file: hasFile.has(quote.id) || !!quote.quote_file_name,
+    }));
+
+    logger.info('Quotes fetched successfully', { ...context, count: quotes.length })
+    return NextResponse.json({ quotes });
   } catch (error: any) {
     logger.api.error('GET', '/api/quotes', error, context)
     captureException(error, context)

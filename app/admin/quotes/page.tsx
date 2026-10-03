@@ -19,8 +19,10 @@ interface QuoteRequest {
   budget_range: string | null;
   status: string;
   notes: string | null;
-  quote_file: string | null;
+  // Absent from the list response; fetched on demand by downloadQuoteFile.
+  quote_file?: string | null;
   quote_file_name: string | null;
+  has_quote_file?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -187,7 +189,7 @@ export default function AdminQuotesPage() {
         if (response.ok) {
           fetchQuotes();
           if (selectedQuote?.id === id) {
-            setSelectedQuote({ ...selectedQuote, quote_file: base64, quote_file_name: file.name });
+            setSelectedQuote({ ...selectedQuote, quote_file: base64, quote_file_name: file.name, has_quote_file: true });
           }
         } else {
           alert("Failed to upload file");
@@ -214,11 +216,38 @@ export default function AdminQuotesPage() {
       if (response.ok) {
         fetchQuotes();
         if (selectedQuote?.id === id) {
-          setSelectedQuote({ ...selectedQuote, quote_file: null, quote_file_name: null });
+          setSelectedQuote({ ...selectedQuote, quote_file: null, quote_file_name: null, has_quote_file: false });
         }
       }
     } catch (error) {
       console.error("Error deleting file:", error);
+    }
+  };
+
+  // The list no longer carries file contents, so fetch the attachment only when
+  // it is actually asked for.
+  const downloadQuoteFile = async (quote: QuoteRequest) => {
+    try {
+      let file = quote.quote_file;
+      if (!file) {
+        const response = await fetch(`/api/quotes/${quote.id}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        file = data.quote?.quote_file;
+      }
+      if (!file) {
+        alert("Could not load the attached file.");
+        return;
+      }
+      const link = document.createElement("a");
+      link.href = file;
+      link.download = quote.quote_file_name || "quote.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Could not load the attached file.");
     }
   };
 
@@ -438,7 +467,7 @@ export default function AdminQuotesPage() {
                         {quote.status === 'new' && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">New</span>
                         )}
-                        {quote.quote_file && (
+                        {quote.has_quote_file && (
                           <span title="Quote attached">
                             <svg className="w-3.5 h-3.5 text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
@@ -535,7 +564,7 @@ export default function AdminQuotesPage() {
                               <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" title="Not responded"></span>
                             )}
                             {quote.name}
-                            {quote.quote_file && (
+                            {quote.has_quote_file && (
                               <span title="Quote attached">
                                 <svg className="w-3.5 h-3.5 text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
@@ -675,20 +704,19 @@ export default function AdminQuotesPage() {
                   {/* Quote Attachment */}
                   <div>
                     <h3 className="font-semibold text-sm text-[#1F1F1F] mb-2">Quote Attachment</h3>
-                    {selectedQuote.quote_file ? (
+                    {(selectedQuote.quote_file || selectedQuote.has_quote_file) ? (
                       <div className="flex items-center gap-3 p-3 bg-[#FAF6EF] rounded-lg border border-[#E6D9C8]">
                         <svg className="w-5 h-5 text-[#C9653B] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
                         <span className="text-sm text-[#1F1F1F] flex-1 truncate">{selectedQuote.quote_file_name || "quote.pdf"}</span>
-                        <a
-                          href={selectedQuote.quote_file}
-                          download={selectedQuote.quote_file_name || "quote.pdf"}
+                        <button
+                          type="button"
                           className="text-xs px-3 py-1 text-[#C9653B] border border-[#C9653B] rounded hover:bg-[#C9653B]/5"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); downloadQuoteFile(selectedQuote); }}
                         >
                           Download
-                        </a>
+                        </button>
                         <button
                           onClick={() => {
                             if (confirm("Remove attached file?")) {
