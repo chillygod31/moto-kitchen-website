@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
     const { data: orderItems } = await supabase
       .from('order_items')
       .select('menu_item_id, name_snapshot')
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
       .limit(100) // Sample recent items
 
     // Count frequency of each item (client-side aggregation)
@@ -49,10 +51,21 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([id, count]) => ({ menu_item_id: id, count }))
 
-    return NextResponse.json({
-      ordersToday: ordersToday || 0,
-      popularItems: popularItems || [],
-    })
+    // Cache at the CDN. This endpoint is public, is polled by every open tab on
+    // the order page, and is hit by every bot that crawls /order. Uncached it
+    // ran an exact count plus a 100-row scan per request, straight to Postgres.
+    // Social-proof counters do not need to be fresher than a minute.
+    return NextResponse.json(
+      {
+        ordersToday: ordersToday || 0,
+        popularItems: popularItems || [],
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      }
+    )
   } catch (error: any) {
     console.error('Error in GET /api/orders/stats:', error)
     return NextResponse.json(

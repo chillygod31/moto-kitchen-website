@@ -206,19 +206,24 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Log job run
+    // Log job run — only when there was actually work to report.
+    // Logging idle runs wrote a row every minute into a table nothing prunes,
+    // which is what drained the project's Disk IO budget. Health checks read
+    // the most recent run, so skipping no-op runs costs no observability.
     const duration = Date.now() - jobStart.getTime();
-    await supabase.from('cron_job_runs').insert({
-      job_name: 'process_email_queue',
-      run_at: jobStart.toISOString(),
-      duration_ms: duration,
-      status: 'success',
-      records_processed: successCount + failCount,
-      metadata: {
-        success_count: successCount,
-        fail_count: failCount
-      }
-    });
+    if (successCount + failCount > 0) {
+      await supabase.from('cron_job_runs').insert({
+        job_name: 'process_email_queue',
+        run_at: jobStart.toISOString(),
+        duration_ms: duration,
+        status: 'success',
+        records_processed: successCount + failCount,
+        metadata: {
+          success_count: successCount,
+          fail_count: failCount
+        }
+      });
+    }
     
     logger.info('Email queue processed', {
       total: emails?.length || 0,

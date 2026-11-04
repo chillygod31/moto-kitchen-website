@@ -1,5 +1,20 @@
 # Supabase Cron Jobs Configuration
 
+> **STATUS AS OF 2026-11-04: THESE JOBS ARE PAUSED. DO NOT RE-RUN THIS DOCUMENT AS-IS.**
+>
+> Both jobs below were unscheduled because they depleted the project's Disk IO
+> Budget: they fired every 1 and 5 minutes around the clock and wrote a
+> `cron_job_runs` row on every tick regardless of whether there was work, into
+> tables nothing pruned. Ordering and payments are not currently in use, so the
+> jobs found nothing to do on every run.
+>
+> Re-enable only when ordering is switched back on, and use the corrected
+> intervals in the footer of
+> `supabase/migrations/2026-11-04-pause-ordering-crons-and-log-retention.sql`
+> (5 min and 15 min, not 1 min and 5 min) — not the intervals in this document.
+>
+> A weekly `prune-job-logs` job now handles log retention. Leave it scheduled.
+
 This document contains the SQL commands to set up cron jobs in Supabase for the P0 Payment Safety system.
 
 ## Prerequisites
@@ -21,11 +36,11 @@ Run these SQL commands in the Supabase SQL Editor:
 
 ```sql
 -- Remove existing job if it exists
-SELECT cron.unschedule('cleanup-expired-pending-orders');
+SELECT cron.unschedule('cleanup-expired-orders');
 
 -- Create new job
 SELECT cron.schedule(
-  'cleanup-expired-pending-orders',
+  'cleanup-expired-orders',
   '*/5 * * * *', -- Every 5 minutes
   $$
   SELECT net.http_post(
@@ -43,7 +58,7 @@ SELECT cron.schedule(
 **For local development**, use:
 ```sql
 SELECT cron.schedule(
-  'cleanup-expired-pending-orders',
+  'cleanup-expired-orders',
   '*/5 * * * *',
   $$
   SELECT net.http_post(
@@ -205,7 +220,7 @@ Expected response (healthy):
 To remove a cron job:
 
 ```sql
-SELECT cron.unschedule('cleanup-expired-pending-orders');
+SELECT cron.unschedule('cleanup-expired-orders');
 SELECT cron.unschedule('process-email-queue');
 ```
 
