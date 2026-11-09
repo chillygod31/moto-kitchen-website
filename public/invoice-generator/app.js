@@ -557,6 +557,7 @@ function getFormData(docType) {
       includeMocktailPackage: getChecked('includeMocktailPackage'),
       mocktailHours: getVal('mocktailHours'),
       includeAdminFee: getChecked('includeAdminFee'),
+      showDiscount: getChecked('showDiscount'),
       serviceFeeDelivery: getChecked('serviceFeeDelivery'),
       serviceFeeBuffet: getChecked('serviceFeeBuffet'),
       serviceFeeDecorations: getChecked('serviceFeeDecorations'),
@@ -587,6 +588,7 @@ function getFormData(docType) {
       quoteIncludeMocktailPackage: getChecked('quoteIncludeMocktailPackage'),
       quoteMocktailHours: getVal('quoteMocktailHours'),
       quoteIncludeAdminFee: getChecked('quoteIncludeAdminFee'),
+      quoteShowDiscount: getChecked('quoteShowDiscount'),
       quoteServiceFeeDelivery: getChecked('quoteServiceFeeDelivery'),
       quoteServiceFeeBuffet: getChecked('quoteServiceFeeBuffet'),
       quoteServiceFeeDecorations: getChecked('quoteServiceFeeDecorations'),
@@ -613,6 +615,7 @@ function getFormData(docType) {
       embassyInvoiceIncludeMocktailPackage: getChecked('embassyInvoiceIncludeMocktailPackage'),
       embassyInvoiceMocktailHours: getVal('embassyInvoiceMocktailHours'),
       embassyInvoiceIncludeAdminFee: getChecked('embassyInvoiceIncludeAdminFee'),
+      embassyInvoiceShowDiscount: getChecked('embassyInvoiceShowDiscount'),
       embassyInvoiceServiceFeeDelivery: getChecked('embassyInvoiceServiceFeeDelivery'),
       embassyInvoiceServiceFeeBuffet: getChecked('embassyInvoiceServiceFeeBuffet'),
       embassyInvoiceServiceFeeDecorations: getChecked('embassyInvoiceServiceFeeDecorations'),
@@ -664,6 +667,7 @@ function setFormData(docType, data) {
     setChecked('includeMocktailPackage', data.includeMocktailPackage);
     setVal('mocktailHours', data.mocktailHours);
     setChecked('includeAdminFee', data.includeAdminFee);
+    setChecked('showDiscount', data.showDiscount !== false);
     setChecked('serviceFeeDelivery', data.serviceFeeDelivery);
     setChecked('serviceFeeBuffet', data.serviceFeeBuffet);
     setChecked('serviceFeeDecorations', data.serviceFeeDecorations);
@@ -698,6 +702,7 @@ function setFormData(docType, data) {
     setChecked('quoteIncludeMocktailPackage', data.quoteIncludeMocktailPackage);
     setVal('quoteMocktailHours', data.quoteMocktailHours);
     setChecked('quoteIncludeAdminFee', data.quoteIncludeAdminFee);
+    setChecked('quoteShowDiscount', data.quoteShowDiscount !== false);
     setChecked('quoteServiceFeeDelivery', data.quoteServiceFeeDelivery);
     setChecked('quoteServiceFeeBuffet', data.quoteServiceFeeBuffet);
     setChecked('quoteServiceFeeDecorations', data.quoteServiceFeeDecorations);
@@ -722,6 +727,7 @@ function setFormData(docType, data) {
     setChecked('embassyInvoiceIncludeMocktailPackage', data.embassyInvoiceIncludeMocktailPackage);
     setVal('embassyInvoiceMocktailHours', data.embassyInvoiceMocktailHours);
     setChecked('embassyInvoiceIncludeAdminFee', data.embassyInvoiceIncludeAdminFee);
+    setChecked('embassyInvoiceShowDiscount', data.embassyInvoiceShowDiscount !== false);
     setChecked('embassyInvoiceServiceFeeDelivery', data.embassyInvoiceServiceFeeDelivery);
     setChecked('embassyInvoiceServiceFeeBuffet', data.embassyInvoiceServiceFeeBuffet);
     setChecked('embassyInvoiceServiceFeeDecorations', data.embassyInvoiceServiceFeeDecorations);
@@ -988,7 +994,9 @@ function calculateTotals() {
   let pricePerPerson;
 
   if (isCustomOrder) {
-    itemTotal = subtotal;
+    // A custom order is priced line by line, so the discount comes off the
+    // order total rather than each guest's rate.
+    itemTotal = Math.max(0, subtotal - discount);
     rate = 0;
     pricePerPerson = 0;
   } else {
@@ -1055,6 +1063,7 @@ function calculateTotals() {
   updateEl('displayRate', formatEUR(rate));
   updateEl('displayItemTotal', `EUR ${formatEUR(itemTotal)}`);
   updateEl('displaySubtotal', `EUR ${formatEUR(itemTotal)}`);
+  updateDiscountDisplay('invoice', { discount, guestCount, isCustomOrder, rate, itemTotal });
   updateEl('displayServiceFee', `EUR ${formatEUR(serviceFee + staffCost)}`);
   updateStaffFields('invoice');
   updateAdditionalFeeFields('invoice');
@@ -1165,7 +1174,9 @@ function calculateQuoteTotals() {
   let itemTotal, rate, pricePerPerson;
 
   if (isCustomOrder) {
-    itemTotal = subtotal;
+    // A custom order is priced line by line, so the discount comes off the
+    // order total rather than each guest's rate.
+    itemTotal = Math.max(0, subtotal - discount);
     rate = 0;
     pricePerPerson = 0;
   } else {
@@ -1205,6 +1216,7 @@ function calculateQuoteTotals() {
   updateEl('quoteDisplayRate', formatEUR(rate));
   updateEl('quoteDisplayItemTotal', `EUR ${formatEUR(itemTotal)}`);
   updateEl('quoteDisplaySubtotal', `EUR ${formatEUR(itemTotal)}`);
+  updateDiscountDisplay('quote', { discount, guestCount, isCustomOrder, rate, itemTotal });
   updateEl('quoteDisplayServiceFee', `EUR ${formatEUR(serviceFee + staffCost)}`);
   updateStaffFields('quote');
   updateAdditionalFeeFields('quote');
@@ -1255,7 +1267,9 @@ function calculateEmbassyInvoiceTotals() {
   let itemTotal, rate, pricePerPerson;
 
   if (isCustomOrder) {
-    itemTotal = subtotal;
+    // A custom order is priced line by line, so the discount comes off the
+    // order total rather than each guest's rate.
+    itemTotal = Math.max(0, subtotal - discount);
     rate = 0;
     pricePerPerson = 0;
   } else {
@@ -1287,6 +1301,7 @@ function calculateEmbassyInvoiceTotals() {
   updateEl('embassyInvoiceDisplayRate', formatEUR(rate));
   updateEl('embassyInvoiceDisplayItemTotal', `EUR ${formatEUR(itemTotal)}`);
   updateEl('embassyInvoiceDisplaySubtotal', `EUR ${formatEUR(itemTotal)}`);
+  updateDiscountDisplay('embassy-invoice', { discount, guestCount, isCustomOrder, rate, itemTotal });
   updateEl('embassyInvoiceDisplayServiceFee', `EUR ${formatEUR(serviceFee + staffCost)}`);
   updateStaffFields('embassy-invoice');
   updateAdditionalFeeFields('embassy-invoice');
@@ -2250,6 +2265,64 @@ function resetQuoteForm(options) {
 // typed by hand. The rate defaults to EUR 20 in the markup, editable per job.
 // A one-off charge with a name the customer reads: a late-night surcharge, an
 // extra trip. It bills on its own line between the service fee and the admin fee.
+// Discount is entered per guest on the per-person documents and as a flat
+// amount on a custom order. Putting it on show means displaying the
+// pre-discount figures with the saving on its own line. The grand total never
+// moves: the discount is already inside the rate the totals are built from.
+const DISCOUNT_DISPLAY_IDS = {
+  'invoice': {
+    checkbox: 'showDiscount', row: 'discountRow',
+    rowLabel: 'displayDiscountLabel', rowAmount: 'displayDiscount',
+    subtotal: 'displaySubtotal', rate: 'displayRate', itemTotal: 'displayItemTotal',
+  },
+  'quote': {
+    checkbox: 'quoteShowDiscount', row: 'quoteDiscountRow',
+    rowLabel: 'quoteDisplayDiscountLabel', rowAmount: 'quoteDisplayDiscount',
+    subtotal: 'quoteDisplaySubtotal', rate: 'quoteDisplayRate',
+    itemTotal: 'quoteDisplayItemTotal',
+  },
+  'embassy-invoice': {
+    checkbox: 'embassyInvoiceShowDiscount', row: 'embassyInvoiceDiscountRow',
+    rowLabel: 'embassyInvoiceDisplayDiscountLabel',
+    rowAmount: 'embassyInvoiceDisplayDiscount',
+    subtotal: 'embassyInvoiceDisplaySubtotal', rate: 'embassyInvoiceDisplayRate',
+    itemTotal: 'embassyInvoiceDisplayItemTotal',
+  },
+};
+
+// Runs after the totals have been painted, so it only overwrites the few
+// figures that differ once the discount is shown. With the box unticked, or no
+// discount entered, the net figures are left exactly as they were.
+function updateDiscountDisplay(docType, { discount, guestCount, isCustomOrder, rate, itemTotal }) {
+  const ids = DISCOUNT_DISPLAY_IDS[docType];
+  if (!ids) return;
+
+  const show = !!document.getElementById(ids.checkbox)?.checked && discount > 0;
+  const row = document.getElementById(ids.row);
+  if (row) row.style.display = show ? '' : 'none';
+  if (!show) return;
+
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  const discountAmount = isCustomOrder ? discount : discount * guestCount;
+  const grossItemTotal = itemTotal + discountAmount;
+
+  setText(ids.subtotal, `EUR ${formatEUR(grossItemTotal)}`);
+  setText(ids.rowAmount, `- EUR ${formatEUR(discountAmount)}`);
+  setText(ids.rowLabel, isCustomOrder
+    ? 'Discount'
+    : `Discount (EUR ${formatEUR(discount)} per guest)`);
+
+  // The line item has to agree with the subtotal printed beneath it.
+  if (!isCustomOrder) {
+    setText(ids.rate, formatEUR(rate + discount));
+    setText(ids.itemTotal, `EUR ${formatEUR(grossItemTotal)}`);
+  }
+}
+
 const ADDITIONAL_FEE_IDS = {
   'invoice': {
     label: 'additionalFeeLabel', amount: 'additionalFeeAmount', row: 'additionalFeeRow',
@@ -2652,6 +2725,7 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('includeMocktailPackage')?.addEventListener('change', calculateTotals);
   document.getElementById('mocktailHours')?.addEventListener('input', calculateTotals);
   document.getElementById('includeAdminFee')?.addEventListener('change', calculateTotals);
+  document.getElementById('showDiscount')?.addEventListener('change', calculateTotals);
 
   // Custom order toggle
   document.getElementById('isCustomOrder')?.addEventListener('change', function() {
@@ -2710,6 +2784,7 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('quoteIncludeMocktailPackage')?.addEventListener('change', calculateQuoteTotals);
   document.getElementById('quoteMocktailHours')?.addEventListener('input', calculateQuoteTotals);
   document.getElementById('quoteIncludeAdminFee')?.addEventListener('change', calculateQuoteTotals);
+  document.getElementById('quoteShowDiscount')?.addEventListener('change', calculateQuoteTotals);
   
   // Embassy invoice form listeners
   ['embassyInvoiceGuestCount', 'embassyInvoiceDiscount', 'embassyInvoiceServiceFee', 'embassyInvoiceDate', 'embassyInvoiceCaterDate'].forEach(id => {
@@ -2722,6 +2797,7 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('embassyInvoiceIncludeMocktailPackage')?.addEventListener('change', calculateEmbassyInvoiceTotals);
   document.getElementById('embassyInvoiceMocktailHours')?.addEventListener('input', calculateEmbassyInvoiceTotals);
   document.getElementById('embassyInvoiceIncludeAdminFee')?.addEventListener('change', calculateEmbassyInvoiceTotals);
+  document.getElementById('embassyInvoiceShowDiscount')?.addEventListener('change', calculateEmbassyInvoiceTotals);
 
   // Embassy invoice amended fields
   document.getElementById('embassyInvoiceIsAmended')?.addEventListener('change', function() {

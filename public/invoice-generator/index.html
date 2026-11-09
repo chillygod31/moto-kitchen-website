@@ -231,6 +231,13 @@
 
         <div class="form-group" style="grid-column: 1 / -1;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="showDiscount" checked style="width: 18px; height: 18px;">
+            <span>Show discount on document</span>
+          </label>
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" id="isAmendedInvoice" style="width: 18px; height: 18px;">
             <span>This is an amended invoice (partial payment received)</span>
           </label>
@@ -422,6 +429,13 @@
             <span>Include Admin Fee (3%)</span>
           </label>
         </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="quoteShowDiscount" checked style="width: 18px; height: 18px;">
+            <span>Show discount on document</span>
+          </label>
+        </div>
         
         <div class="form-group" style="grid-column: 1 / -1;">
           <label for="quoteItemDescription">ITEM DESCRIPTION (Page 3):</label>
@@ -592,6 +606,13 @@
 
         <div class="form-group" style="grid-column: 1 / -1;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="embassyInvoiceShowDiscount" checked style="width: 18px; height: 18px;">
+            <span>Show discount on document</span>
+          </label>
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" id="embassyInvoiceIsAmended" style="width: 18px; height: 18px;">
             <span>This is an amended invoice (partial payment received)</span>
           </label>
@@ -728,6 +749,7 @@
       </table>
       <table class="totals-table">
         <tr><td>Subtotal food &amp; drinks</td><td id="displaySubtotal">EUR 1378,50</td></tr>
+        <tr id="discountRow" style="display: none;"><td id="displayDiscountLabel">Discount</td><td id="displayDiscount">- EUR 0,00</td></tr>
         <tr><td>Service fee - <span id="displayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="displayServiceFee">EUR 410,00</td></tr>
         <tr id="additionalFeeRow" style="display: none;"><td id="displayAdditionalFeeLabel">Additional fee</td><td id="displayAdditionalFee">EUR 0,00</td></tr>
         <tr id="adminFeeRow"><td id="displayAdminFeeLabel">Admin Fee (3%)</td><td id="displayAdminFee">EUR 53,65</td></tr>
@@ -855,6 +877,7 @@
       </table>
       <table class="totals-table">
         <tr><td>Subtotal food &amp; drinks</td><td id="quoteDisplaySubtotal">EUR 1378,50</td></tr>
+        <tr id="quoteDiscountRow" style="display: none;"><td id="quoteDisplayDiscountLabel">Discount</td><td id="quoteDisplayDiscount">- EUR 0,00</td></tr>
         <tr><td>Service fee - <span id="quoteDisplayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="quoteDisplayServiceFee">EUR 410,00</td></tr>
         <tr id="quoteAdditionalFeeRow" style="display: none;"><td id="quoteDisplayAdditionalFeeLabel">Additional fee</td><td id="quoteDisplayAdditionalFee">EUR 0,00</td></tr>
         <tr id="quoteAdminFeeRow"><td id="quoteDisplayAdminFeeLabel">Admin Fee (3%)</td><td id="quoteDisplayAdminFee">EUR 53,65</td></tr>
@@ -911,6 +934,7 @@
       </table>
       <table class="totals-table" style="margin-top: 12px;">
         <tr><td>Subtotal food &amp; drinks</td><td id="embassyInvoiceDisplaySubtotal">EUR 1378,50</td></tr>
+        <tr id="embassyInvoiceDiscountRow" style="display: none;"><td id="embassyInvoiceDisplayDiscountLabel">Discount</td><td id="embassyInvoiceDisplayDiscount">- EUR 0,00</td></tr>
         <tr><td>Service fee - <span id="embassyInvoiceDisplayServiceFeeType">delivery, buffet set up, decorations &amp; staff</span></td><td id="embassyInvoiceDisplayServiceFee">EUR 410,00</td></tr>
         <tr id="embassyInvoiceAdditionalFeeRow" style="display: none;"><td id="embassyInvoiceDisplayAdditionalFeeLabel">Additional fee</td><td id="embassyInvoiceDisplayAdditionalFee">EUR 0,00</td></tr>
         <tr id="embassyInvoiceAdminFeeRow"><td id="embassyInvoiceDisplayAdminFeeLabel">Admin Fee (3%)</td><td id="embassyInvoiceDisplayAdminFee">EUR 53,65</td></tr>
